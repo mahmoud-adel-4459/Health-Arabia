@@ -1,0 +1,20 @@
+---
+description: Privacy and access rules the Express API must enforce for Health Arabia
+globs: apps/api/**
+alwaysApply: false
+---
+
+# API privacy and access rules
+
+The database enforces lifecycle rules (see the header comment in `apps/api/prisma/schema.prisma`). These rules must be enforced in API code:
+
+1. **Anonymous facility access.** Facility endpoints may read only `Application.candidateCode`, `anonymousJobTitle`, `anonymousSpecialtyId`, `anonymousYearsOfExperience`, and `status`. Never select `doctorId`, `ApplicationSubmission`, `DoctorProfile`, or files for a facility unless rule 2 passes.
+2. **Consent-gated profile and CV access.** A facility may read a doctor's details or CV only while the related `IdentityRelease` has `status = APPROVED` and `doctorConsentStatus = GRANTED`. Re-check on every request; revocation takes effect immediately.
+3. **Audit every revealed-data access.** Each read of revealed doctor data or files writes an `AuditLog` row (actor, action, entity, metadata) in the same request.
+4. **Files.** Never return storage keys or permanent URLs. Serve files only through short-lived links issued after an authorization check. CVs and documents are always private.
+5. **Notifications** store `type` + structured `data` only; facility notification data must not identify a doctor before rule 2 passes.
+6. **Login.** Doctors sign up and log in with mobile (E.164) + password; email is optional. Facilities log in with the recruitment officer's email (`User.email`) + password. Store email lowercase and only a password hash. No OTP yet.
+7. **Sessions.** Server-side `Session` rows store only a token hash. Reject login and every authenticated request for `DEACTIVATED` accounts and for revoked or expired sessions.
+8. **No hard deletes** of users or hiring records; account deletion creates an `AccountDeletionRequest`. Completing it deactivates the account and revokes its sessions (database triggers); records are preserved.
+9. **Revocation.** When a release is `REVOKED` (consent revoked, request cancelled, or platform decision), facility access to that doctor's data ends immediately; the conversation stays readable but accepts no new messages.
+10. Chat attachments are out of scope for the MVP.

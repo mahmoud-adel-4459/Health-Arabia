@@ -1,10 +1,1008 @@
-// Models are added in a later stage.
-
 generator client {
-  provider = "prisma-client-js"
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "cjs"
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+}
+
+// Database rules that Prisma cannot express live only in raw migration SQL
+// (Prisma does not diff them, so they must be re-checked when editing related models):
+// - 20261025130415_privacy_and_hiring_rules: partial unique index
+//   "HireRequestItem_one_open_per_application", consent and listing CHECKs,
+//   conversation/application/listing triggers, private file kinds.
+// - 20261025131723_privacy_lifecycle_rules: terminal hire outcomes, consent
+//   revocation (read-only conversations, message gating), append-only audit log.
+// - 20261025132321_accounts_and_retention: login identifier formats, one open
+//   deletion request per user, request cancellation cascade, no hard deletes of
+//   users or hiring records.
+// - 20261025133044_stage2_closure: role login identifiers, account deactivation
+//   and session revocation, revoking approved releases of cancelled items.
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum UserRole {
+  DOCTOR
+  FACILITY
+  PLATFORM_ADMIN
+}
+
+// DEACTIVATED is final: set when an account deletion request is completed.
+enum AccountStatus {
+  DRAFT
+  PENDING_REVIEW
+  APPROVED
+  REJECTED
+  SUSPENDED
+  DEACTIVATED
+}
+
+enum Locale {
+  EN
+  AR
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum FileKind {
+  CV
+  PROFILE_PHOTO
+  FACILITY_LOGO
+  CERTIFICATE
+  SUPPORTING_DOCUMENT
+  CONTENT_IMAGE
+}
+
+enum FileVisibility {
+  PRIVATE
+  PUBLIC
+}
+
+enum FacilityType {
+  GOVERNMENT
+  MILITARY
+  UNIVERSITY
+  PRIVATE
+  CLINIC
+  OTHER
+}
+
+enum LanguageProficiency {
+  NATIVE
+  FLUENT
+  PROFESSIONAL
+  BASIC
+}
+
+enum JobStatus {
+  DRAFT
+  PENDING_REVIEW
+  CHANGES_REQUESTED
+  PUBLISHED
+  REJECTED
+  CLOSED
+}
+
+enum ApplicationStatus {
+  SUBMITTED
+  UNDER_REVIEW
+  HIRE_REQUESTED
+  HIRED
+  NOT_SELECTED
+  WITHDRAWN
+}
+
+enum HireRequestStatus {
+  SUBMITTED
+  IN_COORDINATION
+  COMPLETED
+  CANCELLED
+}
+
+// HIRED, REJECTED, WITHDRAWN, CANCELLED are terminal and require closedAt.
+enum HireRequestItemStatus {
+  REQUESTED
+  IN_COORDINATION
+  AGREED
+  HIRED
+  REJECTED
+  WITHDRAWN
+  CANCELLED
+}
+
+enum IdentityReleaseStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  REVOKED
+}
+
+enum IdentityRevocationReason {
+  DOCTOR_CONSENT_REVOKED
+  HIRE_REQUEST_CANCELLED
+  PLATFORM_DECISION
+}
+
+enum DoctorConsentStatus {
+  PENDING
+  GRANTED
+  DECLINED
+  REVOKED
+}
+
+enum ConversationStatus {
+  ACTIVE
+  READ_ONLY
+}
+
+enum AccountDeletionStatus {
+  REQUESTED
+  IN_REVIEW
+  COMPLETED
+  REJECTED
+  CANCELLED
+}
+
+enum ParticipantRole {
+  DOCTOR
+  FACILITY
+  PLATFORM
+}
+
+enum NotificationType {
+  ACCOUNT_STATUS
+  JOB_REVIEW
+  JOB_MATCH
+  APPLICATION_UPDATE
+  HIRE_REQUEST_UPDATE
+  IDENTITY_CONSENT_REQUEST
+  IDENTITY_RELEASE
+  NEW_MESSAGE
+  PROFILE_REMINDER
+  SYSTEM
+}
+
+enum ContactSubmissionStatus {
+  NEW
+  IN_REVIEW
+  RESOLVED
+  SPAM
+}
+
+enum ContentPage {
+  HOME
+  ABOUT
+  COUNTRIES
+  HOSPITALS
+  FAQ
+  CONTACT
+  JOBS
+}
+
+// ---------------------------------------------------------------------------
+// Accounts and approval
+// ---------------------------------------------------------------------------
+
+// Login identifiers (enforced in migration SQL): doctors sign up and log in with
+// mobile (E.164) + password, email optional; facilities log in with the recruitment
+// officer's email + password. Email is stored lowercase.
+// Users are never hard-deleted; deletion starts as an AccountDeletionRequest and
+// completing it deactivates the account and revokes its sessions.
+model User {
+  id                   String        @id @default(uuid(7)) @db.Uuid
+  email                String?       @unique
+  mobileE164           String?       @unique
+  passwordHash         String
+  passwordChangedAt    DateTime?
+  deactivatedAt        DateTime?
+  displayName          String?
+  role                 UserRole
+  status               AccountStatus @default(DRAFT)
+  preferredLocale      Locale        @default(EN)
+  submittedForReviewAt DateTime?
+  reviewedAt           DateTime?
+  reviewedById         String?       @db.Uuid
+  reviewNote           String?
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  reviewedBy                 User?                     @relation("AccountReview", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAccounts           User[]                    @relation("AccountReview")
+  doctorProfile              DoctorProfile?
+  facility                   Facility?
+  enabledFacilityListings    Facility[]                @relation("FacilityPublicListing")
+  files                      FileAsset[]
+  reviewedJobs               Job[]                     @relation("JobReview")
+  coordinatedHireRequests    HireRequest[]
+  identityReleaseDecisions   IdentityRelease[]
+  conversationParticipations ConversationParticipant[]
+  messages                   Message[]
+  notifications              Notification[]
+  contactSubmissions         ContactSubmission[]       @relation("ContactSubmitter")
+  reviewedContactSubmissions ContactSubmission[]       @relation("ContactReviewer")
+  sessions                   Session[]
+  deletionRequests           AccountDeletionRequest[]  @relation("DeletionRequester")
+  processedDeletionRequests  AccountDeletionRequest[]  @relation("DeletionProcessor")
+  auditLogs                  AuditLog[]
+
+  @@index([role, status])
+}
+
+// Server-side sessions; only a hash of the session token is stored.
+// Deactivated accounts cannot open sessions (enforced in migration SQL).
+model Session {
+  id         String    @id @default(uuid(7)) @db.Uuid
+  userId     String    @db.Uuid
+  tokenHash  String    @unique
+  createdAt  DateTime  @default(now())
+  expiresAt  DateTime
+  lastUsedAt DateTime?
+  revokedAt  DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@index([userId, revokedAt])
+}
+
+// One open (REQUESTED or IN_REVIEW) request per user, enforced in migration SQL.
+// No retention period is defined yet; completing a request must not hard-delete retained records.
+model AccountDeletionRequest {
+  id             String                @id @default(uuid(7)) @db.Uuid
+  userId         String                @db.Uuid
+  status         AccountDeletionStatus @default(REQUESTED)
+  reason         String?
+  requestedAt    DateTime              @default(now())
+  processedById  String?               @db.Uuid
+  processedAt    DateTime?
+  resolutionNote String?
+  updatedAt      DateTime              @updatedAt
+
+  user        User  @relation("DeletionRequester", fields: [userId], references: [id], onDelete: Restrict)
+  processedBy User? @relation("DeletionProcessor", fields: [processedById], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([status, requestedAt])
+}
+
+// File bytes live in private, provider-neutral storage; storageKey is an opaque key
+// resolved by the API's storage adapter. Files are served only through authorized,
+// short-lived access, never as public URLs (except PUBLIC logo/content images).
+model FileAsset {
+  id             String         @id @default(uuid(7)) @db.Uuid
+  ownerId        String?        @db.Uuid
+  kind           FileKind
+  visibility     FileVisibility @default(PRIVATE)
+  storageKey     String         @unique
+  originalName   String
+  mimeType       String
+  sizeBytes      Int
+  checksumSha256 String?
+  createdAt      DateTime       @default(now())
+
+  owner                User?                   @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  doctorPhotos         DoctorProfile[]         @relation("DoctorPhoto")
+  doctorCvs            DoctorProfile[]         @relation("DoctorCv")
+  facilityLogos        Facility[]              @relation("FacilityLogo")
+  countryHeroImages    Country[]               @relation("CountryHeroImage")
+  applicationCvs       ApplicationSubmission[] @relation("ApplicationCv")
+  applicationDocuments ApplicationDocument[]
+  contentBlocks        ContentBlock[]
+  testimonials         Testimonial[]
+
+  @@index([ownerId])
+}
+
+// ---------------------------------------------------------------------------
+// Reference data and platform-managed options
+// ---------------------------------------------------------------------------
+
+model Country {
+  id               String   @id @default(uuid(7)) @db.Uuid
+  isoCode          String   @unique @db.Char(2)
+  slug             String   @unique
+  nameEn           String
+  nameAr           String
+  isGcc            Boolean  @default(false)
+  isActive         Boolean  @default(true)
+  sortOrder        Int      @default(0)
+  summaryEn        String?
+  summaryAr        String?
+  heroImageId      String?  @db.Uuid
+  isGuidePublished Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  heroImage             FileAsset?              @relation("CountryHeroImage", fields: [heroImageId], references: [id], onDelete: SetNull)
+  cities                City[]
+  guideSections         CountryGuideSection[]
+  residentDoctors       DoctorProfile[]         @relation("DoctorResidenceCountry")
+  nationalDoctors       DoctorProfile[]         @relation("DoctorNationality")
+  preferredByDoctors    DoctorProfile[]         @relation("DoctorPreferredCountries")
+  facilities            Facility[]
+  jobs                  Job[]
+  submissionNationality ApplicationSubmission[]
+}
+
+model City {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  countryId String   @db.Uuid
+  nameEn    String
+  nameAr    String
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  country                Country                 @relation(fields: [countryId], references: [id], onDelete: Restrict)
+  facilities             Facility[]
+  jobs                   Job[]
+  preferredInSubmissions ApplicationSubmission[]
+
+  @@unique([countryId, nameEn])
+  @@unique([id, countryId])
+}
+
+model Specialty {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  slug      String   @unique
+  nameEn    String
+  nameAr    String
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  primaryDoctors    DoctorProfile[]         @relation("DoctorPrimarySpecialty")
+  additionalDoctors DoctorProfile[]         @relation("DoctorAdditionalSpecialties")
+  jobs              Job[]
+  applications      Application[]
+  submissions       ApplicationSubmission[]
+}
+
+model EmploymentTypeOption {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  code      String   @unique
+  nameEn    String
+  nameAr    String
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  jobs        Job[]
+  submissions ApplicationSubmission[]
+}
+
+model SalaryPeriodOption {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  code      String   @unique
+  nameEn    String
+  nameAr    String
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  jobs Job[]
+}
+
+model Currency {
+  code      String   @id @db.Char(3)
+  nameEn    String
+  nameAr    String
+  symbol    String?
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  jobs        Job[]
+  submissions ApplicationSubmission[]
+}
+
+// ---------------------------------------------------------------------------
+// Doctor profile
+// ---------------------------------------------------------------------------
+
+model DoctorProfile {
+  id                 String    @id @default(uuid(7)) @db.Uuid
+  userId             String    @unique @db.Uuid
+  fullName           String
+  dateOfBirth        DateTime? @db.Date
+  gender             Gender?
+  nationalityId      String?   @db.Uuid
+  residenceCountryId String?   @db.Uuid
+  photoId            String?   @db.Uuid
+  jobTitle           String?
+  primarySpecialtyId String?   @db.Uuid
+  about              String?
+  yearsOfExperience  Int?
+  currentPosition    String?
+  isAvailable        Boolean   @default(true)
+  cvId               String?   @db.Uuid
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  user                  User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nationality           Country?           @relation("DoctorNationality", fields: [nationalityId], references: [id], onDelete: SetNull)
+  residenceCountry      Country?           @relation("DoctorResidenceCountry", fields: [residenceCountryId], references: [id], onDelete: SetNull)
+  photo                 FileAsset?         @relation("DoctorPhoto", fields: [photoId], references: [id], onDelete: SetNull)
+  primarySpecialty      Specialty?         @relation("DoctorPrimarySpecialty", fields: [primarySpecialtyId], references: [id], onDelete: SetNull)
+  cv                    FileAsset?         @relation("DoctorCv", fields: [cvId], references: [id], onDelete: SetNull)
+  preferredCountries    Country[]          @relation("DoctorPreferredCountries")
+  additionalSpecialties Specialty[]        @relation("DoctorAdditionalSpecialties")
+  educations            DoctorEducation[]
+  licenses              DoctorLicense[]
+  experiences           DoctorExperience[]
+  languages             DoctorLanguage[]
+  applications          Application[]
+  savedJobs             SavedJob[]
+}
+
+model DoctorEducation {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  doctorId       String   @db.Uuid
+  degree         String
+  institution    String
+  graduationYear Int?
+  isPrimary      Boolean  @default(false)
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  doctor DoctorProfile @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@index([doctorId])
+}
+
+model DoctorLicense {
+  id                 String    @id @default(uuid(7)) @db.Uuid
+  doctorId           String    @db.Uuid
+  licenseType        String
+  registrationNumber String
+  issuingAuthority   String
+  expiryDate         DateTime? @db.Date
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  doctor DoctorProfile @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@index([doctorId])
+}
+
+model DoctorExperience {
+  id               String    @id @default(uuid(7)) @db.Uuid
+  doctorId         String    @db.Uuid
+  organization     String
+  position         String
+  startDate        DateTime  @db.Date
+  endDate          DateTime? @db.Date
+  responsibilities String?
+  sortOrder        Int       @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  doctor DoctorProfile @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@index([doctorId])
+}
+
+model DoctorLanguage {
+  id          String              @id @default(uuid(7)) @db.Uuid
+  doctorId    String              @db.Uuid
+  language    String
+  proficiency LanguageProficiency
+
+  doctor DoctorProfile @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+
+  @@unique([doctorId, language])
+}
+
+// ---------------------------------------------------------------------------
+// Facility (one account per facility, recruitment officer collected at registration).
+// The officer's email is the account's User.email (the facility login email).
+// Public directory: only facilities whose account is APPROVED and that the
+// platform explicitly enabled for listing (isListedPublicly + publicListingEnabledAt).
+// ---------------------------------------------------------------------------
+
+model Facility {
+  id                       String        @id @default(uuid(7)) @db.Uuid
+  userId                   String        @unique @db.Uuid
+  name                     String
+  type                     FacilityType?
+  description              String?
+  logoId                   String?       @db.Uuid
+  countryId                String?       @db.Uuid
+  cityId                   String?       @db.Uuid
+  address                  String?
+  locationUrl              String?
+  employeeCount            Int?
+  officerName              String
+  officerPhoneCountryCode  String?
+  officerPhone             String?
+  slug                     String?       @unique
+  isListedPublicly         Boolean       @default(false)
+  publicListingEnabledAt   DateTime?
+  publicListingEnabledById String?       @db.Uuid
+  createdAt                DateTime      @default(now())
+  updatedAt                DateTime      @updatedAt
+
+  user                   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logo                   FileAsset?    @relation("FacilityLogo", fields: [logoId], references: [id], onDelete: SetNull)
+  country                Country?      @relation(fields: [countryId], references: [id], onDelete: SetNull)
+  city                   City?         @relation(fields: [cityId], references: [id], onDelete: Restrict)
+  publicListingEnabledBy User?         @relation("FacilityPublicListing", fields: [publicListingEnabledById], references: [id], onDelete: SetNull)
+  jobs                   Job[]
+  hireRequests           HireRequest[]
+
+  @@index([isListedPublicly])
+}
+
+// ---------------------------------------------------------------------------
+// Jobs (facility submits, platform approves before publication)
+// ---------------------------------------------------------------------------
+
+model Job {
+  id                 String    @id @default(uuid(7)) @db.Uuid
+  referenceNumber    Int       @unique @default(autoincrement())
+  facilityId         String    @db.Uuid
+  title              String
+  specialtyId        String    @db.Uuid
+  countryId          String    @db.Uuid
+  cityId             String    @db.Uuid
+  employmentTypeId   String    @db.Uuid
+  positions          Int       @default(1)
+  minYearsExperience Int?
+  description        String
+  responsibilities   String[]
+  requirements       String[]
+  benefits           String[]
+  salaryMin          Decimal?  @db.Decimal(12, 2)
+  salaryMax          Decimal?  @db.Decimal(12, 2)
+  salaryCurrencyCode String?   @db.Char(3)
+  salaryPeriodId     String?   @db.Uuid
+  isUrgent           Boolean   @default(false)
+  status             JobStatus @default(DRAFT)
+  submittedAt        DateTime?
+  reviewedAt         DateTime?
+  reviewedById       String?   @db.Uuid
+  reviewNote         String?
+  publishedAt        DateTime?
+  closedAt           DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  facility       Facility             @relation(fields: [facilityId], references: [id], onDelete: Restrict)
+  specialty      Specialty            @relation(fields: [specialtyId], references: [id], onDelete: Restrict)
+  country        Country              @relation(fields: [countryId], references: [id], onDelete: Restrict)
+  city           City                 @relation(fields: [cityId, countryId], references: [id, countryId], onDelete: Restrict)
+  employmentType EmploymentTypeOption @relation(fields: [employmentTypeId], references: [id], onDelete: Restrict)
+  salaryCurrency Currency?            @relation(fields: [salaryCurrencyCode], references: [code], onDelete: Restrict)
+  salaryPeriod   SalaryPeriodOption?  @relation(fields: [salaryPeriodId], references: [id], onDelete: Restrict)
+  reviewedBy     User?                @relation("JobReview", fields: [reviewedById], references: [id], onDelete: SetNull)
+  applications   Application[]
+  hireRequests   HireRequest[]
+  savedBy        SavedJob[]
+
+  @@unique([id, facilityId])
+  @@index([status, publishedAt])
+  @@index([facilityId, status])
+  @@index([specialtyId])
+  @@index([countryId])
+  @@index([cityId])
+}
+
+model SavedJob {
+  doctorId  String   @db.Uuid
+  jobId     String   @db.Uuid
+  createdAt DateTime @default(now())
+
+  doctor DoctorProfile @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  job    Job           @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@id([doctorId, jobId])
+  @@index([jobId])
+}
+
+// ---------------------------------------------------------------------------
+// Job-specific applications.
+// Application holds only what a facility may see before identity release
+// (candidateCode + anonymous* fields + status). Everything the doctor submitted,
+// including identity, lives in ApplicationSubmission and is never exposed to the
+// facility until an IdentityRelease is APPROVED with doctor consent GRANTED.
+// ---------------------------------------------------------------------------
+
+model Application {
+  id                         String            @id @default(uuid(7)) @db.Uuid
+  jobId                      String            @db.Uuid
+  doctorId                   String            @db.Uuid
+  candidateCode              String            @unique @default(nanoid(10))
+  anonymousJobTitle          String
+  anonymousSpecialtyId       String            @db.Uuid
+  anonymousYearsOfExperience Int
+  status                     ApplicationStatus @default(SUBMITTED)
+  submittedAt                DateTime          @default(now())
+  updatedAt                  DateTime          @updatedAt
+  withdrawnAt                DateTime?
+
+  job                Job                    @relation(fields: [jobId], references: [id], onDelete: Restrict)
+  doctor             DoctorProfile          @relation(fields: [doctorId], references: [id], onDelete: Restrict)
+  anonymousSpecialty Specialty              @relation(fields: [anonymousSpecialtyId], references: [id], onDelete: Restrict)
+  submission         ApplicationSubmission?
+  documents          ApplicationDocument[]
+  hireRequestItems   HireRequestItem[]
+
+  @@unique([jobId, doctorId])
+  @@unique([id, jobId])
+  @@index([jobId, status])
+  @@index([doctorId])
+}
+
+// Snapshot of the values the doctor submitted (prefilled from the profile, editable in the form).
+model ApplicationSubmission {
+  applicationId              String    @id @db.Uuid
+  firstName                  String
+  lastName                   String?
+  email                      String?
+  phoneCountryCode           String?
+  phoneNumber                String?
+  dateOfBirth                DateTime? @db.Date
+  gender                     Gender?
+  nationalityId              String?   @db.Uuid
+  currentLocation            String?
+  currentJobTitle            String?
+  specialtyId                String?   @db.Uuid
+  mainQualification          String?
+  qualificationDate          DateTime? @db.Date
+  yearsOfExperience          Int?
+  preferredCityId            String?   @db.Uuid
+  acceptableLocations        String[]
+  preferredEmploymentTypeId  String?   @db.Uuid
+  noticePeriodId             String?   @db.Uuid
+  expectedSalary             Decimal?  @db.Decimal(12, 2)
+  expectedSalaryCurrencyCode String?   @db.Char(3)
+  openToPrivateSector        Boolean?
+  referralSourceId           String?   @db.Uuid
+  additionalNotes            String?
+  cvId                       String?   @db.Uuid
+  termsAcceptedAt            DateTime?
+  createdAt                  DateTime  @default(now())
+
+  application             Application           @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  nationality             Country?              @relation(fields: [nationalityId], references: [id], onDelete: Restrict)
+  specialty               Specialty?            @relation(fields: [specialtyId], references: [id], onDelete: Restrict)
+  preferredCity           City?                 @relation(fields: [preferredCityId], references: [id], onDelete: Restrict)
+  preferredEmploymentType EmploymentTypeOption? @relation(fields: [preferredEmploymentTypeId], references: [id], onDelete: Restrict)
+  expectedSalaryCurrency  Currency?             @relation(fields: [expectedSalaryCurrencyCode], references: [code], onDelete: Restrict)
+  noticePeriod            NoticePeriodOption?   @relation(fields: [noticePeriodId], references: [id], onDelete: Restrict)
+  referralSource          ReferralSourceOption? @relation(fields: [referralSourceId], references: [id], onDelete: Restrict)
+  cv                      FileAsset?            @relation("ApplicationCv", fields: [cvId], references: [id], onDelete: SetNull)
+}
+
+model ApplicationDocument {
+  applicationId String @db.Uuid
+  fileId        String @db.Uuid
+
+  application Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  file        FileAsset   @relation(fields: [fileId], references: [id], onDelete: Cascade)
+
+  @@id([applicationId, fileId])
+}
+
+// ---------------------------------------------------------------------------
+// Hire requests: one request per job, one item per selected applicant.
+// Composite keys guarantee every item's application belongs to the request's job,
+// and every request's job belongs to the requesting facility.
+// An application can be in at most one open item (closedAt IS NULL) at a time,
+// enforced by the partial unique index in migration SQL. Items stay open through
+// agreement and chat; closedAt is set only on terminal outcomes.
+// ---------------------------------------------------------------------------
+
+model HireRequest {
+  id            String            @id @default(uuid(7)) @db.Uuid
+  jobId         String            @db.Uuid
+  facilityId    String            @db.Uuid
+  status        HireRequestStatus @default(SUBMITTED)
+  facilityNote  String?
+  coordinatorId String?           @db.Uuid
+  submittedAt   DateTime          @default(now())
+  closedAt      DateTime?
+  updatedAt     DateTime          @updatedAt
+
+  job         Job               @relation(fields: [jobId, facilityId], references: [id, facilityId], onDelete: Restrict)
+  facility    Facility          @relation(fields: [facilityId], references: [id], onDelete: Restrict)
+  coordinator User?             @relation(fields: [coordinatorId], references: [id], onDelete: SetNull)
+  items       HireRequestItem[]
+
+  @@unique([id, jobId])
+  @@index([jobId])
+  @@index([facilityId, status])
+}
+
+model HireRequestItem {
+  id            String                @id @default(uuid(7)) @db.Uuid
+  hireRequestId String                @db.Uuid
+  jobId         String                @db.Uuid
+  applicationId String                @db.Uuid
+  status        HireRequestItemStatus @default(REQUESTED)
+  decidedAt     DateTime?
+  closedAt      DateTime?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+
+  hireRequest     HireRequest      @relation(fields: [hireRequestId, jobId], references: [id, jobId], onDelete: Cascade)
+  application     Application      @relation(fields: [applicationId, jobId], references: [id, jobId], onDelete: Restrict)
+  identityRelease IdentityRelease?
+
+  @@unique([hireRequestId, applicationId])
+  @@index([applicationId])
+}
+
+// ---------------------------------------------------------------------------
+// Identity release: requires the platform-facility agreement, the doctor's explicit
+// consent (GRANTED), and platform approval. Doctor details and CV may be read by the
+// facility only while status = APPROVED and doctorConsentStatus = GRANTED.
+// Revoking consent forces status REVOKED and makes the conversation READ_ONLY.
+// Cancelling an item with an APPROVED release revokes it (HIRE_REQUEST_CANCELLED)
+// without changing the doctor's consent decision.
+// ---------------------------------------------------------------------------
+
+model IdentityRelease {
+  id                     String                    @id @default(uuid(7)) @db.Uuid
+  hireRequestItemId      String                    @unique @db.Uuid
+  status                 IdentityReleaseStatus     @default(PENDING)
+  facilityAgreedAt       DateTime?
+  doctorConsentStatus    DoctorConsentStatus       @default(PENDING)
+  doctorConsentAt        DateTime?
+  doctorConsentRevokedAt DateTime?
+  decidedById            String?                   @db.Uuid
+  decidedAt              DateTime?
+  decisionNote           String?
+  revokedAt              DateTime?
+  revocationReason       IdentityRevocationReason?
+  createdAt              DateTime                  @default(now())
+  updatedAt              DateTime                  @updatedAt
+
+  hireRequestItem HireRequestItem @relation(fields: [hireRequestItemId], references: [id], onDelete: Cascade)
+  decidedBy       User?           @relation(fields: [decidedById], references: [id], onDelete: SetNull)
+  conversation    Conversation?
+
+  @@index([status])
+}
+
+// ---------------------------------------------------------------------------
+// Conversations (doctor + facility + platform group chat).
+// READ_ONLY is final: no new messages, no edits or deletes; history is preserved.
+// ---------------------------------------------------------------------------
+
+model Conversation {
+  id                String             @id @default(uuid(7)) @db.Uuid
+  identityReleaseId String             @unique @db.Uuid
+  status            ConversationStatus @default(ACTIVE)
+  readOnlyAt        DateTime?
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  identityRelease IdentityRelease           @relation(fields: [identityReleaseId], references: [id], onDelete: Restrict)
+  participants    ConversationParticipant[]
+  messages        Message[]
+}
+
+model ConversationParticipant {
+  conversationId String          @db.Uuid
+  userId         String          @db.Uuid
+  role           ParticipantRole
+  joinedAt       DateTime        @default(now())
+  lastReadAt     DateTime?
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Restrict)
+
+  @@id([conversationId, userId])
+  @@index([userId])
+}
+
+model Message {
+  id             String    @id @default(uuid(7)) @db.Uuid
+  conversationId String    @db.Uuid
+  senderId       String    @db.Uuid
+  body           String
+  createdAt      DateTime  @default(now())
+  editedAt       DateTime?
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender       User         @relation(fields: [senderId], references: [id], onDelete: Restrict)
+
+  @@index([conversationId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Notifications store a type and structured data; apps render localized text.
+// Facility notification data must not contain doctor identity before an identity
+// release is approved with consent.
+// ---------------------------------------------------------------------------
+
+model Notification {
+  id        String           @id @default(uuid(7)) @db.Uuid
+  userId    String           @db.Uuid
+  type      NotificationType
+  data      Json             @default("{}")
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+  @@index([userId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Contact Us submissions (reviewed by the platform)
+// ---------------------------------------------------------------------------
+
+model ContactSubmission {
+  id           String                  @id @default(uuid(7)) @db.Uuid
+  userId       String?                 @db.Uuid
+  fullName     String
+  email        String
+  phone        String?
+  subjectId    String?                 @db.Uuid
+  message      String
+  locale       Locale?
+  status       ContactSubmissionStatus @default(NEW)
+  reviewedById String?                 @db.Uuid
+  reviewedAt   DateTime?
+  internalNote String?
+  createdAt    DateTime                @default(now())
+  updatedAt    DateTime                @updatedAt
+
+  user       User?                 @relation("ContactSubmitter", fields: [userId], references: [id], onDelete: SetNull)
+  reviewedBy User?                 @relation("ContactReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  subject    ContactSubjectOption? @relation(fields: [subjectId], references: [id], onDelete: Restrict)
+
+  @@index([status, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Platform-managed form options (deactivate instead of deleting; submissions keep references)
+// ---------------------------------------------------------------------------
+
+model ContactSubjectOption {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  code      String   @unique
+  nameEn    String
+  nameAr    String
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  submissions ContactSubmission[]
+}
+
+model NoticePeriodOption {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  code      String   @unique
+  nameEn    String
+  nameAr    String
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  submissions ApplicationSubmission[]
+}
+
+model ReferralSourceOption {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  code      String   @unique
+  nameEn    String
+  nameAr    String
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  submissions ApplicationSubmission[]
+}
+
+// ---------------------------------------------------------------------------
+// Editable public-site content
+// ---------------------------------------------------------------------------
+
+model SiteSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+}
+
+model ContentBlock {
+  id          String      @id @default(uuid(7)) @db.Uuid
+  page        ContentPage
+  key         String
+  locale      Locale
+  title       String?
+  body        String?
+  data        Json?
+  imageId     String?     @db.Uuid
+  sortOrder   Int         @default(0)
+  isPublished Boolean     @default(false)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  image FileAsset? @relation(fields: [imageId], references: [id], onDelete: SetNull)
+
+  @@unique([page, key, locale])
+}
+
+model Faq {
+  id          String   @id @default(uuid(7)) @db.Uuid
+  locale      Locale
+  question    String
+  answer      String
+  sortOrder   Int      @default(0)
+  isPublished Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([locale, isPublished, sortOrder])
+}
+
+model Testimonial {
+  id             String   @id @default(uuid(7)) @db.Uuid
+  locale         Locale
+  authorName     String
+  authorTitle    String
+  authorLocation String?
+  quote          String
+  photoId        String?  @db.Uuid
+  sortOrder      Int      @default(0)
+  isPublished    Boolean  @default(false)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  photo FileAsset? @relation(fields: [photoId], references: [id], onDelete: SetNull)
+
+  @@index([locale, isPublished, sortOrder])
+}
+
+model CountryGuideSection {
+  id        String   @id @default(uuid(7)) @db.Uuid
+  countryId String   @db.Uuid
+  locale    Locale
+  title     String
+  body      String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  country Country @relation(fields: [countryId], references: [id], onDelete: Cascade)
+
+  @@index([countryId, locale, sortOrder])
+}
+
+// ---------------------------------------------------------------------------
+// Audit trail (approvals, identity releases, access to revealed doctor data)
+// ---------------------------------------------------------------------------
+
+model AuditLog {
+  id         String   @id @default(uuid(7)) @db.Uuid
+  actorId    String?  @db.Uuid
+  action     String
+  entityType String
+  entityId   String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([actorId, createdAt])
 }

@@ -11,7 +11,7 @@ Medical recruitment platform connecting doctors with healthcare facilities in th
 
 - `apps/web`: Next.js (App Router) + TypeScript, public website, port 3000.
 - `apps/dashboard`: React + Vite + TypeScript, doctor/facility/platform dashboards, port 5173.
-- `apps/api`: NestJS + TypeScript, routes under `/api`, port 4000.
+- `apps/api`: Express 5 + TypeScript (CommonJS), routes under `/api`, port 4000. Entry `src/server.ts`, app setup `src/app.ts`, routers in `src/routes/`, shared Prisma client in `src/lib/prisma.ts`.
 - PostgreSQL (Docker, `docker-compose.yml`) + Prisma (`apps/api/prisma/schema.prisma`).
 - Use `pnpm` only. Run app commands from the root via the scripts in `package.json`.
 - Never commit `.env` files; update the matching `.env.example` when adding a variable.

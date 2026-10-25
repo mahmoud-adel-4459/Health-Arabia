@@ -124,7 +124,7 @@ Color variables: green-500 `#1B8A8A`, green-400 `#49A1A1`, green-50 `#E8F3F3`, b
 
 | # | Priority | Frame | Finding |
 |---|---|---|---|
-| L1 | P0 | Doctor Step 1-6, Hospital Step 1-2 | No password or account credential field in either registration, although both login screens require one. |
+| L1 | P0 | Doctor Step 1-6, Hospital Step 1-2 | No password or account credential field in either registration, although both login screens require one. Later visually verified for Doctor Step 1 (384:2057): fields are photo, full name, date of birth, country, phone only. Confirmed decision: doctors sign up and log in with mobile + password (email optional); facilities log in with the recruitment officer's email + password. **Figma gap:** neither registration flow has a password step, and Hospital Login shows email only. No OTP or new UI is planned yet. |
 | L2 | P0 | Apply Job (421:6725) | Re-collects personal data (name, email, date of birth, nationality, gender, CV) that an approved doctor already provided. |
 | L3 | P0 | Request Medical Staff (440:3528) | Fields: institution name, country, city, required specialty, number of positions, minimum experience, contract type, description, contact person. It references no job or applicant, so it does not match the hire-request flow (rule 5). Its purpose is unconfirmed; it should not be treated as a job-posting form without client confirmation. |
 | L4 | P1 | Hospital Dashboard (440:2294) | "Available Applicants" card shows "Consultant Cardiologist / Cardiology • 12 yrs" (matches rule 4 fields) but is not grouped under a job. |

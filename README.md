@@ -2,7 +2,9 @@
 
 Medical recruitment platform connecting doctors with healthcare facilities across the GCC, with the platform mediating approvals and hiring.
 
-Status: **Stage 1 (foundation)**. Apps start and respond, but no product pages, authentication, database models, or business workflows exist yet.
+Status: **Stage 2 (data model)**. Apps start and respond, and the initial Prisma data model and migration exist. No product pages, authentication, or business endpoints exist yet.
+
+Prisma 7 notes: the CLI reads `apps/api/prisma.config.ts` (which loads `apps/api/.env`), and the client is generated into `apps/api/src/generated/prisma` (git-ignored). `pnpm install` regenerates it; after schema changes run `pnpm db:migrate` and then `pnpm db:generate`.
 
 ## Structure
 
@@ -10,7 +12,7 @@ Status: **Stage 1 (foundation)**. Apps start and respond, but no product pages, 
 apps/
   web/         Next.js + TypeScript      public website          http://localhost:3000
   dashboard/   React + Vite + TypeScript  dashboards              http://localhost:5173
-  api/         NestJS + TypeScript       backend API (/api)      http://localhost:4000/api
+  api/         Express + TypeScript      backend API (/api)      http://localhost:4000/api
     prisma/    Prisma schema (PostgreSQL)
 docs/          UX audit and project docs
 reference/     Figma screenshots used as design reference
@@ -48,7 +50,7 @@ On Windows PowerShell, use `Copy-Item` instead of `cp`.
 | `pnpm dev` | Run web, dashboard, and api together |
 | `pnpm dev:web` | Public website on http://localhost:3000 |
 | `pnpm dev:dashboard` | Dashboards on http://localhost:5173 |
-| `pnpm dev:api` | API on http://localhost:4000/api |
+| `pnpm dev:api` | API on http://localhost:4000/api (Express, reloads on change via `tsx watch`) |
 | `pnpm build` | Build all apps |
 | `pnpm typecheck` | Type-check all apps |
 | `pnpm db:up` / `pnpm db:down` | Start / stop PostgreSQL |
