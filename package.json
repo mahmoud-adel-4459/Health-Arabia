@@ -1,0 +1,22 @@
+{
+  "name": "health-arabia",
+  "private": true,
+  "packageManager": "pnpm@9.15.9",
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=9"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter \"./apps/*\" dev",
+    "dev:web": "pnpm --filter @health-arabia/web dev",
+    "dev:dashboard": "pnpm --filter @health-arabia/dashboard dev",
+    "dev:api": "pnpm --filter @health-arabia/api dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "db:generate": "pnpm --filter @health-arabia/api prisma:generate",
+    "db:migrate": "pnpm --filter @health-arabia/api prisma:migrate",
+    "db:studio": "pnpm --filter @health-arabia/api prisma:studio"
+  }
+}

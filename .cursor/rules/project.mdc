@@ -1,0 +1,38 @@
+---
+description: Health Arabia project context, current repository state, and design source
+alwaysApply: true
+---
+
+# Health Arabia
+
+Medical recruitment platform connecting doctors with healthcare facilities in the GCC, with the platform (ALMAHER) mediating reviews and hiring.
+
+## Stack (pnpm workspace monorepo)
+
+- `apps/web`: Next.js (App Router) + TypeScript, public website, port 3000.
+- `apps/dashboard`: React + Vite + TypeScript, doctor/facility/platform dashboards, port 5173.
+- `apps/api`: NestJS + TypeScript, routes under `/api`, port 4000.
+- PostgreSQL (Docker, `docker-compose.yml`) + Prisma (`apps/api/prisma/schema.prisma`).
+- Use `pnpm` only. Run app commands from the root via the scripts in `package.json`.
+- Never commit `.env` files; update the matching `.env.example` when adding a variable.
+- Add path-scoped rules under `.cursor/rules/` per app instead of growing this file.
+
+## Design source
+
+- Figma file key `T4lscZxor3C5196h5KzSEA` (Al-Maher - Health Arabia - Final).
+- Screens live on page `Design` (351:570); tokens on `Cover` (27:1399); icons (Vuesax) on `Icons` (244:2).
+- Designs are desktop-only (1440px), English/LTR. Mobile, tablet, and Arabic/RTL are not designed.
+- Use the `health-arabia-figma` skill for any Figma inspection or design-to-code work.
+
+## Confirmed product rules (stakeholder-provided)
+
+- Doctor and facility accounts require platform approval before use.
+- Facilities submit jobs; the platform approves them before publication.
+- Doctors can apply only after account approval.
+- Facilities see applicants anonymously: job title, specialty, years of experience only.
+- Facilities can request to hire one, several, or all applicants of a job; each selected applicant has their own request and stays anonymous.
+- After private platform-facility agreement, the platform reveals the doctor's details and opens a group chat (doctor, facility, platform).
+- One account per facility; recruitment officer details are collected at registration.
+- The home "Upload Your CV" banner is for a registered doctor who has not uploaded a CV.
+
+When the Figma design conflicts with these rules, follow the rules and report the conflict.
