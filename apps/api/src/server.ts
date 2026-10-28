@@ -1,9 +1,13 @@
 import { createApp } from "./app";
 import { env } from "./config/env";
 import { prisma } from "./lib/prisma";
+import { bootstrapPlatformAdmin } from "./lib/bootstrap-admin";
 
 const server = createApp().listen(env.port, () => {
   console.log(`API listening on http://localhost:${env.port}/api`);
+  void bootstrapPlatformAdmin().catch((err) => {
+    console.error("[BOOTSTRAP] Admin bootstrap failed:", err);
+  });
 });
 
 function shutdown() {

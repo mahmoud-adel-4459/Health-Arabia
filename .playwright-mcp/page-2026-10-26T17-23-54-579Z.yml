@@ -1,0 +1,166 @@
+- generic [ref=f16e8]:
+  - complementary [ref=f16e9]:
+    - img "Health Arabia" [ref=f16e12] [cursor=pointer]
+    - generic [ref=f16e13]: Platform Administration
+    - navigation "Admin Navigation" [ref=f16e15]:
+      - generic [ref=f16e16]: Account Verification
+      - button "Review Queue 3" [ref=f16e708] [cursor=pointer]:
+        - generic [ref=f16e22]: Review Queue
+        - generic [ref=f16e23]: "3"
+      - generic [ref=f16e24]:
+        - button "Pending Decisions" [ref=f16e25] [cursor=pointer]
+        - button "Doctor Profiles" [ref=f16e28] [cursor=pointer]
+        - button "Hospital & Clinics" [ref=f16e31] [cursor=pointer]
+        - button "Approved Archive" [ref=f16e34] [cursor=pointer]
+        - button "Rejected Archive" [ref=f16e37] [cursor=pointer]
+    - generic [ref=f16e40]:
+      - generic [ref=f16e41]: API Server Connected
+      - generic [ref=f16e44]:
+        - generic [ref=f16e45]: P
+        - generic [ref=f16e46]:
+          - generic [ref=f16e47]: Platform Administrator
+          - generic "admin@healtharabia.local" [ref=f16e48]
+      - button "Sign Out" [ref=f16e49] [cursor=pointer]
+  - generic [ref=f16e54]:
+    - banner [ref=f16e55]:
+      - navigation "Breadcrumbs" [ref=f16e57]:
+        - generic [ref=f16e58] [cursor=pointer]: Platform Console
+        - generic [ref=f16e59]: /
+        - generic [ref=f16e60] [cursor=pointer]: Review Queue
+        - generic [ref=f16e577]: /
+        - generic [ref=f16e578]: Account Inspection
+      - generic [ref=f16e63]:
+        - generic [ref=f16e64]:
+          - generic [ref=f16e65]: PLATFORM_ADMIN
+          - generic [ref=f16e66]: admin@healtharabia.local
+        - button "Logout" [ref=f16e67] [cursor=pointer]
+    - main [ref=f16e72]:
+      - generic [ref=f16e579]:
+        - button "Back to Review Queue" [ref=f16e709] [cursor=pointer]
+        - status [ref=f16e713]:
+          - generic [ref=f16e716]: Account "Dr. Sulaiman Al Habib Medical Group" has been REJECTED.
+          - button "×" [ref=f16e717] [cursor=pointer]
+        - generic [ref=f16e718]:
+          - generic [ref=f16e719]:
+            - generic [ref=f16e720]:
+              - generic [ref=f16e721]: Healthcare Facility
+              - generic [ref=f16e722]: REJECTED
+            - heading "Dr. Sulaiman Al Habib Medical Group" [level=1] [ref=f16e723]
+            - generic [ref=f16e724]:
+              - generic [ref=f16e725]:
+                - strong [ref=f16e726]: "ID:"
+                - code [ref=f16e727]: 01a178f6-f827-7479-bcab-8962552d387f
+              - generic [ref=f16e728]:
+                - strong [ref=f16e729]: "Registered:"
+                - text: 26 Oct 2026, 19:06
+              - generic [ref=f16e730]:
+                - strong [ref=f16e731]: "Submitted for Review:"
+                - text: 26 Oct 2026, 19:06
+          - generic [ref=f16e736]:
+            - strong [ref=f16e737]: Declined Account
+            - generic [ref=f16e738]: Declined by Platform Administrator on 26 Oct 2026, 20:23 — "Institution commercial registration document missing; please re-upload valid CR certificate."
+        - generic [ref=f16e739]:
+          - generic [ref=f16e740]:
+            - generic [ref=f16e741]:
+              - generic [ref=f16e742]:
+                - heading "Institutional Details" [level=2] [ref=f16e743]
+                - generic [ref=f16e744]: Hospital / Clinic
+              - generic [ref=f16e745]:
+                - generic [ref=f16e746]:
+                  - generic [ref=f16e747]: Official Facility Name
+                  - generic [ref=f16e748]: Dr. Sulaiman Al Habib Medical Group
+                - generic [ref=f16e749]:
+                  - generic [ref=f16e750]: Facility Type
+                  - generic [ref=f16e751]: PRIVATE
+                - generic [ref=f16e752]:
+                  - generic [ref=f16e753]: Beds / Employee Capacity
+                  - generic [ref=f16e754]: 1200 Beds / Capacity
+                - generic [ref=f16e755]:
+                  - generic [ref=f16e756]: Location & City
+                  - generic [ref=f16e757]: —
+                - generic [ref=f16e758]:
+                  - generic [ref=f16e759]: Physical Street Address
+                  - generic [ref=f16e760]: King Fahd Road, Olaya District, Riyadh 11643
+                - generic [ref=f16e761]:
+                  - generic [ref=f16e762]: Website / Online Profile
+                  - link "https://maps.google.com/?q=Al+Habib+Hospital+Riyadh ↗" [ref=f16e763] [cursor=pointer]:
+                    - /url: https://maps.google.com/?q=Al+Habib+Hospital+Riyadh
+                - generic [ref=f16e764]:
+                  - generic [ref=f16e765]: About Institution
+                  - paragraph [ref=f16e766]: Multi-disciplinary healthcare leader across KSA and GCC with JCI accreditation.
+            - generic [ref=f16e767]:
+              - generic [ref=f16e768]:
+                - heading "Email & Administrative Contacts" [level=2] [ref=f16e769]
+                - generic [ref=f16e770]: Security & Verification
+              - generic [ref=f16e771]:
+                - generic [ref=f16e772]:
+                  - generic [ref=f16e773]:
+                    - generic [ref=f16e774]: Institution Email
+                    - generic [ref=f16e775]: Official Correspondence
+                  - generic [ref=f16e776]: info.riyadh@drsulaimanalhabib.com
+                  - paragraph [ref=f16e777]: Used for official hospital communications and public institutional listing.
+                - generic [ref=f16e778]:
+                  - generic [ref=f16e779]:
+                    - generic [ref=f16e780]: Login / Officer Email
+                    - generic [ref=f16e781]: Account Credentials
+                  - generic [ref=f16e782]: noura.recruitment@drsulaimanalhabib.com
+                  - paragraph [ref=f16e783]:
+                    - text: "Authentication email bound to recruitment officer:"
+                    - strong [ref=f16e784]: Noura Al-Shehri
+                    - generic [ref=f16e785]: (+966 +966 541234567)
+            - generic [ref=f16e786]:
+              - generic [ref=f16e787]:
+                - heading "Facility Inquiry Message" [level=2] [ref=f16e788]
+                - generic [ref=f16e789]: Submitted Notes
+              - generic [ref=f16e790]:
+                - generic [ref=f16e791]: “
+                - paragraph [ref=f16e792]: We need 6 Senior Consultants in Anesthesiology, Oncology and Emergency Medicine for Q1.
+                - generic [ref=f16e793]: — Submitted by Noura Al-Shehri during facility registration
+            - generic [ref=f16e794]:
+              - generic [ref=f16e795]:
+                - heading "Private Brand Assets & Logo" [level=2] [ref=f16e796]
+                - generic [ref=f16e797]: Authorized Access Only
+              - paragraph [ref=f16e799]: No institutional logo file was attached.
+          - generic [ref=f16e800]:
+            - generic [ref=f16e801]:
+              - heading "Account Contact" [level=2] [ref=f16e803]
+              - generic [ref=f16e804]:
+                - generic [ref=f16e805]:
+                  - generic [ref=f16e806]: Primary Email
+                  - generic [ref=f16e807]: noura.recruitment@drsulaimanalhabib.com
+                - generic [ref=f16e808]:
+                  - generic [ref=f16e809]: Mobile (E.164)
+                  - generic [ref=f16e810]: —
+                - generic [ref=f16e811]:
+                  - generic [ref=f16e812]: Role Type
+                  - generic [ref=f16e813]: FACILITY
+                - generic [ref=f16e814]:
+                  - generic [ref=f16e815]: Account Status
+                  - generic [ref=f16e816]: REJECTED
+            - generic [ref=f16e817]:
+              - heading "Review Decision Record" [level=2] [ref=f16e819]
+              - generic [ref=f16e820]:
+                - generic [ref=f16e821]:
+                  - generic [ref=f16e822]: "Reviewer:"
+                  - generic [ref=f16e823]: Platform Administrator
+                - generic [ref=f16e824]:
+                  - generic [ref=f16e825]: "Decided At:"
+                  - generic [ref=f16e826]: 26 Oct 2026, 20:23
+                - generic [ref=f16e827]:
+                  - text: "Decision Note:"
+                  - paragraph [ref=f16e828]: "\"Institution commercial registration document missing; please re-upload valid CR certificate.\""
+            - generic [ref=f16e829]:
+              - generic [ref=f16e830]:
+                - heading "Entity Audit Trail" [level=2] [ref=f16e831]
+                - generic [ref=f16e832]: Tamper-Proof
+              - generic [ref=f16e834]:
+                - generic [ref=f16e835]:
+                  - generic [ref=f16e836]: ACCOUNT_REJECTED
+                  - generic [ref=f16e837]: 26 Oct 2026, 20:23
+                - generic [ref=f16e838]:
+                  - strong [ref=f16e839]: "Actor:"
+                  - text: Platform Administrator
+                - generic [ref=f16e840]: "{ \"role\": \"FACILITY\", \"reason\": \"Institution commercial registration document missing; please re-upload valid CR certificate.\", \"newStatus\": \"REJECTED\", \"reviewerId\": \"01a17918-7811-70a7-9e9d-4888ceb4b1fc\", \"reviewerEmail\": \"admin@healtharabia.local\", \"previousStatus\": \"PENDING_REVIEW\" }"
+      - status [ref=f16e841]:
+        - generic [ref=f16e845]: Account "Dr. Sulaiman Al Habib Medical Group" has been REJECTED.
+        - button "Dismiss notification" [ref=f16e846] [cursor=pointer]: ×

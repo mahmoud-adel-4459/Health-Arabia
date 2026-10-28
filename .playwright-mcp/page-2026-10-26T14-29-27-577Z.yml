@@ -1,0 +1,53 @@
+- generic [active] [ref=f5e1]:
+  - banner [ref=f5e2]:
+    - generic [ref=f5e3]:
+      - link "Health Arabia home" [ref=f5e4] [cursor=pointer]:
+        - /url: /
+        - img "Health Arabia" [ref=f5e5]
+      - navigation "Main" [ref=f5e6]:
+        - link "Home" [ref=f5e7] [cursor=pointer]:
+          - /url: /
+        - link "About" [ref=f5e8] [cursor=pointer]:
+          - /url: /about
+        - link "Countries" [ref=f5e9] [cursor=pointer]:
+          - /url: /countries
+        - link "Hospitals" [ref=f5e12] [cursor=pointer]:
+          - /url: /hospitals
+        - link "FAQ’s" [ref=f5e13] [cursor=pointer]:
+          - /url: /faqs
+        - link "Contact Us" [ref=f5e14] [cursor=pointer]:
+          - /url: /contact
+        - link "Available Jobs" [ref=f5e15] [cursor=pointer]:
+          - /url: /jobs
+      - generic [ref=f5e18]:
+        - generic [ref=f5e19]: Nursing Services for Homes
+        - link "Join as" [ref=f5e21] [cursor=pointer]:
+          - /url: /join
+  - main [ref=f5e24]:
+    - generic [ref=f5e25]:
+      - generic [ref=f5e26]:
+        - heading "Join Health Arabia" [level=1] [ref=f5e27]
+        - paragraph [ref=f5e28]: Select how you would like to proceed on the GCC region's premier specialist healthcare career & recruitment platform.
+      - generic [ref=f5e29]:
+        - generic [ref=f5e30]:
+          - generic [ref=f5e31]:
+            - generic [ref=f5e34]:
+              - heading "Healthcare Professional" [level=2] [ref=f5e35]
+              - generic [ref=f5e36]: CANDIDATE PORTAL
+            - paragraph [ref=f5e37]: Doctors, nurses, pharmacists, and medical specialists looking for career opportunities and professional licensing transition support across leading healthcare facilities in Saudi Arabia & the Gulf.
+          - link "Get Started" [ref=f5e38] [cursor=pointer]:
+            - /url: /register/doctor
+        - generic [ref=f5e43]:
+          - generic [ref=f5e44]:
+            - generic [ref=f5e47]:
+              - heading "Hospital / Clinic" [level=2] [ref=f5e48]
+              - generic [ref=f5e49]: EMPLOYER PORTAL
+            - paragraph [ref=f5e50]: Premier government, military, university, and private healthcare clients seeking high-caliber clinical consultants, administrative executives, or whole department medical staffing solutions.
+          - link "Get Started" [ref=f5e51] [cursor=pointer]:
+            - /url: /register/facility
+  - contentinfo [ref=f5e56]:
+    - generic [ref=f5e57]:
+      - generic [ref=f5e58]: Copyright © 2026
+      - strong [ref=f5e59]: QEEMATECH
+      - generic [ref=f5e60]: "| All Rights Reserved"
+  - button "Open Next.js Dev Tools" [ref=f5e66] [cursor=pointer]

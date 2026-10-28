@@ -1,0 +1,39 @@
+- generic [active] [ref=f6e1]:
+  - banner [ref=f6e2]:
+    - generic [ref=f6e3]:
+      - link "Health Arabia home" [ref=f6e4] [cursor=pointer]:
+        - /url: /
+        - img "Health Arabia" [ref=f6e5]
+      - generic [ref=f6e6]:
+        - link "Join as" [ref=f6e8] [cursor=pointer]:
+          - /url: /join
+        - group [ref=f6e11]:
+          - generic "Open menu" [ref=f6e12] [cursor=pointer]
+  - main [ref=f6e15]:
+    - generic [ref=f6e16]:
+      - generic [ref=f6e17]:
+        - heading "Join Health Arabia" [level=1] [ref=f6e18]
+        - paragraph [ref=f6e19]: Select how you would like to proceed on the GCC region's premier specialist healthcare career & recruitment platform.
+      - generic [ref=f6e20]:
+        - generic [ref=f6e21]:
+          - generic [ref=f6e22]:
+            - generic [ref=f6e25]:
+              - heading "Healthcare Professional" [level=2] [ref=f6e26]
+              - generic [ref=f6e27]: CANDIDATE PORTAL
+            - paragraph [ref=f6e28]: Doctors, nurses, pharmacists, and medical specialists looking for career opportunities and professional licensing transition support across leading healthcare facilities in Saudi Arabia & the Gulf.
+          - link "Get Started" [ref=f6e29] [cursor=pointer]:
+            - /url: /register/doctor
+        - generic [ref=f6e34]:
+          - generic [ref=f6e35]:
+            - generic [ref=f6e38]:
+              - heading "Hospital / Clinic" [level=2] [ref=f6e39]
+              - generic [ref=f6e40]: EMPLOYER PORTAL
+            - paragraph [ref=f6e41]: Premier government, military, university, and private healthcare clients seeking high-caliber clinical consultants, administrative executives, or whole department medical staffing solutions.
+          - link "Get Started" [ref=f6e42] [cursor=pointer]:
+            - /url: /register/facility
+  - contentinfo [ref=f6e47]:
+    - generic [ref=f6e48]:
+      - generic [ref=f6e49]: Copyright © 2026
+      - strong [ref=f6e50]: QEEMATECH
+      - generic [ref=f6e51]: "| All Rights Reserved"
+  - button "Open Next.js Dev Tools" [ref=f6e57] [cursor=pointer]

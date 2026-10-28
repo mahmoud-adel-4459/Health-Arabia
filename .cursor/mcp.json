@@ -1,14 +1,19 @@
 {
   "mcpServers": {
-    "figma": {
-      "url": "https://mcp.figma.com/mcp"
+    "figma-desktop": {
+      "serverUrl": "http://127.0.0.1:3845/mcp",
+      "disabledTools": [],
+      "disabled": false
     },
     "context7": {
       "url": "https://mcp.context7.com/mcp"
     },
     "playwright": {
       "command": "npx",
-      "args": ["-y", "@playwright/mcp@latest"]
+      "args": [
+        "-y",
+        "@playwright/mcp@latest"
+      ]
     }
   }
 }

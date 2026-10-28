@@ -1,0 +1,17 @@
+- generic [active] [ref=f11e1]:
+  - generic [ref=f11e2]:
+    - banner [ref=f11e3]:
+      - generic [ref=f11e4]:
+        - link "Health Arabia home" [ref=f11e5] [cursor=pointer]:
+          - /url: /
+          - img "Health Arabia" [ref=f11e6]
+        - group [ref=f11e9]:
+          - generic "Open menu" [ref=f11e10] [cursor=pointer]
+    - main [ref=f11e13]:
+      - paragraph [ref=f11e16]: Loading institutional dashboard...
+    - contentinfo [ref=f11e17]:
+      - generic [ref=f11e18]:
+        - generic [ref=f11e19]: Copyright © 2026
+        - strong [ref=f11e20]: QEEMATECH
+        - generic [ref=f11e21]: "| All Rights Reserved"
+  - button "Open Next.js Dev Tools" [ref=f11e27] [cursor=pointer]

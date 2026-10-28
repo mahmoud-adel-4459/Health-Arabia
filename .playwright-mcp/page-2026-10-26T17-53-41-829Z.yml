@@ -1,0 +1,267 @@
+- generic [ref=f5e1]:
+  - banner [ref=f5e2]:
+    - generic [ref=f5e3]:
+      - link "Health Arabia home" [ref=f5e4] [cursor=pointer]:
+        - /url: /
+        - img "Health Arabia" [ref=f5e5]
+      - navigation "Main" [ref=f5e6]:
+        - link "Home" [ref=f5e7] [cursor=pointer]:
+          - /url: /
+        - link "About" [ref=f5e8] [cursor=pointer]:
+          - /url: /about
+        - link "Countries" [ref=f5e9] [cursor=pointer]:
+          - /url: /countries
+        - link "Hospitals" [ref=f5e12] [cursor=pointer]:
+          - /url: /hospitals
+        - link "FAQ’s" [ref=f5e13] [cursor=pointer]:
+          - /url: /faqs
+        - link "Contact Us" [ref=f5e14] [cursor=pointer]:
+          - /url: /contact
+        - link "Available Jobs" [ref=f5e15] [cursor=pointer]:
+          - /url: /jobs
+      - generic [ref=f5e18]:
+        - generic [ref=f5e19]: Nursing Services for Homes
+        - generic [ref=f5e20]:
+          - button "Open account menu for Zayed Military Hospital, Abu Dhabi" [expanded] [active] [ref=f5e21] [cursor=pointer]:
+            - generic [ref=f5e22]: ZM
+            - generic [ref=f5e24]: Zayed Military Hospital, Abu Dhabi
+          - generic [ref=f5e292]:
+            - generic [ref=f5e293]:
+              - generic [ref=f5e294]: Zayed Military Hospital, Abu Dhabi
+              - generic [ref=f5e295]:
+                - generic [ref=f5e296]: FACILITY
+                - generic [ref=f5e297]: Verified
+            - generic [ref=f5e298]:
+              - link "Dashboard" [ref=f5e299] [cursor=pointer]:
+                - /url: /dashboard/facility
+              - link "Profile" [ref=f5e303] [cursor=pointer]:
+                - /url: /profile/facility
+              - link "Settings" [ref=f5e307] [cursor=pointer]:
+                - /url: /settings
+              - button "Log out" [ref=f5e312] [cursor=pointer]
+  - main [ref=f5e27]:
+    - generic [ref=f5e28]:
+      - generic [ref=f5e30]:
+        - heading "Connecting Great Clinicians With Leading Healthcare Practices" [level=1] [ref=f5e31]
+        - paragraph [ref=f5e32]: Personal recruitment and consultancy service for medical professionals seeking opportunities across the Middle East — from Specialist to Head of Department.
+        - generic [ref=f5e33]:
+          - link "Available Jobs" [ref=f5e34] [cursor=pointer]:
+            - /url: /jobs
+          - link "Apply Now" [ref=f5e35] [cursor=pointer]:
+            - /url: /join
+          - link "For Hospitals & Clinics" [ref=f5e36] [cursor=pointer]:
+            - /url: /join
+      - generic [ref=f5e40]:
+        - generic [ref=f5e41]:
+          - generic [ref=f5e42]: Specialty
+          - combobox "Specialty" [ref=f5e44] [cursor=pointer]:
+            - option "Select Specialty" [selected]
+            - option "Paediatrics & ICU"
+            - option "Radiology"
+            - option "Internal Medicine"
+            - option "Surgery"
+            - option "Anaesthetics"
+            - option "Cardiology"
+        - generic [ref=f5e45]:
+          - generic [ref=f5e46]: Location
+          - combobox "Location" [ref=f5e48] [cursor=pointer]:
+            - option "All GCC Countries" [selected]
+            - option "Saudi Arabia"
+            - option "Bahrain"
+            - option "Qatar"
+            - option "United Arab Emirates"
+            - option "Oman"
+            - option "Kuwait"
+        - generic [ref=f5e49]:
+          - generic [ref=f5e50]: Job Type
+          - combobox "Job Type" [ref=f5e52] [cursor=pointer]:
+            - option "All Positions" [selected]
+            - option "Permanent"
+            - option "Contract"
+            - option "Locum"
+        - button "Search Jobs" [ref=f5e53] [cursor=pointer]
+    - generic [ref=f5e55]:
+      - generic [ref=f5e56]:
+        - paragraph [ref=f5e60]: 60 Employers
+        - paragraph [ref=f5e61]: Located in the Middle East
+      - generic [ref=f5e62]:
+        - paragraph [ref=f5e66]: 60 Employers
+        - paragraph [ref=f5e67]: Waiting for Candidates
+    - generic [ref=f5e69]:
+      - generic [ref=f5e70]:
+        - generic [ref=f5e71]:
+          - paragraph [ref=f5e72]: Immediate Vacancies
+          - heading "Latest Opportunities" [level=2] [ref=f5e73]
+        - link "See More" [ref=f5e74] [cursor=pointer]:
+          - /url: /jobs
+      - generic [ref=f5e78]:
+        - article [ref=f5e79]:
+          - generic [ref=f5e80]:
+            - generic [ref=f5e81]: "REF: JO0000000359"
+            - generic [ref=f5e82]: Permanent
+          - heading "Consultant Anaesthetist" [level=3] [ref=f5e83]
+          - paragraph [ref=f5e84]: Zayed Military Hospital, Abu Dhabi
+          - paragraph [ref=f5e85]: Specialist anaesthetist for general, obstetric, and trauma theatre sessions with advanced airway credentials.
+          - generic [ref=f5e86]:
+            - generic [ref=f5e87]: Dammam, Saudi Arabia
+            - generic [ref=f5e91]: GBP 9,000–10,200 / Month
+          - generic [ref=f5e96]:
+            - generic [ref=f5e97]: 🔥 Urgently Hiring
+            - link "View details" [ref=f5e98] [cursor=pointer]:
+              - /url: /jobs/01a17850-1a08-7267-a625-9a472f59d4bf
+        - article [ref=f5e102]:
+          - generic [ref=f5e103]:
+            - generic [ref=f5e104]: "REF: JO0000000358"
+            - generic [ref=f5e105]: Permanent
+          - heading "Consultant Paediatric Specialist" [level=3] [ref=f5e106]
+          - paragraph [ref=f5e107]: Zayed Military Hospital, Abu Dhabi
+          - paragraph [ref=f5e108]: Dedicated paediatric specialist for acute and outpatient paediatric services within our healthcare network.
+          - generic [ref=f5e109]:
+            - generic [ref=f5e110]: Dammam, Saudi Arabia
+            - generic [ref=f5e114]: GBP 8,800–9,800 / Month
+          - link "View details" [ref=f5e120] [cursor=pointer]:
+            - /url: /jobs/01a17850-1a03-770f-b0a9-9ed01cfeb977
+    - generic [ref=f5e125]:
+      - generic [ref=f5e126]:
+        - paragraph [ref=f5e127]: Want to Apply?
+        - heading "Ready to Begin Your Medical Career?" [level=2] [ref=f5e128]
+        - paragraph [ref=f5e129]: Click here to begin the application process. You can upload your CV which will be reviewed by one of our medical recruitment consultants. We ensure complete confidentiality.
+      - link "Upload Your CV" [ref=f5e130] [cursor=pointer]:
+        - /url: /join
+    - generic [ref=f5e134]:
+      - generic [ref=f5e135]:
+        - generic [ref=f5e136]:
+          - paragraph [ref=f5e137]: Our Partners
+          - heading "Our Partner Hospitals & Healthcare Facilities" [level=2] [ref=f5e138]
+        - link "See More" [ref=f5e139] [cursor=pointer]:
+          - /url: /hospitals
+      - list [ref=f5e143]:
+        - listitem [ref=f5e144]:
+          - link "Government Hospitals" [ref=f5e145] [cursor=pointer]:
+            - /url: /hospitals
+        - listitem [ref=f5e149]:
+          - link "Military Hospitals" [ref=f5e150] [cursor=pointer]:
+            - /url: /hospitals
+        - listitem [ref=f5e154]:
+          - link "University Hospitals" [ref=f5e155] [cursor=pointer]:
+            - /url: /hospitals
+        - listitem [ref=f5e159]:
+          - link "Private Clinics & Centres" [ref=f5e160] [cursor=pointer]:
+            - /url: /hospitals
+        - listitem [ref=f5e164]:
+          - link "National Guard Health Affairs" [ref=f5e165] [cursor=pointer]:
+            - /url: /hospitals
+        - listitem [ref=f5e169]:
+          - link "View All Partners" [ref=f5e170] [cursor=pointer]:
+            - /url: /hospitals
+    - generic [ref=f5e175]:
+      - generic [ref=f5e176]:
+        - generic [ref=f5e177]:
+          - paragraph [ref=f5e178]: Clinician Testimonials
+          - heading "Success Stories" [level=2] [ref=f5e179]
+        - generic [ref=f5e180]:
+          - button "Previous" [ref=f5e181] [cursor=pointer]
+          - button "Next" [ref=f5e185] [cursor=pointer]
+      - list [ref=f5e189]:
+        - listitem [ref=f5e190]:
+          - blockquote [ref=f5e191]: “The credentialing assistance provided by AlMahrer was exceptional. They handled my SCFHS license registration flawlessly, making my transition from London to Riyadh seamless.”
+          - generic [ref=f5e192]:
+            - img "Dr. Sarah Ahmed" [ref=f5e193]
+            - generic [ref=f5e194]:
+              - paragraph [ref=f5e195]: Dr. Sarah Ahmed
+              - paragraph [ref=f5e196]: Cardiologist — Riyadh
+        - listitem [ref=f5e197]:
+          - blockquote [ref=f5e198]: “I highly recommend AlMahrer for clinical professionals seeking GCC relocation. Transparent consultation, swift coordination of interviews, and generous family package negotiation support.”
+          - generic [ref=f5e199]:
+            - img "Nurse James Wilson" [ref=f5e200]
+            - generic [ref=f5e201]:
+              - paragraph [ref=f5e202]: Nurse James Wilson
+              - paragraph [ref=f5e203]: ICU Nurse Specialist — Jeddah
+        - listitem [ref=f5e204]:
+          - blockquote [ref=f5e205]: “The local regional knowledge within AlMahrer is outstanding. They mapped my credentials directly to a flagship pediatric complex in Qatar with a highly competitive package.”
+          - generic [ref=f5e206]:
+            - img "Dr. Fatima Al-Rashid" [ref=f5e207]
+            - generic [ref=f5e208]:
+              - paragraph [ref=f5e209]: Dr. Fatima Al-Rashid
+              - paragraph [ref=f5e210]: Consultant Paediatrician — Doha
+    - generic [ref=f5e212]:
+      - heading "Ready to Build Your Medical Team?" [level=2] [ref=f5e213]
+      - paragraph [ref=f5e214]: Partner with Health Arabia to secure high-caliber clinical consultants and administrative staff. Contact our consultants today.
+      - link "Request Medical Staff Now" [ref=f5e215] [cursor=pointer]:
+        - /url: /join
+    - generic [ref=f5e217]:
+      - generic [ref=f5e218]:
+        - generic [ref=f5e219]:
+          - paragraph [ref=f5e220]: Partner With Us
+          - heading "Tailored Solutions for Clinicians & Institutions" [level=2] [ref=f5e221]
+        - link "See More" [ref=f5e222] [cursor=pointer]:
+          - /url: /join
+      - generic [ref=f5e226]:
+        - article [ref=f5e227]:
+          - img "For Doctors & Healthcare Professionals" [ref=f5e229]
+          - heading "For Doctors & Healthcare Professionals" [level=3] [ref=f5e230]
+          - paragraph [ref=f5e231]: Discover verified medical opportunities across leading hospitals and healthcare institutions in the GCC. We guide you through credentialing, licensing, and placement.
+          - link "Get Started" [ref=f5e232] [cursor=pointer]:
+            - /url: /join
+        - article [ref=f5e233]:
+          - img "For Hospitals & Clinics" [ref=f5e235]
+          - heading "For Hospitals & Clinics" [level=3] [ref=f5e236]
+          - paragraph [ref=f5e237]: Find qualified healthcare professionals through a trusted medical recruitment partner. Secure high-caliber clinical consultants and administrative staff.
+          - link "Get Started" [ref=f5e238] [cursor=pointer]:
+            - /url: /join
+  - contentinfo [ref=f5e239]:
+    - generic [ref=f5e240]:
+      - generic [ref=f5e241]:
+        - img "Health Arabia" [ref=f5e242]
+        - paragraph [ref=f5e243]: Connecting great clinicians to the practices that need them. Trusted partner across the Kingdom of Saudi Arabia and the wider GCC region.
+      - generic [ref=f5e244]:
+        - heading "Quick Links" [level=2] [ref=f5e245]
+        - list [ref=f5e246]:
+          - listitem [ref=f5e247]:
+            - link "Search Jobs" [ref=f5e248] [cursor=pointer]:
+              - /url: /jobs
+          - listitem [ref=f5e249]:
+            - link "For Hospitals" [ref=f5e250] [cursor=pointer]:
+              - /url: /hospitals
+          - listitem [ref=f5e251]:
+            - link "About Us" [ref=f5e252] [cursor=pointer]:
+              - /url: /about
+          - listitem [ref=f5e253]:
+            - link "Contact Our Consultants" [ref=f5e254] [cursor=pointer]:
+              - /url: /contact
+          - listitem [ref=f5e255]: Latest Healthcare News
+      - generic [ref=f5e256]:
+        - heading "GCC Destinations" [level=2] [ref=f5e257]
+        - list [ref=f5e258]:
+          - listitem [ref=f5e259]:
+            - link "Saudi Arabia" [ref=f5e260] [cursor=pointer]:
+              - /url: /countries
+          - listitem [ref=f5e261]:
+            - link "United Arab Emirates" [ref=f5e262] [cursor=pointer]:
+              - /url: /countries
+          - listitem [ref=f5e263]:
+            - link "Qatar" [ref=f5e264] [cursor=pointer]:
+              - /url: /countries
+          - listitem [ref=f5e265]:
+            - link "Bahrain" [ref=f5e266] [cursor=pointer]:
+              - /url: /countries
+          - listitem [ref=f5e267]:
+            - link "Oman & Kuwait" [ref=f5e268] [cursor=pointer]:
+              - /url: /countries
+      - generic [ref=f5e269]:
+        - heading "Contact Info" [level=2] [ref=f5e270]
+        - list [ref=f5e271]:
+          - listitem [ref=f5e272]: Al Olaya District, Riyadh, KSA
+          - listitem [ref=f5e273]:
+            - link "info@healtharabia.com" [ref=f5e274] [cursor=pointer]:
+              - /url: mailto:info@healtharabia.com
+          - listitem [ref=f5e275]:
+            - link "+966 11 465 0000" [ref=f5e276] [cursor=pointer]:
+              - /url: tel:+966114650000
+          - listitem [ref=f5e277]: "Sunday - Thursday: 9AM - 5PM"
+    - generic [ref=f5e278]:
+      - generic [ref=f5e279]: Copyright © 2026
+      - strong [ref=f5e280]: QEEMATECH
+      - generic [ref=f5e281]: "| All Rights Reserved"
+  - button "Open Next.js Dev Tools" [ref=f5e287] [cursor=pointer]
+  - alert [ref=f5e291]

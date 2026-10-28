@@ -1,0 +1,68 @@
+- generic [active] [ref=f7e1]:
+  - banner [ref=f7e2]:
+    - generic [ref=f7e3]:
+      - link "Health Arabia home" [ref=f7e4] [cursor=pointer]:
+        - /url: /
+        - img "Health Arabia" [ref=f7e5]
+      - navigation "Main" [ref=f7e6]:
+        - link "Home" [ref=f7e7] [cursor=pointer]:
+          - /url: /
+        - link "About" [ref=f7e8] [cursor=pointer]:
+          - /url: /about
+        - link "Countries" [ref=f7e9] [cursor=pointer]:
+          - /url: /countries
+        - link "Hospitals" [ref=f7e12] [cursor=pointer]:
+          - /url: /hospitals
+        - link "FAQ’s" [ref=f7e13] [cursor=pointer]:
+          - /url: /faqs
+        - link "Contact Us" [ref=f7e14] [cursor=pointer]:
+          - /url: /contact
+        - link "Available Jobs" [ref=f7e15] [cursor=pointer]:
+          - /url: /jobs
+      - generic [ref=f7e18]:
+        - generic [ref=f7e19]: Nursing Services for Homes
+        - link "Join as" [ref=f7e21] [cursor=pointer]:
+          - /url: /join
+  - generic [ref=f7e25]:
+    - button "✓ Personal Info" [ref=f7e124] [cursor=pointer]:
+      - generic [ref=f7e28]: ✓
+      - generic [ref=f7e29]: Personal Info
+    - button "✓ Professional Info" [ref=f7e169] [cursor=pointer]:
+      - generic [ref=f7e33]: ✓
+      - generic [ref=f7e34]: Professional Info
+    - button "✓ Education" [ref=f7e194] [cursor=pointer]:
+      - generic [ref=f7e38]: ✓
+      - generic [ref=f7e39]: Education
+    - button "✓ Licenses" [ref=f7e218] [cursor=pointer]:
+      - generic [ref=f7e43]: ✓
+      - generic [ref=f7e44]: Licenses
+    - button "✓ Experience" [ref=f7e245] [cursor=pointer]:
+      - generic [ref=f7e48]: ✓
+      - generic [ref=f7e49]: Experience
+    - button "6 CV Upload" [ref=f7e52] [cursor=pointer]:
+      - generic [ref=f7e53]: "6"
+      - generic [ref=f7e54]: CV Upload
+  - main [ref=f7e55]:
+    - generic [ref=f7e56]:
+      - generic [ref=f7e57]:
+        - heading "CV" [level=1] [ref=f7e246]
+        - paragraph [ref=f7e247]: Upload your professional curriculum vitae to complete your application
+      - generic [ref=f7e248]:
+        - 'button "Drag & drop your CV here or click to browse Supported formats: PDF, DOC, DOCX (Max 10MB)" [ref=f7e249] [cursor=pointer]':
+          - generic [ref=f7e256]: Drag & drop your CV here or click to browse
+          - generic [ref=f7e257]: "Supported formats: PDF, DOC, DOCX (Max 10MB)"
+        - generic [ref=f7e258]:
+          - generic [ref=f7e263]:
+            - generic [ref=f7e264]: CV_Dr_Sarah_Ahmed.pdf
+            - generic [ref=f7e265]: 2.4 MB • Uploaded successfully
+          - button "Remove" [ref=f7e266] [cursor=pointer]
+        - generic [ref=f7e267]:
+          - button "Back" [ref=f7e268] [cursor=pointer]
+          - button "Explore Available Jobs" [ref=f7e269] [cursor=pointer]
+  - contentinfo [ref=f7e110]:
+    - generic [ref=f7e111]:
+      - generic [ref=f7e112]: Copyright © 2026
+      - strong [ref=f7e113]: QEEMATECH
+      - generic [ref=f7e114]: "| All Rights Reserved"
+  - button "Open Next.js Dev Tools" [ref=f7e120] [cursor=pointer]
+  - alert [ref=f7e168]

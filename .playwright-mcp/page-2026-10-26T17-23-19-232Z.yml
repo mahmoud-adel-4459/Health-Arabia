@@ -1,0 +1,156 @@
+- generic [ref=f16e8]:
+  - complementary [ref=f16e9]:
+    - img "Health Arabia" [ref=f16e12] [cursor=pointer]
+    - generic [ref=f16e13]: Platform Administration
+    - navigation "Admin Navigation" [ref=f16e15]:
+      - generic [ref=f16e16]: Account Verification
+      - button "Review Queue 4" [ref=f16e234] [cursor=pointer]:
+        - generic [ref=f16e22]: Review Queue
+        - generic [ref=f16e23]: "4"
+      - generic [ref=f16e24]:
+        - button "Pending Decisions" [ref=f16e25] [cursor=pointer]
+        - button "Doctor Profiles" [ref=f16e28] [cursor=pointer]
+        - button "Hospital & Clinics" [ref=f16e31] [cursor=pointer]
+        - button "Approved Archive" [ref=f16e34] [cursor=pointer]
+        - button "Rejected Archive" [ref=f16e37] [cursor=pointer]
+    - generic [ref=f16e40]:
+      - generic [ref=f16e41]: API Server Connected
+      - generic [ref=f16e44]:
+        - generic [ref=f16e45]: P
+        - generic [ref=f16e46]:
+          - generic [ref=f16e47]: Platform Administrator
+          - generic "admin@healtharabia.local" [ref=f16e48]
+      - button "Sign Out" [ref=f16e49] [cursor=pointer]
+  - generic [ref=f16e54]:
+    - banner [ref=f16e55]:
+      - navigation "Breadcrumbs" [ref=f16e57]:
+        - generic [ref=f16e58] [cursor=pointer]: Platform Console
+        - generic [ref=f16e59]: /
+        - generic [ref=f16e60] [cursor=pointer]: Review Queue
+        - generic [ref=f16e577]: /
+        - generic [ref=f16e578]: Account Inspection
+      - generic [ref=f16e63]:
+        - generic [ref=f16e64]:
+          - generic [ref=f16e65]: PLATFORM_ADMIN
+          - generic [ref=f16e66]: admin@healtharabia.local
+        - button "Logout" [ref=f16e67] [cursor=pointer]
+    - main [ref=f16e72]:
+      - generic [ref=f16e579]:
+        - button "Back to Review Queue" [ref=f16e581] [cursor=pointer]
+        - generic [ref=f16e585]:
+          - generic [ref=f16e586]:
+            - generic [ref=f16e587]:
+              - generic [ref=f16e588]: Healthcare Facility
+              - generic [ref=f16e589]: PENDING REVIEW
+            - heading "Dr. Sulaiman Al Habib Medical Group" [level=1] [ref=f16e590]
+            - generic [ref=f16e591]:
+              - generic [ref=f16e592]:
+                - strong [ref=f16e593]: "ID:"
+                - code [ref=f16e594]: 01a178f6-f827-7479-bcab-8962552d387f
+              - generic [ref=f16e595]:
+                - strong [ref=f16e596]: "Registered:"
+                - text: 26 Oct 2026, 19:06
+              - generic [ref=f16e597]:
+                - strong [ref=f16e598]: "Submitted for Review:"
+                - text: 26 Oct 2026, 19:06
+          - generic [ref=f16e600]:
+            - button "Approve Account" [ref=f16e601] [cursor=pointer]
+            - button "Reject Account" [active] [ref=f16e605] [cursor=pointer]
+        - region "Reject confirmation" [ref=f16e694]:
+          - generic [ref=f16e695]:
+            - generic [ref=f16e696]:
+              - generic [ref=f16e697]: ✕
+              - generic [ref=f16e698]:
+                - heading "Confirm Account Rejection" [level=3] [ref=f16e699]
+                - paragraph [ref=f16e700]: This will decline the account, revoke any active login sessions, and save the mandatory rejection reason.
+            - button "×" [ref=f16e701] [cursor=pointer]
+          - generic [ref=f16e702]:
+            - generic [ref=f16e703]: Reason for Rejection * (Required)
+            - textbox "Reason for Rejection * (Required)" [ref=f16e704]:
+              - /placeholder: Provide a clear, actionable explanation (e.g., Incomplete medical council license document, expired certificate, unverifiable institution email)
+          - generic [ref=f16e705]:
+            - button "Confirm & Reject Account" [disabled] [ref=f16e706] [cursor=pointer]
+            - button "Cancel" [ref=f16e707] [cursor=pointer]
+        - generic [ref=f16e610]:
+          - generic [ref=f16e611]:
+            - generic [ref=f16e612]:
+              - generic [ref=f16e613]:
+                - heading "Institutional Details" [level=2] [ref=f16e614]
+                - generic [ref=f16e615]: Hospital / Clinic
+              - generic [ref=f16e616]:
+                - generic [ref=f16e617]:
+                  - generic [ref=f16e618]: Official Facility Name
+                  - generic [ref=f16e619]: Dr. Sulaiman Al Habib Medical Group
+                - generic [ref=f16e620]:
+                  - generic [ref=f16e621]: Facility Type
+                  - generic [ref=f16e622]: PRIVATE
+                - generic [ref=f16e623]:
+                  - generic [ref=f16e624]: Beds / Employee Capacity
+                  - generic [ref=f16e625]: 1200 Beds / Capacity
+                - generic [ref=f16e626]:
+                  - generic [ref=f16e627]: Location & City
+                  - generic [ref=f16e628]: —
+                - generic [ref=f16e629]:
+                  - generic [ref=f16e630]: Physical Street Address
+                  - generic [ref=f16e631]: King Fahd Road, Olaya District, Riyadh 11643
+                - generic [ref=f16e632]:
+                  - generic [ref=f16e633]: Website / Online Profile
+                  - link "https://maps.google.com/?q=Al+Habib+Hospital+Riyadh ↗" [ref=f16e634] [cursor=pointer]:
+                    - /url: https://maps.google.com/?q=Al+Habib+Hospital+Riyadh
+                - generic [ref=f16e635]:
+                  - generic [ref=f16e636]: About Institution
+                  - paragraph [ref=f16e637]: Multi-disciplinary healthcare leader across KSA and GCC with JCI accreditation.
+            - generic [ref=f16e638]:
+              - generic [ref=f16e639]:
+                - heading "Email & Administrative Contacts" [level=2] [ref=f16e640]
+                - generic [ref=f16e641]: Security & Verification
+              - generic [ref=f16e642]:
+                - generic [ref=f16e643]:
+                  - generic [ref=f16e644]:
+                    - generic [ref=f16e645]: Institution Email
+                    - generic [ref=f16e646]: Official Correspondence
+                  - generic [ref=f16e647]: info.riyadh@drsulaimanalhabib.com
+                  - paragraph [ref=f16e648]: Used for official hospital communications and public institutional listing.
+                - generic [ref=f16e649]:
+                  - generic [ref=f16e650]:
+                    - generic [ref=f16e651]: Login / Officer Email
+                    - generic [ref=f16e652]: Account Credentials
+                  - generic [ref=f16e653]: noura.recruitment@drsulaimanalhabib.com
+                  - paragraph [ref=f16e654]:
+                    - text: "Authentication email bound to recruitment officer:"
+                    - strong [ref=f16e655]: Noura Al-Shehri
+                    - generic [ref=f16e656]: (+966 +966 541234567)
+            - generic [ref=f16e657]:
+              - generic [ref=f16e658]:
+                - heading "Facility Inquiry Message" [level=2] [ref=f16e659]
+                - generic [ref=f16e660]: Submitted Notes
+              - generic [ref=f16e661]:
+                - generic [ref=f16e662]: “
+                - paragraph [ref=f16e663]: We need 6 Senior Consultants in Anesthesiology, Oncology and Emergency Medicine for Q1.
+                - generic [ref=f16e664]: — Submitted by Noura Al-Shehri during facility registration
+            - generic [ref=f16e665]:
+              - generic [ref=f16e666]:
+                - heading "Private Brand Assets & Logo" [level=2] [ref=f16e667]
+                - generic [ref=f16e668]: Authorized Access Only
+              - paragraph [ref=f16e670]: No institutional logo file was attached.
+          - generic [ref=f16e671]:
+            - generic [ref=f16e672]:
+              - heading "Account Contact" [level=2] [ref=f16e674]
+              - generic [ref=f16e675]:
+                - generic [ref=f16e676]:
+                  - generic [ref=f16e677]: Primary Email
+                  - generic [ref=f16e678]: noura.recruitment@drsulaimanalhabib.com
+                - generic [ref=f16e679]:
+                  - generic [ref=f16e680]: Mobile (E.164)
+                  - generic [ref=f16e681]: —
+                - generic [ref=f16e682]:
+                  - generic [ref=f16e683]: Role Type
+                  - generic [ref=f16e684]: FACILITY
+                - generic [ref=f16e685]:
+                  - generic [ref=f16e686]: Account Status
+                  - generic [ref=f16e687]: PENDING_REVIEW
+            - generic [ref=f16e688]:
+              - generic [ref=f16e689]:
+                - heading "Entity Audit Trail" [level=2] [ref=f16e690]
+                - generic [ref=f16e691]: Tamper-Proof
+              - paragraph [ref=f16e693]: No audit events recorded for this entity yet.

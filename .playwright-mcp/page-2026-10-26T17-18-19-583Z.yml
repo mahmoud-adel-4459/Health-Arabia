@@ -1,0 +1,79 @@
+- generic [ref=f14e39]:
+  - complementary [ref=f14e40]:
+    - img "Health Arabia" [ref=f14e43] [cursor=pointer]
+    - generic [ref=f14e44]: Platform Administration
+    - navigation "Admin Navigation" [ref=f14e46]:
+      - generic [ref=f14e47]: Account Verification
+      - button "Review Queue 5" [ref=f14e48] [cursor=pointer]:
+        - generic [ref=f14e53]: Review Queue
+        - generic [ref=f14e54]: "5"
+      - generic [ref=f14e55]:
+        - button "Pending Decisions" [ref=f14e56] [cursor=pointer]
+        - button "Doctor Profiles" [ref=f14e59] [cursor=pointer]
+        - button "Hospital & Clinics" [ref=f14e62] [cursor=pointer]
+        - button "Approved Archive" [ref=f14e65] [cursor=pointer]
+        - button "Rejected Archive" [ref=f14e68] [cursor=pointer]
+    - generic [ref=f14e71]:
+      - generic [ref=f14e72]: API Server Connected
+      - generic [ref=f14e75]:
+        - generic [ref=f14e76]: P
+        - generic [ref=f14e77]:
+          - generic [ref=f14e78]: Platform Administrator
+          - generic "admin@healtharabia.local" [ref=f14e79]
+      - button "Sign Out" [ref=f14e80] [cursor=pointer]
+  - generic [ref=f14e85]:
+    - banner [ref=f14e86]:
+      - navigation "Breadcrumbs" [ref=f14e88]:
+        - generic [ref=f14e89] [cursor=pointer]: Platform Console
+        - generic [ref=f14e90]: /
+        - generic [ref=f14e91] [cursor=pointer]: Review Queue
+        - generic [ref=f14e382]: /
+        - generic [ref=f14e383]: Account Inspection
+      - generic [ref=f14e92]:
+        - generic [ref=f14e93]:
+          - generic [ref=f14e94]: PLATFORM_ADMIN
+          - generic [ref=f14e95]: admin@healtharabia.local
+        - button "Logout" [ref=f14e96] [cursor=pointer]
+    - main [ref=f14e101]:
+      - generic [ref=f14e384]:
+        - button "Back to Review Queue" [ref=f14e386] [cursor=pointer]
+        - generic [ref=f14e390]:
+          - generic [ref=f14e391]:
+            - generic [ref=f14e392]:
+              - generic [ref=f14e393]: Healthcare Facility
+              - generic [ref=f14e394]: PENDING REVIEW
+            - heading "Verification Medical Complex" [level=1] [ref=f14e395]
+            - generic [ref=f14e396]:
+              - generic [ref=f14e397]:
+                - strong [ref=f14e398]: "ID:"
+                - code [ref=f14e399]: 01a1790b-258c-768f-892c-b9f6f8335477
+              - generic [ref=f14e400]:
+                - strong [ref=f14e401]: "Registered:"
+                - text: 26 Oct 2026, 19:28
+              - generic [ref=f14e402]:
+                - strong [ref=f14e403]: "Submitted for Review:"
+                - text: 26 Oct 2026, 19:28
+          - generic [ref=f14e405]:
+            - button "Approve Account" [ref=f14e406] [cursor=pointer]
+            - button "Reject Account" [ref=f14e410] [cursor=pointer]
+        - generic [ref=f14e416]:
+          - generic [ref=f14e417]:
+            - heading "Account Contact" [level=2] [ref=f14e419]
+            - generic [ref=f14e420]:
+              - generic [ref=f14e421]:
+                - generic [ref=f14e422]: Primary Email
+                - generic [ref=f14e423]: recruiter.tariq@verification-mc.com
+              - generic [ref=f14e424]:
+                - generic [ref=f14e425]: Mobile (E.164)
+                - generic [ref=f14e426]: —
+              - generic [ref=f14e427]:
+                - generic [ref=f14e428]: Role Type
+                - generic [ref=f14e429]: FACILITY
+              - generic [ref=f14e430]:
+                - generic [ref=f14e431]: Account Status
+                - generic [ref=f14e432]: PENDING_REVIEW
+          - generic [ref=f14e433]:
+            - generic [ref=f14e434]:
+              - heading "Entity Audit Trail" [level=2] [ref=f14e435]
+              - generic [ref=f14e436]: Tamper-Proof
+            - paragraph [ref=f14e438]: No audit events recorded for this entity yet.

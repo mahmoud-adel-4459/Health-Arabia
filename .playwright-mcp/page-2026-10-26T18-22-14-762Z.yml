@@ -1,0 +1,60 @@
+- generic [active] [ref=f6e1]:
+  - banner [ref=f6e2]:
+    - generic [ref=f6e3]:
+      - link "Health Arabia home" [ref=f6e4] [cursor=pointer]:
+        - /url: /
+        - img "Health Arabia" [ref=f6e5]
+      - navigation "Main" [ref=f6e6]:
+        - link "Home" [ref=f6e7] [cursor=pointer]:
+          - /url: /
+        - link "About" [ref=f6e8] [cursor=pointer]:
+          - /url: /about
+        - link "Countries" [ref=f6e9] [cursor=pointer]:
+          - /url: /countries
+        - link "Hospitals" [ref=f6e12] [cursor=pointer]:
+          - /url: /hospitals
+        - link "FAQ’s" [ref=f6e13] [cursor=pointer]:
+          - /url: /faqs
+        - link "Contact Us" [ref=f6e14] [cursor=pointer]:
+          - /url: /contact
+        - link "Available Jobs" [ref=f6e15] [cursor=pointer]:
+          - /url: /jobs
+      - generic [ref=f6e18]: Nursing Services for Homes
+  - main [ref=f6e21]:
+    - generic [ref=f6e23]:
+      - heading "Hospital Portal" [level=1] [ref=f6e24]
+      - paragraph [ref=f6e25]: Access your secure institution dashboard.
+      - generic [ref=f6e26]:
+        - generic [ref=f6e27]:
+          - generic [ref=f6e28]: Institutional Email Address
+          - textbox "Institutional Email Address" [ref=f6e29]:
+            - /placeholder: officer.zayed@healtharabia.com
+        - generic [ref=f6e30]:
+          - generic [ref=f6e31]:
+            - generic [ref=f6e32]: Password
+            - generic "Contact support to reset password" [ref=f6e33]: Forgot Password?
+          - generic [ref=f6e34]:
+            - textbox "Password" [ref=f6e35]:
+              - /placeholder: ••••••••••••
+            - button "Show password" [ref=f6e36] [cursor=pointer]
+        - button "Log In to Portal" [ref=f6e40] [cursor=pointer]
+      - paragraph [ref=f6e41]:
+        - text: Don't have an account?
+        - link "Create Account" [ref=f6e42] [cursor=pointer]:
+          - /url: /register/facility
+    - generic [ref=f6e46]:
+      - heading "High-Caliber Clinical Talent on Demand" [level=2] [ref=f6e47]
+      - paragraph [ref=f6e48]: Sourcing verified medical consultants, specialty nurses, and healthcare managers with pre-mapped SCFHS credentials.
+      - generic [ref=f6e49]:
+        - generic [ref=f6e50]:
+          - strong [ref=f6e51]: 456+
+          - generic [ref=f6e52]: Active Placements
+        - generic [ref=f6e53]:
+          - strong [ref=f6e54]: 200+
+          - generic [ref=f6e55]: Hospital Clients
+  - contentinfo [ref=f6e56]:
+    - generic [ref=f6e57]:
+      - generic [ref=f6e58]: Copyright © 2026
+      - strong [ref=f6e59]: QEEMATECH
+      - generic [ref=f6e60]: "| All Rights Reserved"
+  - button "Open Next.js Dev Tools" [ref=f6e66] [cursor=pointer]

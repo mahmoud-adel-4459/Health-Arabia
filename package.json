@@ -18,5 +18,8 @@
     "db:generate": "pnpm --filter @health-arabia/api prisma:generate",
     "db:migrate": "pnpm --filter @health-arabia/api prisma:migrate",
     "db:studio": "pnpm --filter @health-arabia/api prisma:studio"
+  },
+  "devDependencies": {
+    "playwright": "^1.64.1"
   }
 }

@@ -1,0 +1,546 @@
+/* Header: Figma "Header" component 551:5801 (1440 x 88) */
+.header {
+  position: relative;
+  z-index: 20;
+  background: var(--white);
+  box-shadow: 0 4px 10px rgba(10, 38, 71, 0.05);
+}
+
+.headerInner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  height: 88px;
+}
+
+.logo {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.navLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: var(--blue-200);
+  white-space: nowrap;
+}
+
+.navLink:hover,
+.navLinkActive {
+  color: var(--green-500);
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.secondaryLink {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--blue-400);
+  white-space: nowrap;
+}
+
+.joinMenu {
+  position: relative;
+}
+
+.joinButton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 20px;
+  border-radius: 16px;
+  background: var(--green-500);
+  color: var(--white);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.joinButton:hover {
+  background: #157070;
+}
+
+/* Figma "Join as" overlay 480:2254 (274 x 82) */
+.joinList {
+  display: none;
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  width: 274px;
+  background: var(--white);
+  box-shadow: 0 8px 24px rgba(10, 38, 71, 0.12);
+  border-radius: 8px;
+  overflow: hidden;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  z-index: 50;
+}
+
+.joinMenu:hover .joinList,
+.joinMenu:focus-within .joinList {
+  display: block;
+}
+
+.joinItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 41px;
+  padding: 0 12px;
+  font-size: 14px;
+  color: var(--blue-300);
+}
+
+.joinItemActive {
+  background: var(--green-50);
+  color: var(--green-500);
+  font-weight: 700;
+}
+
+.joinItem span {
+  flex: 1;
+}
+
+.joinChevron {
+  transform: rotate(-90deg);
+}
+
+.mobileMenu {
+  display: none;
+  position: relative;
+}
+
+.mobileMenuButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--blue-50);
+  color: var(--blue-500);
+  list-style: none;
+  cursor: pointer;
+}
+
+.mobileMenuButton::-webkit-details-marker {
+  display: none;
+}
+
+.mobileNav {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 240px;
+  padding: 20px;
+  border-radius: 16px;
+  background: var(--white);
+  box-shadow: 0 8px 24px rgba(10, 38, 71, 0.12);
+}
+
+/* Reserved space during auth check to prevent layout jump */
+.authPlaceholder {
+  width: 120px;
+  height: 48px;
+}
+
+/* Authenticated Account Menu: matching Figma 428:2648 & 430:3873 */
+.accountMenuWrapper {
+  position: relative;
+}
+
+.accountTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 48px;
+  padding: 0 12px;
+  border-radius: 12px;
+  background: var(--white);
+  border: 1px solid var(--border, #e2e8f0);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.accountTrigger:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+}
+
+.doctorAvatarBox {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #0284c7;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.doctorAvatarImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.doctorAvatarInitials {
+  position: absolute;
+}
+
+.facilityAvatarBox {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #7c3aed;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.adminAvatarBox {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #0a2647;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.accountUserName {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue-500);
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.accountChevron {
+  transition: transform 0.2s ease;
+  color: var(--blue-300);
+}
+
+.accountChevronOpen {
+  transform: rotate(180deg);
+}
+
+/* Authenticated Dropdown Menu matching Figma 428:2716 & 446:2320 */
+.accountDropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 230px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(10, 38, 71, 0.12);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+  z-index: 60;
+  animation: fadeInDown 0.15s ease-out;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.accountDropdownHeader {
+  padding: 14px 16px;
+  background: #f8fafc;
+  border-bottom: 1px solid #edf2f7;
+}
+
+.dropdownName {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--blue-500);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dropdownBadgeRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.dropdownRoleBadge {
+  font-size: 10px;
+  font-weight: 700;
+  background: #e2e8f0;
+  color: #334155;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.dropdownStatusBadge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.statusApproved {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.statusPending {
+  background: #fef3c7;
+  color: #b45309;
+}
+
+.accountDropdownList {
+  display: flex;
+  flex-direction: column;
+  padding: 6px 0;
+}
+
+.accountMenuItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--blue-300);
+  transition: all 0.15s ease;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.accountMenuItem:hover {
+  background: var(--green-50);
+  color: var(--green-500);
+}
+
+.accountLogoutItem {
+  color: #dc2626;
+  border-top: 1px solid #f1f5f9;
+  margin-top: 4px;
+  padding-top: 10px;
+}
+
+.accountLogoutItem:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.accountDangerItem {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.accountDangerItem:hover {
+  background: #fff1f2;
+  color: #e11d48;
+}
+
+/* Mobile user section inside drawer */
+.mobileUserSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--blue-50);
+}
+
+.mobileUserHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  color: var(--blue-500);
+}
+
+.mobileUserRole {
+  font-size: 11px;
+  font-weight: 700;
+  background: #e2e8f0;
+  color: #334155;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.mobileLogoutBtn {
+  margin-top: 4px;
+  padding: 8px 12px;
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+}
+
+@media (max-width: 1240px) {
+  .nav,
+  .secondaryLink {
+    display: none;
+  }
+
+  .mobileMenu {
+    display: block;
+  }
+}
+
+@media (max-width: 640px) {
+  .headerInner {
+    height: 72px;
+  }
+
+  .logo img {
+    width: 180px;
+    height: auto;
+  }
+
+  .joinButton {
+    height: 44px;
+    padding: 0 14px;
+    font-size: 14px;
+  }
+
+  .joinList {
+    width: min(274px, calc(100vw - 40px));
+  }
+}
+
+/* Footer: Figma "footer" 351:781 (1440 x 446) */
+.footer {
+  padding: 80px 0 40px;
+  background: var(--blue-500);
+  color: var(--white);
+}
+
+.footerGrid {
+  display: grid;
+  grid-template-columns: 340px 220px 220px 220px;
+  justify-content: space-between;
+  min-height: 202px;
+}
+
+.footerLogo {
+  /* White rendering of the colour logo; the white footer logo asset is not available. */
+  filter: brightness(0) invert(1);
+}
+
+.footerTagline {
+  margin-top: 20px;
+  font-size: 14px;
+  line-height: 22px;
+}
+
+.footerHeading {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 17px;
+  color: var(--green-500);
+  text-transform: uppercase;
+}
+
+.footerLinks {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+  font-size: 14px;
+  line-height: 17px;
+}
+
+.footerLinks a:hover {
+  color: var(--green-400);
+}
+
+.copyright {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 60px;
+  margin-top: 64px;
+  font-family: var(--font-alexandria), sans-serif;
+  font-size: 18px;
+}
+
+.copyrightCompany {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 1024px) {
+  .footerGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 40px;
+  }
+}
+
+@media (max-width: 640px) {
+  .footer {
+    padding-top: 56px;
+  }
+
+  .footerGrid {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .copyright {
+    flex-wrap: wrap;
+    height: auto;
+    margin-top: 40px;
+    font-size: 14px;
+    text-align: center;
+  }
+}

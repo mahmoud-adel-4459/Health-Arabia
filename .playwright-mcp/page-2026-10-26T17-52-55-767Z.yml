@@ -1,0 +1,62 @@
+- generic [active] [ref=f4e1]:
+  - button "Open Next.js Dev Tools" [ref=f4e284] [cursor=pointer]
+  - alert [ref=f4e288]: Join Health Arabia
+  - banner [ref=f4e289]:
+    - generic [ref=f4e290]:
+      - link "Health Arabia home" [ref=f4e291] [cursor=pointer]:
+        - /url: /
+        - img "Health Arabia" [ref=f4e292]
+      - navigation "Main" [ref=f4e293]:
+        - link "Home" [ref=f4e294] [cursor=pointer]:
+          - /url: /
+        - link "About" [ref=f4e295] [cursor=pointer]:
+          - /url: /about
+        - link "Countries" [ref=f4e296] [cursor=pointer]:
+          - /url: /countries
+        - link "Hospitals" [ref=f4e299] [cursor=pointer]:
+          - /url: /hospitals
+        - link "FAQ’s" [ref=f4e300] [cursor=pointer]:
+          - /url: /faqs
+        - link "Contact Us" [ref=f4e301] [cursor=pointer]:
+          - /url: /contact
+        - link "Available Jobs" [ref=f4e302] [cursor=pointer]:
+          - /url: /jobs
+      - generic [ref=f4e305]:
+        - generic [ref=f4e306]: Nursing Services for Homes
+        - generic [ref=f4e307]:
+          - link "Join Us" [ref=f4e308] [cursor=pointer]:
+            - /url: /join
+          - list [ref=f4e311]:
+            - listitem [ref=f4e312]:
+              - link "Join as Healthcare Professional" [ref=f4e313] [cursor=pointer]:
+                - /url: /login/doctor
+            - listitem [ref=f4e320]:
+              - link "Join as Hospital / Clinic" [ref=f4e321] [cursor=pointer]:
+                - /url: /login/facility
+  - main [ref=f4e330]:
+    - generic [ref=f4e331]:
+      - generic [ref=f4e332]:
+        - heading "Join Health Arabia" [level=1] [ref=f4e333]
+        - paragraph [ref=f4e334]: Select how you would like to proceed on the GCC region's premier specialist healthcare career & recruitment platform.
+      - generic [ref=f4e335]:
+        - generic [ref=f4e336]:
+          - generic [ref=f4e337]:
+            - generic [ref=f4e340]:
+              - heading "Healthcare Professional" [level=2] [ref=f4e341]
+              - generic [ref=f4e342]: CANDIDATE PORTAL
+            - paragraph [ref=f4e343]: Doctors, nurses, pharmacists, and medical specialists looking for career opportunities and professional licensing transition support across leading healthcare facilities in Saudi Arabia & the Gulf.
+          - link "Get Started" [ref=f4e344] [cursor=pointer]:
+            - /url: /login/doctor
+        - generic [ref=f4e349]:
+          - generic [ref=f4e350]:
+            - generic [ref=f4e353]:
+              - heading "Hospital / Clinic" [level=2] [ref=f4e354]
+              - generic [ref=f4e355]: EMPLOYER PORTAL
+            - paragraph [ref=f4e356]: Premier government, military, university, and private healthcare clients seeking high-caliber clinical consultants, administrative executives, or whole department medical staffing solutions.
+          - link "Get Started" [ref=f4e357] [cursor=pointer]:
+            - /url: /login/facility
+  - contentinfo [ref=f4e362]:
+    - generic [ref=f4e363]:
+      - generic [ref=f4e364]: Copyright © 2026
+      - strong [ref=f4e365]: QEEMATECH
+      - generic [ref=f4e366]: "| All Rights Reserved"

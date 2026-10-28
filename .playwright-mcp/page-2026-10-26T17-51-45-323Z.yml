@@ -1,0 +1,61 @@
+- generic [active] [ref=f2e1]:
+  - button "Open Next.js Dev Tools" [ref=f2e281] [cursor=pointer]
+  - alert [ref=f2e285]: Doctor Login | HealthArabia
+  - banner [ref=f2e364]:
+    - generic [ref=f2e365]:
+      - link "Health Arabia home" [ref=f2e366] [cursor=pointer]:
+        - /url: /
+        - img "Health Arabia" [ref=f2e367]
+      - navigation "Main" [ref=f2e368]:
+        - link "Home" [ref=f2e369] [cursor=pointer]:
+          - /url: /
+        - link "About" [ref=f2e370] [cursor=pointer]:
+          - /url: /about
+        - link "Countries" [ref=f2e371] [cursor=pointer]:
+          - /url: /countries
+        - link "Hospitals" [ref=f2e374] [cursor=pointer]:
+          - /url: /hospitals
+        - link "FAQ’s" [ref=f2e375] [cursor=pointer]:
+          - /url: /faqs
+        - link "Contact Us" [ref=f2e376] [cursor=pointer]:
+          - /url: /contact
+        - link "Available Jobs" [ref=f2e377] [cursor=pointer]:
+          - /url: /jobs
+      - generic [ref=f2e380]:
+        - generic [ref=f2e381]: Nursing Services for Homes
+        - link "Join Us" [ref=f2e383] [cursor=pointer]:
+          - /url: /join
+  - main [ref=f2e386]:
+    - generic [ref=f2e388]:
+      - heading "Welcome Back" [level=1] [ref=f2e389]
+      - paragraph [ref=f2e390]: Sign in to your healthcare career portal.
+      - generic [ref=f2e422]: Welcome, Dr. Sarah Ahmed! Sign in successful. Redirecting...
+      - generic [ref=f2e391]:
+        - generic [ref=f2e392]:
+          - generic [ref=f2e393]: Email Address or Mobile Number
+          - textbox "Email Address or Mobile Number" [ref=f2e394]:
+            - /placeholder: doctor.sarah@healtharabia.com or +966...
+            - text: "+966501234567"
+        - generic [ref=f2e395]:
+          - generic [ref=f2e396]:
+            - generic [ref=f2e397]: Password
+            - generic "Contact support to reset password" [ref=f2e398]: Forgot Password?
+          - generic [ref=f2e399]:
+            - textbox "Password" [ref=f2e400]:
+              - /placeholder: ••••••••••••
+              - text: Password123!
+            - button "Show password" [ref=f2e401] [cursor=pointer]
+        - button "Sign In" [ref=f2e405] [cursor=pointer]
+      - paragraph [ref=f2e406]:
+        - text: Don't have an account?
+        - link "Create Account" [ref=f2e407] [cursor=pointer]:
+          - /url: /register/doctor
+    - generic [ref=f2e411]:
+      - heading "Connecting Clinicians with Prime GCC Practices" [level=2] [ref=f2e412]
+      - paragraph [ref=f2e413]: Health Arabia partners directly with elite government, military, university, and private healthcare systems to bring medical professionals the region's best career paths.
+      - generic [ref=f2e414]: Over 12,000+ medical colleagues registered
+  - contentinfo [ref=f2e417]:
+    - generic [ref=f2e418]:
+      - generic [ref=f2e419]: Copyright © 2026
+      - strong [ref=f2e420]: QEEMATECH
+      - generic [ref=f2e421]: "| All Rights Reserved"

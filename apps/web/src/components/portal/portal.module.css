@@ -1,0 +1,1288 @@
+/* ==========================================================================
+   Health Arabia - Authenticated Portal Design System
+   Exact implementation matching Figma frames:
+   - Doctor Dashboard: 430:3164
+   - Doctor Profile: 430:2811
+   - Facility Dashboard: 440:2294
+   - Facility Profile: 430:4258
+   - Settings: 564:9584
+   ========================================================================== */
+
+/* Outer Container */
+.portalContainer {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+}
+
+.portalMain {
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 48px 96px 80px 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  flex: 1 0 auto;
+}
+
+@media (max-width: 1024px) {
+  .portalMain {
+    padding: 32px 32px 64px 32px;
+  }
+}
+
+@media (max-width: 640px) {
+  .portalMain {
+    padding: 24px 16px 48px 16px;
+    gap: 24px;
+  }
+}
+
+/* Page Welcome Headers */
+.pageHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pageTitle {
+  font-size: 32px;
+  font-weight: 700;
+  color: #0a2647;
+  letter-spacing: -0.5px;
+  line-height: 1.25;
+}
+
+.pageSubtitle {
+  font-size: 16px;
+  color: #5b6e84;
+  line-height: 1.5;
+}
+
+/* Stat Cards Row */
+.statCardsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+
+.statCard {
+  background: #ffffff;
+  border: 1px solid #e7e9ed;
+  border-radius: 16px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 6px rgba(10, 38, 71, 0.03);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(10, 38, 71, 0.06);
+}
+
+.statIconWrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 200px;
+  background: #e8f3f3;
+  color: #1b8a8a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.statInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.statLabel {
+  font-size: 14px;
+  color: #3b516c;
+  font-weight: 500;
+}
+
+.statValue {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1b8a8a;
+  line-height: 1.1;
+}
+
+/* 2-Column Dashboard Layout */
+.dashboardGrid {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 32px;
+  align-items: start;
+}
+
+@media (max-width: 1080px) {
+  .dashboardGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mainColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.sidebarColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Section Header */
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.sectionTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0a2647;
+}
+
+.sectionActionLink {
+  font-size: 14px;
+  font-weight: 600;
+  color: #5b6e84;
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.sectionActionLink:hover {
+  color: #1b8a8a;
+}
+
+/* Application Cards */
+.applicationList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.applicationCard {
+  background: #ffffff;
+  border: 1px solid #e7e9ed;
+  border-radius: 16px;
+  padding: 18px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.applicationCard:hover {
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 10px rgba(10, 38, 71, 0.04);
+}
+
+.appCardInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.appJobTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0a2647;
+}
+
+.appMetaRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #8e9baa;
+}
+
+.dotSeparator {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #8e9baa;
+}
+
+.appCardRight {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+}
+
+.appAppliedDate {
+  font-size: 14px;
+  color: #8e9baa;
+}
+
+/* Status Badges */
+.statusPill {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: capitalize;
+  white-space: nowrap;
+}
+
+.statusApplied,
+.statusSubmitted {
+  background: #e7e9ed;
+  color: #5b6e84;
+}
+
+.statusUnderReview {
+  background: #ffece0;
+  color: #b54600;
+}
+
+.statusApproved,
+.statusVerified,
+.statusHired,
+.statusCompleted {
+  background: #e8f3f3;
+  color: #1b8a8a;
+}
+
+.statusRejected {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* Job Cards (Recommended & Saved) */
+.jobCardsList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.jobCard {
+  background: #ffffff;
+  border: 1px solid #e7e9ed;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(10, 38, 71, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.jobCard:hover {
+  transform: translateY(-2px);
+  border-color: #cbd5e1;
+  box-shadow: 0 6px 16px rgba(10, 38, 71, 0.06);
+}
+
+.jobCardTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.jobRef {
+  font-size: 12px;
+  font-weight: 700;
+  color: #5b6e84;
+  letter-spacing: 0.5px;
+}
+
+.jobTypePill {
+  background: #e8f3f3;
+  color: #1b8a8a;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 16px;
+}
+
+.jobCardMain {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.jobTitle {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0a2647;
+}
+
+.jobFacilityName {
+  font-size: 14px;
+  font-weight: 700;
+  color: #5b6e84;
+}
+
+.jobDescription {
+  font-size: 15px;
+  color: #8e9baa;
+  line-height: 1.5;
+  margin-top: 4px;
+}
+
+.jobMetaRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.jobMetaItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: #5b6e84;
+}
+
+.jobCardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 8px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.urgentBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #e11d48;
+}
+
+.jobActionLink {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1b8a8a;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: opacity 0.15s ease;
+}
+
+.jobActionLink:hover {
+  opacity: 0.8;
+}
+
+/* Notifications Panel */
+.panelCard {
+  background: #ffffff;
+  border: 1px solid #e7e9ed;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(10, 38, 71, 0.03);
+  display: flex;
+  flex-direction: column;
+}
+
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.panelTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1b8a8a;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.panelActionBtn {
+  background: none;
+  border: none;
+  font-size: 13px;
+  color: #8e9baa;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.15s ease;
+}
+
+.panelActionBtn:hover {
+  color: #0a2647;
+}
+
+.notificationList {
+  display: flex;
+  flex-direction: column;
+}
+
+.notificationItem {
+  padding: 12px 0;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+}
+
+.notificationItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.notificationTop {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.unreadDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e11d48;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.notificationText {
+  font-size: 13px;
+  font-weight: 600;
+  color: #0a2647;
+  line-height: 1.4;
+}
+
+.notificationTime {
+  font-size: 12px;
+  color: #8e9baa;
+  padding-left: 16px;
+}
+
+/* Overview Bar Chart (Facility Dashboard) */
+.chartLegend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 12px;
+  color: #5b6e84;
+}
+
+.legendDotTeal {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #1b8a8a;
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.legendDotSlate {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #5b6e84;
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.barChartContainer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 180px;
+  padding: 24px 16px 8px 16px;
+  border-bottom: 1px solid #e2e8f0;
+  gap: 12px;
+}
+
+.chartColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.barsGroup {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 140px;
+  width: 100%;
+  justify-content: center;
+}
+
+.barTeal {
+  width: 12px;
+  background: #1b8a8a;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.4s ease;
+}
+
+.barSlate {
+  width: 12px;
+  background: #5b6e84;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.4s ease;
+}
+
+.chartDayLabel {
+  font-size: 12px;
+  color: #8e9baa;
+  font-weight: 600;
+}
+
+/* Available Applicants Table / List (Facility Dashboard) */
+.batchActionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  margin-bottom: 14px;
+  font-size: 13px;
+  color: #3b516c;
+}
+
+.batchButton {
+  background: #1b8a8a;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.batchButton:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+}
+
+.batchButton:hover:not(:disabled) {
+  background: #136969;
+}
+
+.applicantRowsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.applicantCardRow {
+  background: #ffffff;
+  border: 1px solid #e7e9ed;
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.applicantCardRowSelected {
+  border-color: #1b8a8a;
+  background: #f4fafb;
+}
+
+.applicantRowLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.applicantCheckbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #1b8a8a;
+  cursor: pointer;
+}
+
+.applicantInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.applicantJobTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0a2647;
+}
+
+.applicantMeta {
+  font-size: 13px;
+  color: #5b6e84;
+}
+
+.candidateCodeTag {
+  display: inline-block;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  margin-left: 6px;
+}
+
+.hireRequestBtn {
+  background: #1b8a8a;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.hireRequestBtn:hover {
+  background: #136969;
+}
+
+.hireRequestBtn:disabled {
+  background: #e2e8f0;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* ==========================================================================
+   Profile Pages (Doctor Profile 430:2811 & Facility Profile 430:4258)
+   ========================================================================== */
+.profileHero {
+  background: #0a2647;
+  width: 100%;
+  padding: 56px 96px;
+  color: #ffffff;
+}
+
+@media (max-width: 1024px) {
+  .profileHero {
+    padding: 40px 32px;
+  }
+}
+
+@media (max-width: 640px) {
+  .profileHero {
+    padding: 32px 16px;
+  }
+}
+
+.profileHeroContent {
+  max-width: 1248px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.profileHeroIdentity {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.doctorAvatarWrap {
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  border: 4px solid #ffffff;
+  overflow: hidden;
+  background: #1b8a8a;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  font-weight: 700;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.facilityAvatarWrap {
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  background: #1b8a8a;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 36px;
+  font-weight: 800;
+  flex-shrink: 0;
+  letter-spacing: 1px;
+}
+
+.profileHeroDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.profileHeroNameRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.profileHeroName {
+  font-size: 32px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+}
+
+.availablePill {
+  background: #1b8a8a;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 16px;
+}
+
+.profileHeroSubtitle {
+  font-size: 16px;
+  color: #cbd5e1;
+}
+
+.profileHeroMeta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 14px;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+.profileHeroActions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btnOutlineWhite {
+  background: transparent;
+  color: #ffffff;
+  border: 1.5px solid #ffffff;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.btnOutlineWhite:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.btnSolidTeal {
+  background: #1b8a8a;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: background 0.15s ease;
+}
+
+.btnSolidTeal:hover {
+  background: #136969;
+}
+
+/* Profile Content Section Grids */
+.profileSectionsGrid {
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  gap: 24px;
+}
+
+@media (max-width: 1024px) {
+  .profileSectionsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.profileCard {
+  background: #ffffff;
+  border: 1px solid #e7e9ed;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(10, 38, 71, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.profileCardHeading {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1b8a8a;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.profileBodyText {
+  font-size: 15px;
+  color: #5b6e84;
+  line-height: 1.6;
+}
+
+/* Experience / Education Timeline Items */
+.experienceItem {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.experienceItem:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.experienceTopRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.experienceTitle {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0a2647;
+}
+
+.experienceDuration {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1b8a8a;
+}
+
+.experienceOrg {
+  font-size: 14px;
+  color: #5b6e84;
+}
+
+.experienceDesc {
+  font-size: 14px;
+  color: #8e9baa;
+  line-height: 1.5;
+}
+
+/* Tags Cloud (Specialties) */
+.tagsCloud {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.specialtyPill {
+  background: #e8f3f3;
+  color: #1b8a8a;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 16px;
+}
+
+/* Licenses List */
+.licenseItem {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.licenseItem:last-child {
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.licenseTitle {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0a2647;
+}
+
+.licenseMeta {
+  font-size: 13px;
+  color: #5b6e84;
+}
+
+/* Languages List */
+.languageRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 14px;
+}
+
+.languageRow:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.langName {
+  color: #0a2647;
+  font-weight: 600;
+}
+
+.langProficiency {
+  color: #1b8a8a;
+  font-weight: 700;
+}
+
+/* Uploaded CV Card */
+.cvFileRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+}
+
+.cvFileInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0a2647;
+}
+
+.cvDownloadLink {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1b8a8a;
+  text-decoration: none;
+}
+
+.cvDownloadLink:hover {
+  text-decoration: underline;
+}
+
+/* Map Illustration Card (Facility Profile) */
+.mapCard {
+  background: #ffffff;
+  border: 1px solid #e7e9ed;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 4px 6px rgba(10, 38, 71, 0.03);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 280px;
+}
+
+.mapVisualWrap {
+  width: 100%;
+  height: 220px;
+  background: #f8fafc;
+  border-radius: 12px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px dashed #cbd5e1;
+}
+
+.mapPinIndicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: #1b8a8a;
+}
+
+/* ==========================================================================
+   Settings Screen (Figma 564:9584)
+   ========================================================================== */
+.settingsFormCard {
+  background: #ffffff;
+  border: 1px solid #e7e9ed;
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 4px 6px rgba(10, 38, 71, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+@media (max-width: 640px) {
+  .settingsFormCard {
+    padding: 24px 16px;
+    gap: 24px;
+  }
+}
+
+.settingsSection {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.settingsSection:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.settingsSectionTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settingsSectionBar {
+  width: 4px;
+  height: 20px;
+  background: #1b8a8a;
+  border-radius: 2px;
+}
+
+.settingsSectionTitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0a2647;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.formLabel {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0a2647;
+}
+
+.formInput {
+  width: 100%;
+  height: 48px;
+  padding: 0 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  font-size: 15px;
+  color: #0a2647;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.formInput:focus {
+  border-color: #1b8a8a;
+  box-shadow: 0 0 0 3px rgba(27, 138, 138, 0.12);
+}
+
+.formInputReadonly {
+  background: #f8fafc;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+.inputIconWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.inputIconWrap input {
+  padding-right: 44px;
+}
+
+.inputIconBtn {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #8e9baa;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.settingsActionsRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-top: 12px;
+}
+
+.btnDangerOutline {
+  background: transparent;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btnDangerOutline:hover {
+  background: #fee2e2;
+}
+
+/* Modal styling */
+.modalBackdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 38, 71, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modalCard {
+  background: #ffffff;
+  border-radius: 16px;
+  max-width: 520px;
+  width: 100%;
+  padding: 32px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  animation: modalEnter 0.2s ease-out;
+}
+
+@keyframes modalEnter {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.modalTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0a2647;
+}
+
+.modalDesc {
+  font-size: 14px;
+  color: #5b6e84;
+  line-height: 1.5;
+}
+
+.modalActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.btnSecondary {
+  background: #f1f5f9;
+  color: #3b516c;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* State Messages (Loading, Error, Empty) */
+.loadingStateWrap,
+.errorStateWrap,
+.emptyStateWrap {
+  background: #ffffff;
+  border: 1px solid #e7e9ed;
+  border-radius: 16px;
+  padding: 60px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 12px;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #1b8a8a;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

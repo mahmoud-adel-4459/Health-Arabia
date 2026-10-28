@@ -1,0 +1,151 @@
+- generic [ref=f16e8]:
+  - complementary [ref=f16e9]:
+    - img "Health Arabia" [ref=f16e12] [cursor=pointer]
+    - generic [ref=f16e13]: Platform Administration
+    - navigation "Admin Navigation" [ref=f16e15]:
+      - generic [ref=f16e16]: Account Verification
+      - button "Review Queue 4" [ref=f16e234] [cursor=pointer]:
+        - generic [ref=f16e22]: Review Queue
+        - generic [ref=f16e23]: "4"
+      - generic [ref=f16e24]:
+        - button "Pending Decisions" [ref=f16e25] [cursor=pointer]
+        - button "Doctor Profiles" [ref=f16e28] [cursor=pointer]
+        - button "Hospital & Clinics" [ref=f16e31] [cursor=pointer]
+        - button "Approved Archive" [ref=f16e34] [cursor=pointer]
+        - button "Rejected Archive" [ref=f16e37] [cursor=pointer]
+    - generic [ref=f16e40]:
+      - generic [ref=f16e41]: API Server Connected
+      - generic [ref=f16e44]:
+        - generic [ref=f16e45]: P
+        - generic [ref=f16e46]:
+          - generic [ref=f16e47]: Platform Administrator
+          - generic "admin@healtharabia.local" [ref=f16e48]
+      - button "Sign Out" [ref=f16e49] [cursor=pointer]
+  - generic [ref=f16e54]:
+    - banner [ref=f16e55]:
+      - navigation "Breadcrumbs" [ref=f16e57]:
+        - generic [ref=f16e58] [cursor=pointer]: Platform Console
+        - generic [ref=f16e59]: /
+        - generic [ref=f16e60]: Review Queue
+      - generic [ref=f16e63]:
+        - generic [ref=f16e64]:
+          - generic [ref=f16e65]: PLATFORM_ADMIN
+          - generic [ref=f16e66]: admin@healtharabia.local
+        - button "Logout" [ref=f16e67] [cursor=pointer]
+    - main [ref=f16e72]:
+      - generic [ref=f16e405]:
+        - generic [ref=f16e406]:
+          - generic [ref=f16e407]:
+            - heading "Account Review Queue" [level=1] [ref=f16e408]
+            - paragraph [ref=f16e409]: Evaluate submitted registrations, review professional credentials and institutional inquiry notes, and decide approvals.
+          - generic [ref=f16e410]: 4 Awaiting Review
+        - region "Review summary metrics" [ref=f16e413]:
+          - button "Pending Review 4 Accounts awaiting administrative review" [ref=f16e414] [cursor=pointer]:
+            - generic [ref=f16e415]: Pending Review
+            - generic [ref=f16e421]: "4"
+            - generic [ref=f16e422]: Accounts awaiting administrative review
+          - button "Doctors Pending 0 Clinicians & specialists pending check" [ref=f16e423] [cursor=pointer]:
+            - generic [ref=f16e424]: Doctors Pending
+            - generic [ref=f16e430]: "0"
+            - generic [ref=f16e431]: Clinicians & specialists pending check
+          - button "Facilities Pending 4 Hospitals & clinics pending check" [ref=f16e432] [cursor=pointer]:
+            - generic [ref=f16e433]: Facilities Pending
+            - generic [ref=f16e439]: "4"
+            - generic [ref=f16e440]: Hospitals & clinics pending check
+          - button "Approved 5 Active verified platform accounts" [ref=f16e441] [cursor=pointer]:
+            - generic [ref=f16e442]: Approved
+            - generic [ref=f16e448]: "5"
+            - generic [ref=f16e449]: Active verified platform accounts
+          - button "Rejected 1 Declined or non-conforming submissions" [ref=f16e450] [cursor=pointer]:
+            - generic [ref=f16e451]: Rejected
+            - generic [ref=f16e458]: "1"
+            - generic [ref=f16e459]: Declined or non-conforming submissions
+        - generic [ref=f16e460]:
+          - textbox "Search by name, email, officer, or phone..." [ref=f16e462]
+          - combobox "Filter by account role" [ref=f16e463] [cursor=pointer]:
+            - option "All Roles" [selected]
+            - option "Healthcare Professionals (Doctors)"
+            - option "Hospitals & Clinics"
+          - combobox "Filter by account status" [ref=f16e464] [cursor=pointer]:
+            - option "Pending Review" [selected]
+            - option "Approved"
+            - option "Rejected"
+            - option "Suspended"
+            - option "Draft"
+            - option "All Statuses"
+          - button "Refresh" [ref=f16e465] [cursor=pointer]
+        - generic [ref=f16e471]:
+          - table [ref=f16e472]:
+            - rowgroup [ref=f16e473]:
+              - row [ref=f16e474]:
+                - columnheader "Candidate / Facility" [ref=f16e475]
+                - columnheader "Role" [ref=f16e476]
+                - columnheader "Contact Credentials" [ref=f16e477]
+                - columnheader "Location" [ref=f16e478]
+                - columnheader "Submitted Date" [ref=f16e479]
+                - columnheader "Status" [ref=f16e480]
+                - columnheader "Action" [ref=f16e481]
+            - rowgroup [ref=f16e482]:
+              - button "Inspect account for Verification Medical Complex" [ref=f16e483] [cursor=pointer]:
+                - cell "V Verification Medical Complex" [ref=f16e484]:
+                  - generic [ref=f16e485]:
+                    - generic [ref=f16e486]: V
+                    - generic [ref=f16e487]: Verification Medical Complex
+                - cell "Facility" [ref=f16e489]
+                - cell "recruiter.tariq@verification-mc.com" [ref=f16e491]
+                - cell "Not specified" [ref=f16e493]
+                - cell "26 Oct 2026, 19:28" [ref=f16e495]
+                - cell "Pending Review" [ref=f16e497]
+                - cell [ref=f16e499]:
+                  - button "Review" [ref=f16e500]
+              - button "Inspect account for Dr. Sulaiman Al Habib Medical Group" [ref=f16e504] [cursor=pointer]:
+                - cell "D Dr. Sulaiman Al Habib Medical Group PRIVATE • Noura Al-Shehri" [ref=f16e505]:
+                  - generic [ref=f16e506]:
+                    - generic [ref=f16e507]: D
+                    - generic [ref=f16e508]:
+                      - generic [ref=f16e509]: Dr. Sulaiman Al Habib Medical Group
+                      - generic [ref=f16e510]: PRIVATE • Noura Al-Shehri
+                - cell "Facility" [ref=f16e511]
+                - cell "noura.recruitment@drsulaimanalhabib.com" [ref=f16e513]
+                - cell "Not specified" [ref=f16e515]
+                - cell "26 Oct 2026, 19:06" [ref=f16e517]
+                - cell "Pending Review" [ref=f16e519]
+                - cell [ref=f16e521]:
+                  - button "Review" [ref=f16e522]
+              - button "Inspect account for King Faisal Specialist Clinic" [ref=f16e526] [cursor=pointer]:
+                - cell "K King Faisal Specialist Clinic" [ref=f16e527]:
+                  - generic [ref=f16e528]:
+                    - generic [ref=f16e529]: K
+                    - generic [ref=f16e530]: King Faisal Specialist Clinic
+                - cell "Facility" [ref=f16e532]
+                - cell "facility@healtharabia.com" [ref=f16e534]
+                - cell "Not specified" [ref=f16e536]
+                - cell "26 Oct 2026, 18:50" [ref=f16e538]
+                - cell "Pending Review" [ref=f16e540]
+                - cell [ref=f16e542]:
+                  - button "Review" [ref=f16e543]
+              - button "Inspect account for eslam" [ref=f16e547] [cursor=pointer]:
+                - cell "E eslam GOVERNMENT • eslam" [ref=f16e548]:
+                  - generic [ref=f16e549]:
+                    - generic [ref=f16e550]: E
+                    - generic [ref=f16e551]:
+                      - generic [ref=f16e552]: eslam
+                      - generic [ref=f16e553]: GOVERNMENT • eslam
+                - cell "Facility" [ref=f16e554]
+                - cell "eslamelbarbary60@gmail.com" [ref=f16e556]
+                - cell "Not specified" [ref=f16e558]
+                - cell "26 Oct 2026, 18:50" [ref=f16e560]
+                - cell "Pending Review" [ref=f16e562]
+                - cell [ref=f16e564]:
+                  - button "Review" [ref=f16e565]
+          - generic [ref=f16e569]:
+            - generic [ref=f16e570]:
+              - text: Showing
+              - strong [ref=f16e571]: "4"
+              - text: of
+              - strong [ref=f16e572]: "4"
+              - text: accounts
+            - generic [ref=f16e573]:
+              - button "Previous" [disabled] [ref=f16e574]
+              - generic [ref=f16e575]: 1 / 1
+              - button "Next" [disabled] [ref=f16e576]

@@ -1,0 +1,29 @@
+- generic [active] [ref=f5e1]:
+  - button "Open Next.js Dev Tools" [ref=f5e66] [cursor=pointer]
+  - alert [ref=f5e70]: Doctor Registration
+  - banner [ref=f5e71]:
+    - generic [ref=f5e72]:
+      - link "Health Arabia home" [ref=f5e73] [cursor=pointer]:
+        - /url: /
+        - img "Health Arabia" [ref=f5e74]
+      - generic [ref=f5e75]:
+        - link "Join as" [ref=f5e77] [cursor=pointer]:
+          - /url: /join
+        - group [ref=f5e80]:
+          - generic "Open menu" [ref=f5e81] [cursor=pointer]
+  - main [ref=f5e84]:
+    - generic [ref=f5e85]:
+      - generic [ref=f5e86]:
+        - generic [ref=f5e87]: Candidate Registration
+        - heading "Doctor Registration" [level=1] [ref=f5e88]
+        - paragraph [ref=f5e89]: Doctor registration steps (Steps 1 to 6) will be implemented in the next step after reviewing the Start Now screen.
+      - generic [ref=f5e90]:
+        - link "Back to Start Now" [ref=f5e91] [cursor=pointer]:
+          - /url: /join
+        - link "Already registered? Sign In" [ref=f5e92] [cursor=pointer]:
+          - /url: /login/doctor
+  - contentinfo [ref=f5e93]:
+    - generic [ref=f5e94]:
+      - generic [ref=f5e95]: Copyright © 2026
+      - strong [ref=f5e96]: QEEMATECH
+      - generic [ref=f5e97]: "| All Rights Reserved"

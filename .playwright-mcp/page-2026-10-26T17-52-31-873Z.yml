@@ -1,0 +1,61 @@
+- generic [active] [ref=f3e1]:
+  - button "Open Next.js Dev Tools" [ref=f3e287] [cursor=pointer]
+  - alert [ref=f3e291]: Doctor Dashboard | HealthArabia
+  - banner [ref=f3e324]:
+    - generic [ref=f3e325]:
+      - link "Health Arabia home" [ref=f3e326] [cursor=pointer]:
+        - /url: /
+        - img "Health Arabia" [ref=f3e327]
+      - navigation "Main" [ref=f3e328]:
+        - link "Home" [ref=f3e329] [cursor=pointer]:
+          - /url: /
+        - link "About" [ref=f3e330] [cursor=pointer]:
+          - /url: /about
+        - link "Countries" [ref=f3e331] [cursor=pointer]:
+          - /url: /countries
+        - link "Hospitals" [ref=f3e334] [cursor=pointer]:
+          - /url: /hospitals
+        - link "FAQ’s" [ref=f3e335] [cursor=pointer]:
+          - /url: /faqs
+        - link "Contact Us" [ref=f3e336] [cursor=pointer]:
+          - /url: /contact
+        - link "Available Jobs" [ref=f3e337] [cursor=pointer]:
+          - /url: /jobs
+      - generic [ref=f3e340]:
+        - generic [ref=f3e341]: Nursing Services for Homes
+        - button "Open account menu for Dr. Sarah Ahmed" [ref=f3e343] [cursor=pointer]:
+          - generic [ref=f3e344]: DS
+          - generic [ref=f3e346]: Dr. Sarah Ahmed
+  - main [ref=f3e349]:
+    - generic [ref=f3e350]:
+      - generic [ref=f3e351]:
+        - generic [ref=f3e352]: Portal Status • Staged Verification
+        - generic [ref=f3e353]: "Figma Frame: Doctor Dashboard (430:3164)"
+      - heading "Candidate Healthcare Professional Portal" [level=1] [ref=f3e354]
+      - paragraph [ref=f3e355]: Your doctor candidate profile and credentialing records are synchronized with the Health Arabia medical registry. You can inspect career vacancies, manage account settings, or review pending licensing verifications.
+      - generic [ref=f3e356]:
+        - generic [ref=f3e357]:
+          - generic [ref=f3e358]: Clinical Profile
+          - paragraph [ref=f3e359]: Review your submitted education, specialty, and SCFHS licenses.
+          - link "View Profile Details →" [ref=f3e360] [cursor=pointer]:
+            - /url: /profile/doctor
+        - generic [ref=f3e361]:
+          - generic [ref=f3e362]: Available Vacancies
+          - paragraph [ref=f3e363]: Browse consultant and specialist positions across Saudi Arabia & the Gulf.
+          - link "Search Jobs →" [ref=f3e364] [cursor=pointer]:
+            - /url: /jobs
+        - generic [ref=f3e365]:
+          - generic [ref=f3e366]: Account Settings
+          - paragraph [ref=f3e367]: Manage password, notifications, and contact preferences.
+          - link "Preferences →" [ref=f3e368] [cursor=pointer]:
+            - /url: /settings
+      - generic [ref=f3e369]:
+        - link "← Return to Home" [ref=f3e370] [cursor=pointer]:
+          - /url: /
+        - link "Need Help? Contact Consultant" [ref=f3e371] [cursor=pointer]:
+          - /url: /contact
+  - contentinfo [ref=f3e372]:
+    - generic [ref=f3e373]:
+      - generic [ref=f3e374]: Copyright © 2026
+      - strong [ref=f3e375]: QEEMATECH
+      - generic [ref=f3e376]: "| All Rights Reserved"

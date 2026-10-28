@@ -1,0 +1,113 @@
+- generic [ref=f7e1]:
+  - banner [ref=f7e2]:
+    - generic [ref=f7e3]:
+      - link "Health Arabia home" [ref=f7e4] [cursor=pointer]:
+        - /url: /
+        - img "Health Arabia" [ref=f7e5]
+      - navigation "Main" [ref=f7e6]:
+        - link "Home" [ref=f7e7] [cursor=pointer]:
+          - /url: /
+        - link "About" [ref=f7e8] [cursor=pointer]:
+          - /url: /about
+        - link "Countries" [ref=f7e9] [cursor=pointer]:
+          - /url: /countries
+        - link "Hospitals" [ref=f7e12] [cursor=pointer]:
+          - /url: /hospitals
+        - link "FAQ’s" [ref=f7e13] [cursor=pointer]:
+          - /url: /faqs
+        - link "Contact Us" [ref=f7e14] [cursor=pointer]:
+          - /url: /contact
+        - link "Available Jobs" [ref=f7e15] [cursor=pointer]:
+          - /url: /jobs
+      - generic [ref=f7e18]:
+        - generic [ref=f7e19]: Nursing Services for Homes
+        - link "Join as" [ref=f7e21] [cursor=pointer]:
+          - /url: /join
+  - generic [ref=f7e25]:
+    - button "1 Personal Info" [ref=f7e274] [cursor=pointer]:
+      - generic [ref=f7e28]: "1"
+      - generic [ref=f7e29]: Personal Info
+    - button "2 Professional Info" [ref=f7e275] [cursor=pointer]:
+      - generic [ref=f7e33]: "2"
+      - generic [ref=f7e34]: Professional Info
+    - button "3 Education" [ref=f7e276] [cursor=pointer]:
+      - generic [ref=f7e38]: "3"
+      - generic [ref=f7e39]: Education
+    - button "4 Licenses" [ref=f7e277] [cursor=pointer]:
+      - generic [ref=f7e43]: "4"
+      - generic [ref=f7e44]: Licenses
+    - button "5 Experience" [ref=f7e278] [cursor=pointer]:
+      - generic [ref=f7e48]: "5"
+      - generic [ref=f7e49]: Experience
+    - button "6 CV Upload" [ref=f7e52] [cursor=pointer]:
+      - generic [ref=f7e53]: "6"
+      - generic [ref=f7e54]: CV Upload
+  - main [ref=f7e55]:
+    - generic [ref=f7e56]:
+      - generic [ref=f7e57]:
+        - heading "Personal Information" [level=1] [ref=f7e279]
+        - paragraph [ref=f7e280]: Tell us about yourself to customize your clinical placement preferences
+      - generic [ref=f7e60]:
+        - generic [ref=f7e273]: This mobile phone number is already registered. Please sign in instead.
+        - generic [ref=f7e281]:
+          - generic [ref=f7e282]:
+            - generic "Click to upload clinical portrait" [ref=f7e283] [cursor=pointer]
+            - generic [ref=f7e288]:
+              - heading "Profile Photograph" [level=3] [ref=f7e289]
+              - paragraph [ref=f7e290]: Please upload a professional clinical portrait (JPG, PNG. Max 5MB)
+          - generic [ref=f7e291]:
+            - generic [ref=f7e292]: Full Name (As shown in Passport)
+            - textbox "Dr. Sarah Ahmed" [ref=f7e293]: Dr. Tariq Mansoor
+          - generic [ref=f7e294]:
+            - generic [ref=f7e295]: Email (Optional)
+            - textbox "doctor.sarah@healtharabia.com" [active] [ref=f7e296]: dr.tariq@healtharabia.com
+          - generic [ref=f7e297]:
+            - generic [ref=f7e298]: Date of Birth
+            - textbox "DD / MM / YYYY" [ref=f7e299]: 15/04/1988
+          - generic [ref=f7e300]:
+            - generic [ref=f7e301]: Current Country of Residence
+            - combobox [ref=f7e302]:
+              - option "United Kingdom" [selected]
+              - option "Saudi Arabia"
+              - option "United Arab Emirates"
+              - option "Qatar"
+              - option "Bahrain"
+              - option "Kuwait"
+              - option "Oman"
+              - option "Egypt"
+              - option "Jordan"
+              - option "India"
+              - option "Pakistan"
+              - option "Other"
+          - generic [ref=f7e303]:
+            - generic [ref=f7e304]: Phone Number (Primary Login)
+            - generic [ref=f7e305]:
+              - combobox [ref=f7e306]:
+                - option "+44 (UK)"
+                - option "+966 (KSA)" [selected]
+                - option "+971 (UAE)"
+                - option "+974 (QAT)"
+                - option "+965 (KWT)"
+                - option "+968 (OMN)"
+                - option "+973 (BHR)"
+                - option "+20 (EGY)"
+              - textbox "7700 900077" [ref=f7e307]
+          - generic [ref=f7e308]:
+            - generic [ref=f7e309]:
+              - generic [ref=f7e310]: Password
+              - generic [ref=f7e311]:
+                - textbox "••••••••••••" [ref=f7e312]: SecretPassword123!
+                - button [ref=f7e313] [cursor=pointer]
+            - generic [ref=f7e317]:
+              - generic [ref=f7e318]: Confirm Password
+              - generic [ref=f7e319]:
+                - textbox "••••••••••••" [ref=f7e320]: SecretPassword123!
+                - button [ref=f7e321] [cursor=pointer]
+          - button "Save & Continue" [ref=f7e326] [cursor=pointer]
+  - contentinfo [ref=f7e110]:
+    - generic [ref=f7e111]:
+      - generic [ref=f7e112]: Copyright © 2026
+      - strong [ref=f7e113]: QEEMATECH
+      - generic [ref=f7e114]: "| All Rights Reserved"
+  - button "Open Next.js Dev Tools" [ref=f7e120] [cursor=pointer]
+  - alert [ref=f7e168]

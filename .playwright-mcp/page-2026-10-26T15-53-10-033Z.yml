@@ -1,0 +1,92 @@
+- generic [active] [ref=f11e1]:
+  - banner [ref=f11e2]:
+    - generic [ref=f11e3]:
+      - link "Health Arabia home" [ref=f11e4] [cursor=pointer]:
+        - /url: /
+        - img "Health Arabia" [ref=f11e5]
+      - navigation "Main" [ref=f11e6]:
+        - link "Home" [ref=f11e7] [cursor=pointer]:
+          - /url: /
+        - link "About" [ref=f11e8] [cursor=pointer]:
+          - /url: /about
+        - link "Countries" [ref=f11e9] [cursor=pointer]:
+          - /url: /countries
+        - link "Hospitals" [ref=f11e12] [cursor=pointer]:
+          - /url: /hospitals
+        - link "FAQ’s" [ref=f11e13] [cursor=pointer]:
+          - /url: /faqs
+        - link "Contact Us" [ref=f11e14] [cursor=pointer]:
+          - /url: /contact
+        - link "Available Jobs" [ref=f11e15] [cursor=pointer]:
+          - /url: /jobs
+      - generic [ref=f11e18]:
+        - generic [ref=f11e19]: Nursing Services for Homes
+        - link "Join as" [ref=f11e21] [cursor=pointer]:
+          - /url: /join
+  - region "Progress" [ref=f11e24]:
+    - generic [ref=f11e25]:
+      - button "1 Hospital Details" [ref=f11e27] [cursor=pointer]:
+        - generic [ref=f11e28]: "1"
+        - generic [ref=f11e29]: Hospital Details
+      - button "2 Officer information" [ref=f11e32]:
+        - generic [ref=f11e33]: "2"
+        - generic [ref=f11e34]: Officer information
+      - button "3 Verification" [ref=f11e37]:
+        - generic [ref=f11e38]: "3"
+        - generic [ref=f11e39]: Verification
+  - main [ref=f11e40]:
+    - generic [ref=f11e41]:
+      - generic [ref=f11e42]:
+        - heading "Hospital Information" [level=1] [ref=f11e43]
+        - paragraph [ref=f11e44]: Tell us about yourself to customize your clinical placement preferences
+      - generic [ref=f11e46]:
+        - generic [ref=f11e47]:
+          - generic [ref=f11e48]: Hospital/Clinc Name *
+          - textbox "Hospital/Clinc Name *" [ref=f11e49]:
+            - /placeholder: Hospital/Clinc Name
+        - generic [ref=f11e50]:
+          - generic [ref=f11e51]: Upload Logo (Optional)
+          - generic [ref=f11e52] [cursor=pointer]:
+            - generic [ref=f11e59]: Drag & drop your logo here or click to browse
+            - generic [ref=f11e60]: PNG, JPG. Max 5MB. Clear background preferred.
+        - generic [ref=f11e61]:
+          - generic [ref=f11e62]: Hospital Details
+          - textbox "Hospital Details" [ref=f11e63]
+        - generic [ref=f11e64]:
+          - generic [ref=f11e65]: City
+          - textbox "City" [ref=f11e66]
+        - generic [ref=f11e67]:
+          - generic [ref=f11e68]: Location URL
+          - textbox "Location URL" [ref=f11e70]
+        - generic [ref=f11e71]:
+          - generic [ref=f11e72]: Location
+          - textbox "Location" [ref=f11e73]:
+            - /placeholder: Location Details
+        - generic [ref=f11e74]:
+          - generic [ref=f11e75]: No. of Employees
+          - textbox "No. of Employees" [ref=f11e76]:
+            - /placeholder: e.g. 250
+        - generic [ref=f11e77]:
+          - generic [ref=f11e78]: Hospital Email
+          - textbox "Hospital Email" [ref=f11e79]:
+            - /placeholder: Hospital@email.com
+        - generic [ref=f11e80]:
+          - generic [ref=f11e81]:
+            - generic [ref=f11e82]: Password *
+            - generic [ref=f11e83]:
+              - textbox "Password *" [ref=f11e84]:
+                - /placeholder: ••••••••••••
+              - button "Show password" [ref=f11e85] [cursor=pointer]
+          - generic [ref=f11e89]:
+            - generic [ref=f11e90]: Confirm Password *
+            - generic [ref=f11e91]:
+              - textbox "Confirm Password *" [ref=f11e92]:
+                - /placeholder: ••••••••••••
+              - button "Show password" [ref=f11e93] [cursor=pointer]
+        - button "Save & Continue" [ref=f11e98] [cursor=pointer]
+  - contentinfo [ref=f11e102]:
+    - generic [ref=f11e103]:
+      - generic [ref=f11e104]: Copyright © 2026
+      - strong [ref=f11e105]: QEEMATECH
+      - generic [ref=f11e106]: "| All Rights Reserved"
+  - button "Open Next.js Dev Tools" [ref=f11e112] [cursor=pointer]

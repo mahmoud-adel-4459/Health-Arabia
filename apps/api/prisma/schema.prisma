@@ -150,6 +150,21 @@ enum AccountDeletionStatus {
   CANCELLED
 }
 
+enum ProfileChangeRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum StaffingRequestStatus {
+  SUBMITTED
+  IN_REVIEW
+  FULFILLED
+  CLOSED
+  CANCELLED
+}
+
 enum ParticipantRole {
   DOCTOR
   FACILITY
@@ -213,24 +228,27 @@ model User {
   createdAt            DateTime      @default(now())
   updatedAt            DateTime      @updatedAt
 
-  reviewedBy                 User?                     @relation("AccountReview", fields: [reviewedById], references: [id], onDelete: SetNull)
-  reviewedAccounts           User[]                    @relation("AccountReview")
-  doctorProfile              DoctorProfile?
-  facility                   Facility?
-  enabledFacilityListings    Facility[]                @relation("FacilityPublicListing")
-  files                      FileAsset[]
-  reviewedJobs               Job[]                     @relation("JobReview")
-  coordinatedHireRequests    HireRequest[]
-  identityReleaseDecisions   IdentityRelease[]
-  conversationParticipations ConversationParticipant[]
-  messages                   Message[]
-  notifications              Notification[]
-  contactSubmissions         ContactSubmission[]       @relation("ContactSubmitter")
-  reviewedContactSubmissions ContactSubmission[]       @relation("ContactReviewer")
-  sessions                   Session[]
-  deletionRequests           AccountDeletionRequest[]  @relation("DeletionRequester")
-  processedDeletionRequests  AccountDeletionRequest[]  @relation("DeletionProcessor")
-  auditLogs                  AuditLog[]
+  reviewedBy                     User?                          @relation("AccountReview", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewedAccounts               User[]                         @relation("AccountReview")
+  doctorProfile                  DoctorProfile?
+  facility                       Facility?
+  enabledFacilityListings        Facility[]                     @relation("FacilityPublicListing")
+  files                          FileAsset[]
+  reviewedJobs                   Job[]                          @relation("JobReview")
+  coordinatedHireRequests        HireRequest[]
+  identityReleaseDecisions       IdentityRelease[]
+  conversationParticipations     ConversationParticipant[]
+  messages                       Message[]
+  notifications                  Notification[]
+  contactSubmissions             ContactSubmission[]            @relation("ContactSubmitter")
+  reviewedContactSubmissions     ContactSubmission[]            @relation("ContactReviewer")
+  sessions                       Session[]
+  deletionRequests               AccountDeletionRequest[]       @relation("DeletionRequester")
+  processedDeletionRequests      AccountDeletionRequest[]       @relation("DeletionProcessor")
+  auditLogs                      AuditLog[]
+  reviewedFacilityProfileChanges FacilityProfileChangeRequest[] @relation("FacilityChangeRequestReviewer")
+  reviewedDoctorProfileChanges   DoctorProfileChangeRequest[]   @relation("DoctorChangeRequestReviewer")
+  reviewedStaffingRequests       StaffingRequest[]              @relation("StaffingRequestReviewer")
 
   @@index([role, status])
 }
@@ -328,6 +346,7 @@ model Country {
   facilities            Facility[]
   jobs                  Job[]
   submissionNationality ApplicationSubmission[]
+  staffingRequests      StaffingRequest[]
 }
 
 model City {
@@ -364,6 +383,7 @@ model Specialty {
   jobs              Job[]
   applications      Application[]
   submissions       ApplicationSubmission[]
+  staffingRequests  StaffingRequest[]
 }
 
 model EmploymentTypeOption {
@@ -444,6 +464,7 @@ model DoctorProfile {
   languages             DoctorLanguage[]
   applications          Application[]
   savedJobs             SavedJob[]
+  profileChangeRequests DoctorProfileChangeRequest[]
 }
 
 model DoctorEducation {
@@ -524,6 +545,8 @@ model Facility {
   address                  String?
   locationUrl              String?
   employeeCount            Int?
+  hospitalEmail            String?
+  inquiryMessage           String?
   officerName              String
   officerPhoneCountryCode  String?
   officerPhone             String?
@@ -534,13 +557,15 @@ model Facility {
   createdAt                DateTime      @default(now())
   updatedAt                DateTime      @updatedAt
 
-  user                   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  logo                   FileAsset?    @relation("FacilityLogo", fields: [logoId], references: [id], onDelete: SetNull)
-  country                Country?      @relation(fields: [countryId], references: [id], onDelete: SetNull)
-  city                   City?         @relation(fields: [cityId], references: [id], onDelete: Restrict)
-  publicListingEnabledBy User?         @relation("FacilityPublicListing", fields: [publicListingEnabledById], references: [id], onDelete: SetNull)
+  user                   User                           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  logo                   FileAsset?                     @relation("FacilityLogo", fields: [logoId], references: [id], onDelete: SetNull)
+  country                Country?                       @relation(fields: [countryId], references: [id], onDelete: SetNull)
+  city                   City?                          @relation(fields: [cityId], references: [id], onDelete: Restrict)
+  publicListingEnabledBy User?                          @relation("FacilityPublicListing", fields: [publicListingEnabledById], references: [id], onDelete: SetNull)
   jobs                   Job[]
   hireRequests           HireRequest[]
+  profileChangeRequests  FacilityProfileChangeRequest[]
+  staffingRequests       StaffingRequest[]
 
   @@index([isListedPublicly])
 }
@@ -554,6 +579,7 @@ model Job {
   referenceNumber    Int       @unique @default(autoincrement())
   facilityId         String    @db.Uuid
   title              String
+  aboutHospital      String?
   specialtyId        String    @db.Uuid
   countryId          String    @db.Uuid
   cityId             String    @db.Uuid
@@ -1005,4 +1031,85 @@ model AuditLog {
 
   @@index([entityType, entityId])
   @@index([actorId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Facility profile change requests (admin review before updating live profile)
+// ---------------------------------------------------------------------------
+
+model FacilityProfileChangeRequest {
+  id              String                     @id @default(uuid(7)) @db.Uuid
+  facilityId      String                     @db.Uuid
+  status          ProfileChangeRequestStatus @default(PENDING)
+  currentValues   Json
+  proposedValues  Json
+  reviewedById    String?                    @db.Uuid
+  reviewedAt      DateTime?
+  rejectionReason String?
+  createdAt       DateTime                   @default(now())
+  updatedAt       DateTime                   @updatedAt
+
+  facility   Facility @relation(fields: [facilityId], references: [id], onDelete: Cascade)
+  reviewedBy User?    @relation("FacilityChangeRequestReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([facilityId, status])
+  @@index([status, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Doctor profile change requests (admin review before updating live profile)
+// ---------------------------------------------------------------------------
+
+model DoctorProfileChangeRequest {
+  id              String                     @id @default(uuid(7)) @db.Uuid
+  doctorId        String                     @db.Uuid
+  status          ProfileChangeRequestStatus @default(PENDING)
+  currentValues   Json
+  proposedValues  Json
+  reviewedById    String?                    @db.Uuid
+  reviewedAt      DateTime?
+  rejectionReason String?
+  createdAt       DateTime                   @default(now())
+  updatedAt       DateTime                   @updatedAt
+
+  doctor     DoctorProfile @relation(fields: [doctorId], references: [id], onDelete: Cascade)
+  reviewedBy User?         @relation("DoctorChangeRequestReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([doctorId, status])
+  @@index([status, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Staffing requests (Figma 440:3528 general staffing inquiry)
+// ---------------------------------------------------------------------------
+
+model StaffingRequest {
+  id                 String                @id @default(uuid(7)) @db.Uuid
+  facilityId         String?               @db.Uuid
+  institutionName    String
+  countryId          String?               @db.Uuid
+  cityName           String
+  specialtyId        String?               @db.Uuid
+  positions          Int                   @default(1)
+  minExperienceYears Int?
+  experienceRange    String?
+  contractType       String?
+  description        String
+  contactName        String
+  contactEmail       String
+  contactPhone       String?
+  status             StaffingRequestStatus @default(SUBMITTED)
+  reviewedById       String?               @db.Uuid
+  reviewedAt         DateTime?
+  internalNotes      String?
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
+
+  facility   Facility?  @relation(fields: [facilityId], references: [id], onDelete: SetNull)
+  country    Country?   @relation(fields: [countryId], references: [id], onDelete: SetNull)
+  specialty  Specialty? @relation(fields: [specialtyId], references: [id], onDelete: SetNull)
+  reviewedBy User?      @relation("StaffingRequestReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([facilityId, status])
+  @@index([status, createdAt])
 }

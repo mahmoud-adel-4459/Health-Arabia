@@ -1,0 +1,61 @@
+- generic [active] [ref=f5e1]:
+  - button "Open Next.js Dev Tools" [ref=f5e287] [cursor=pointer]
+  - alert [ref=f5e291]: Hospital Dashboard | HealthArabia
+  - banner [ref=f5e318]:
+    - generic [ref=f5e319]:
+      - link "Health Arabia home" [ref=f5e320] [cursor=pointer]:
+        - /url: /
+        - img "Health Arabia" [ref=f5e321]
+      - navigation "Main" [ref=f5e322]:
+        - link "Home" [ref=f5e323] [cursor=pointer]:
+          - /url: /
+        - link "About" [ref=f5e324] [cursor=pointer]:
+          - /url: /about
+        - link "Countries" [ref=f5e325] [cursor=pointer]:
+          - /url: /countries
+        - link "Hospitals" [ref=f5e328] [cursor=pointer]:
+          - /url: /hospitals
+        - link "FAQ’s" [ref=f5e329] [cursor=pointer]:
+          - /url: /faqs
+        - link "Contact Us" [ref=f5e330] [cursor=pointer]:
+          - /url: /contact
+        - link "Available Jobs" [ref=f5e331] [cursor=pointer]:
+          - /url: /jobs
+      - generic [ref=f5e334]:
+        - generic [ref=f5e335]: Nursing Services for Homes
+        - button "Open account menu for Zayed Military Hospital, Abu Dhabi" [ref=f5e337] [cursor=pointer]:
+          - generic [ref=f5e338]: ZM
+          - generic [ref=f5e340]: Zayed Military Hospital, Abu Dhabi
+  - main [ref=f5e343]:
+    - generic [ref=f5e344]:
+      - generic [ref=f5e345]:
+        - generic [ref=f5e346]: Employer Portal • Institutional Management
+        - generic [ref=f5e347]: "Figma Frame: Hospital Dashboard (440:2294)"
+      - heading "Hospital & Healthcare Facility Management" [level=1] [ref=f5e348]
+      - paragraph [ref=f5e349]: Manage clinical staffing requisitions, coordinate interview requests with pre-screened medical specialists, and oversee recruitment officer assignments across your medical group.
+      - generic [ref=f5e350]:
+        - generic [ref=f5e351]:
+          - generic [ref=f5e352]: Institution Profile
+          - paragraph [ref=f5e353]: Facility overview, bed capacity, official emails, and branding.
+          - link "Facility Profile →" [ref=f5e354] [cursor=pointer]:
+            - /url: /profile/facility
+        - generic [ref=f5e355]:
+          - generic [ref=f5e356]: Medical Staffing
+          - paragraph [ref=f5e357]: Submit clinical vacancies and explore verified consultant applicants.
+          - link "Explore Talent Pool →" [ref=f5e358] [cursor=pointer]:
+            - /url: /jobs
+        - generic [ref=f5e359]:
+          - generic [ref=f5e360]: Institution Settings
+          - paragraph [ref=f5e361]: Officer credentials, hospital contact emails, and notifications.
+          - link "Manage Settings →" [ref=f5e362] [cursor=pointer]:
+            - /url: /settings
+      - generic [ref=f5e363]:
+        - link "← Return to Home" [ref=f5e364] [cursor=pointer]:
+          - /url: /
+        - link "Hospital Recruitment Liaison" [ref=f5e365] [cursor=pointer]:
+          - /url: /contact
+  - contentinfo [ref=f5e366]:
+    - generic [ref=f5e367]:
+      - generic [ref=f5e368]: Copyright © 2026
+      - strong [ref=f5e369]: QEEMATECH
+      - generic [ref=f5e370]: "| All Rights Reserved"

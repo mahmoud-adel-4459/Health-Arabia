@@ -1,0 +1,124 @@
+- generic [ref=f3e1]:
+  - generic [ref=f3e2]:
+    - banner [ref=f3e3]:
+      - generic [ref=f3e4]:
+        - link "Health Arabia home" [ref=f3e5] [cursor=pointer]:
+          - /url: /
+          - img "Health Arabia" [ref=f3e6]
+        - navigation "Main" [ref=f3e7]:
+          - link "Home" [ref=f3e8] [cursor=pointer]:
+            - /url: /
+          - link "About" [ref=f3e9] [cursor=pointer]:
+            - /url: /about
+          - link "Countries" [ref=f3e10] [cursor=pointer]:
+            - /url: /countries
+          - link "Hospitals" [ref=f3e13] [cursor=pointer]:
+            - /url: /hospitals
+          - link "FAQ’s" [ref=f3e14] [cursor=pointer]:
+            - /url: /faqs
+          - link "Contact Us" [ref=f3e15] [cursor=pointer]:
+            - /url: /contact
+          - link "Available Jobs" [ref=f3e16] [cursor=pointer]:
+            - /url: /jobs
+        - button "Open account menu for Dr. Sarah Ahmed" [ref=f3e38] [cursor=pointer]:
+          - generic [ref=f3e39]: DS
+          - generic [ref=f3e41]: Dr. Sarah Ahmed
+    - generic [ref=f3e45]:
+      - generic [ref=f3e46]:
+        - generic [ref=f3e47]: SA
+        - generic [ref=f3e49]:
+          - generic [ref=f3e50]:
+            - heading "Dr. Sarah Ahmed" [level=1] [ref=f3e51]
+            - generic [ref=f3e52]: Available for Opportunities
+          - paragraph [ref=f3e53]: Consultant Paediatric Cardiologist • 10 Years Experience
+          - generic [ref=f3e54]:
+            - generic [ref=f3e55]: Saudi Arabia
+            - generic [ref=f3e60]: Consultant Grade
+      - generic [ref=f3e65]:
+        - button "Edit Profile" [active] [ref=f3e66] [cursor=pointer]
+        - link "Download CV" [ref=f3e67] [cursor=pointer]:
+          - /url: /api/files/01a17969-5270-757b-a66a-8805c0bcc2a6/download
+    - main [ref=f3e72]:
+      - generic [ref=f3e73]:
+        - generic [ref=f3e74]:
+          - generic [ref=f3e75]:
+            - heading "About Me" [level=2] [ref=f3e76]
+            - paragraph [ref=f3e77]: Board-certified Consultant Cardiologist with over 10 years of specialized practice in clinical and interventional cardiology. Proven expertise in managing complex cardiac cases, advanced heart failures, and non-invasive diagnostic imaging. Dedicated to delivering patient-centric evidence-based treatments within high-capacity clinical environments.
+          - generic [ref=f3e78]:
+            - heading "Professional Experience" [level=2] [ref=f3e79]
+            - generic [ref=f3e80]:
+              - generic [ref=f3e81]:
+                - heading "Consultant Cardiologist" [level=3] [ref=f3e82]
+                - generic [ref=f3e83]: 2022 - Present
+              - generic [ref=f3e84]: National Guard Health Affairs
+              - paragraph [ref=f3e85]: Supervised daily cardiology inpatient ward and coronary intensive care unit (CCU) management. Led clinical execution of high-risk transcatheter cardiac therapeutic interventions and structural heart diagnostics.
+            - generic [ref=f3e86]:
+              - generic [ref=f3e87]:
+                - heading "Specialist Cardiologist" [level=3] [ref=f3e88]
+                - generic [ref=f3e89]: 2018 - 2022
+              - generic [ref=f3e90]: King Fahd Armed Forces Hospital
+              - paragraph [ref=f3e91]: Conducted comprehensive diagnostic workups including transesophageal echocardiography (TEE) and myocardial perfusion scans.
+          - generic [ref=f3e92]:
+            - heading "Education" [level=2] [ref=f3e93]
+            - generic [ref=f3e94]:
+              - heading "Fellowship of the Royal College of Physicians (FRCP)" [level=3] [ref=f3e95]
+              - generic [ref=f3e96]: Royal College of Physicians, London, UK — 2018
+            - generic [ref=f3e97]:
+              - heading "Doctor of Medicine (M.D.) in Internal Medicine" [level=3] [ref=f3e98]
+              - generic [ref=f3e99]: King Saud University, Riyadh — 2014
+        - generic [ref=f3e100]:
+          - generic [ref=f3e101]:
+            - heading "Medical Specialties" [level=2] [ref=f3e102]
+            - generic [ref=f3e103]: Cardiology
+          - generic [ref=f3e105]:
+            - heading "Current Position" [level=2] [ref=f3e106]
+            - paragraph [ref=f3e107]: Head of Cardiologist
+          - generic [ref=f3e108]:
+            - heading "Licenses & Certifications" [level=2] [ref=f3e109]
+            - generic [ref=f3e110]:
+              - heading "SCFHS Consultant License" [level=3] [ref=f3e111]
+              - generic [ref=f3e112]: "Reg No: 1803C00945 • Expiry: 2028"
+            - generic [ref=f3e113]:
+              - heading "American Board Certification" [level=3] [ref=f3e114]
+              - generic [ref=f3e115]: "Reg No: AB-CARD-7782 • Expiry: 2029"
+          - generic [ref=f3e116]:
+            - heading "Languages" [level=2] [ref=f3e117]
+            - generic [ref=f3e118]:
+              - generic [ref=f3e119]: Arabic
+              - generic [ref=f3e120]: Native
+            - generic [ref=f3e121]:
+              - generic [ref=f3e122]: English
+              - generic [ref=f3e123]: Fluent
+          - generic [ref=f3e124]:
+            - heading "Uploaded CV" [level=2] [ref=f3e125]
+            - generic [ref=f3e126]:
+              - generic [ref=f3e127]: CV_Dr_Sarah_Ahmed.pdf
+              - link "Download" [ref=f3e132] [cursor=pointer]:
+                - /url: /api/files/01a17969-5270-757b-a66a-8805c0bcc2a6/download
+    - generic [ref=f3e135]:
+      - generic [ref=f3e136]:
+        - heading "Edit Profile Information" [level=2] [ref=f3e137]
+        - button [ref=f3e138] [cursor=pointer]
+      - generic [ref=f3e141]:
+        - generic [ref=f3e142]:
+          - generic [ref=f3e143]: Current Position
+          - textbox "e.g. Head of Cardiologist" [ref=f3e144]: Head of Cardiologist
+        - generic [ref=f3e145]:
+          - generic [ref=f3e146]: Years of Experience
+          - spinbutton [ref=f3e147]: "10"
+        - generic [ref=f3e148]:
+          - generic [ref=f3e149]: About Me
+          - textbox "Briefly describe your clinical background, specializations, and patient care philosophy..." [ref=f3e150]: Board-certified Consultant Cardiologist with over 10 years of specialized practice in clinical and interventional cardiology. Proven expertise in managing complex cardiac cases, advanced heart failures, and non-invasive diagnostic imaging. Dedicated to delivering patient-centric evidence-based treatments within high-capacity clinical environments.
+        - generic [ref=f3e151]:
+          - checkbox "Mark as actively available for GCC career opportunities" [checked] [ref=f3e152] [cursor=pointer]
+          - generic [ref=f3e153] [cursor=pointer]: Mark as actively available for GCC career opportunities
+        - generic [ref=f3e154]:
+          - button "Cancel" [ref=f3e155] [cursor=pointer]
+          - button "Save Changes" [ref=f3e156] [cursor=pointer]
+    - contentinfo [ref=f3e24]:
+      - generic [ref=f3e25]:
+        - generic [ref=f3e26]: Copyright © 2026
+        - strong [ref=f3e27]: QEEMATECH
+        - generic [ref=f3e28]: "| All Rights Reserved"
+  - button "Open Next.js Dev Tools" [ref=f3e34] [cursor=pointer]
+  - alert [ref=f3e133]

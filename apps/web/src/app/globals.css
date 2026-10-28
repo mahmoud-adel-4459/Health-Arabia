@@ -1,0 +1,92 @@
+:root {
+  /* Figma variables (file T4lscZxor3C5196h5KzSEA) */
+  --green-500: #1b8a8a;
+  --green-400: #49a1a1;
+  --green-50: #e8f3f3;
+  --blue-500: #0a2647;
+  --blue-400: #3b516c;
+  --blue-300: #5b6e84;
+  --blue-200: #8e9baa;
+  --blue-100: #b3bcc6;
+  --blue-50: #e7e9ed;
+  --red: #ff3b30;
+  --white: #ffffff;
+  --page-bg: #f8fafc;
+  --line: #e2e8f0;
+
+  --container: 1248px;
+  --gutter: 96px;
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --gutter: 40px;
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --gutter: 20px;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--page-bg);
+  color: var(--blue-500);
+  font-family: var(--font-carlito), Calibri, "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: normal;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+button,
+select {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--green-500);
+  outline-offset: 2px;
+}
+
+.container {
+  width: min(var(--container), calc(100% - 2 * var(--gutter)));
+  margin-inline: auto;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}

@@ -1,0 +1,187 @@
+- generic [ref=f16e8]:
+  - complementary [ref=f16e9]:
+    - img "Health Arabia" [ref=f16e12] [cursor=pointer]
+    - generic [ref=f16e13]: Platform Administration
+    - navigation "Admin Navigation" [ref=f16e15]:
+      - generic [ref=f16e16]: Account Verification
+      - button "Review Queue 4" [ref=f16e234] [cursor=pointer]:
+        - generic [ref=f16e22]: Review Queue
+        - generic [ref=f16e23]: "4"
+      - generic [ref=f16e24]:
+        - button "Pending Decisions" [ref=f16e25] [cursor=pointer]
+        - button "Doctor Profiles" [ref=f16e28] [cursor=pointer]
+        - button "Hospital & Clinics" [ref=f16e31] [cursor=pointer]
+        - button "Approved Archive" [ref=f16e34] [cursor=pointer]
+        - button "Rejected Archive" [ref=f16e37] [cursor=pointer]
+    - generic [ref=f16e40]:
+      - generic [ref=f16e41]: API Server Connected
+      - generic [ref=f16e44]:
+        - generic [ref=f16e45]: P
+        - generic [ref=f16e46]:
+          - generic [ref=f16e47]: Platform Administrator
+          - generic "admin@healtharabia.local" [ref=f16e48]
+      - button "Sign Out" [ref=f16e49] [cursor=pointer]
+  - generic [ref=f16e54]:
+    - banner [ref=f16e55]:
+      - navigation "Breadcrumbs" [ref=f16e57]:
+        - generic [ref=f16e58] [cursor=pointer]: Platform Console
+        - generic [ref=f16e59]: /
+        - generic [ref=f16e60] [cursor=pointer]: Review Queue
+        - generic [ref=f16e61]: /
+        - generic [ref=f16e62]: Account Inspection
+      - generic [ref=f16e63]:
+        - generic [ref=f16e64]:
+          - generic [ref=f16e65]: PLATFORM_ADMIN
+          - generic [ref=f16e66]: admin@healtharabia.local
+        - button "Logout" [ref=f16e67] [cursor=pointer]
+    - main [ref=f16e72]:
+      - generic [ref=f16e73]:
+        - button "Back to Review Queue" [ref=f16e235] [cursor=pointer]
+        - status [ref=f16e239]:
+          - generic [ref=f16e242]: Account "Dr. Sarah Ahmed" has been successfully APPROVED.
+          - button "×" [ref=f16e243] [cursor=pointer]
+        - generic [ref=f16e244]:
+          - generic [ref=f16e245]:
+            - generic [ref=f16e246]:
+              - generic [ref=f16e247]: Doctor Candidate
+              - generic [ref=f16e248]: APPROVED
+            - heading "Dr. Sarah Ahmed" [level=1] [ref=f16e249]
+            - generic [ref=f16e250]:
+              - generic [ref=f16e251]:
+                - strong [ref=f16e252]: "ID:"
+                - code [ref=f16e253]: 01a178b7-233e-704e-bffd-9d15017da07b
+              - generic [ref=f16e254]:
+                - strong [ref=f16e255]: "Registered:"
+                - text: 26 Oct 2026, 17:57
+              - generic [ref=f16e256]:
+                - strong [ref=f16e257]: "Submitted for Review:"
+                - text: 26 Oct 2026, 17:57
+          - generic [ref=f16e262]:
+            - strong [ref=f16e263]: Approved Account
+            - generic [ref=f16e264]: Verified by Platform Administrator on 26 Oct 2026, 20:22
+        - generic [ref=f16e265]:
+          - generic [ref=f16e266]:
+            - generic [ref=f16e267]:
+              - generic [ref=f16e268]:
+                - heading "Professional Profile" [level=2] [ref=f16e269]
+                - generic [ref=f16e270]: Doctor Information
+              - generic [ref=f16e271]:
+                - generic [ref=f16e272]:
+                  - generic [ref=f16e273]: Full Name
+                  - generic [ref=f16e274]: Dr. Sarah Ahmed
+                - generic [ref=f16e275]:
+                  - generic [ref=f16e276]: Primary Specialty
+                  - generic [ref=f16e277]: Cardiology
+                - generic [ref=f16e278]:
+                  - generic [ref=f16e279]: Professional Job Title
+                  - generic [ref=f16e280]: Consultant Cardiologist
+                - generic [ref=f16e281]:
+                  - generic [ref=f16e282]: Years of Clinical Experience
+                  - generic [ref=f16e283]: 8 Years
+                - generic [ref=f16e284]:
+                  - generic [ref=f16e285]: Country of Residence
+                  - generic [ref=f16e286]: —
+                - generic [ref=f16e287]:
+                  - generic [ref=f16e288]: Nationality
+                  - generic [ref=f16e289]: —
+                - generic [ref=f16e290]:
+                  - generic [ref=f16e291]: Gender & Date of Birth
+                  - generic [ref=f16e292]: — • 1988-04-15T00:00:00.000Z
+                - generic [ref=f16e293]:
+                  - generic [ref=f16e294]: Current Hospital / Position
+                  - generic [ref=f16e295]: Head of Department
+                - generic [ref=f16e296]:
+                  - generic [ref=f16e297]: Executive Biography
+                  - paragraph [ref=f16e298]: Board-certified Consultant Cardiologist with over 8 years of specialized practice in clinical and interventional cardiology.
+            - generic [ref=f16e299]:
+              - generic [ref=f16e300]:
+                - heading "Confidential Documents & Credentials" [level=2] [ref=f16e301]
+                - generic [ref=f16e302]: Private Authorization
+              - paragraph [ref=f16e305]: No CV document on file.
+            - generic [ref=f16e306]:
+              - generic [ref=f16e307]:
+                - heading "Medical & Healthcare Licenses" [level=2] [ref=f16e308]
+                - generic [ref=f16e309]: 1 Listed
+              - table [ref=f16e311]:
+                - rowgroup [ref=f16e312]:
+                  - row [ref=f16e313]:
+                    - columnheader "License / Council" [ref=f16e314]
+                    - 'columnheader "Registration #" [ref=f16e315]'
+                    - columnheader "Issuing Authority" [ref=f16e316]
+                    - columnheader "Expiry Date" [ref=f16e317]
+                - rowgroup [ref=f16e318]:
+                  - row [ref=f16e319]:
+                    - cell [ref=f16e320]:
+                      - strong [ref=f16e321]: Saudi Commission for Health Specialties (SCFHS)
+                    - cell [ref=f16e322]:
+                      - code [ref=f16e323]: REG-2026-9938210
+                    - cell "SCFHS Riyadh" [ref=f16e324]
+                    - cell "12 Dec 2028, 02:00" [ref=f16e325]
+            - generic [ref=f16e326]:
+              - generic [ref=f16e327]:
+                - heading "Education & Medical Qualifications" [level=2] [ref=f16e328]
+                - generic [ref=f16e329]: 1 Records
+              - generic [ref=f16e333]:
+                - generic [ref=f16e334]:
+                  - generic [ref=f16e335]: MBBS — Bachelor of Medicine
+                  - generic [ref=f16e336]: "2018"
+                - generic [ref=f16e337]: University of London
+                - generic [ref=f16e338]: Primary Medical Qualification
+            - generic [ref=f16e339]:
+              - generic [ref=f16e340]:
+                - heading "Professional Experience History" [level=2] [ref=f16e341]
+                - generic [ref=f16e342]: 1 Roles
+              - generic [ref=f16e346]:
+                - generic [ref=f16e347]:
+                  - generic [ref=f16e348]: Consultant Cardiologist
+                  - generic [ref=f16e349]: 01 Jan 2019, 02:00 — 01 Jan 2026, 02:00
+                - generic [ref=f16e350]: King Faisal Specialist Hospital
+                - paragraph [ref=f16e351]: Consultant in interventional cardiology, cardiac catheterization, and clinical department supervision.
+            - generic [ref=f16e352]:
+              - generic [ref=f16e353]:
+                - heading "Languages Spoken" [level=2] [ref=f16e354]
+                - generic [ref=f16e355]: "0"
+              - paragraph [ref=f16e357]: No languages specified.
+          - generic [ref=f16e358]:
+            - generic [ref=f16e359]:
+              - heading "Account Contact" [level=2] [ref=f16e361]
+              - generic [ref=f16e362]:
+                - generic [ref=f16e363]:
+                  - generic [ref=f16e364]: Primary Email
+                  - generic [ref=f16e365]: doctor1.sarah@healtharabia.com
+                - generic [ref=f16e366]:
+                  - generic [ref=f16e367]: Mobile (E.164)
+                  - generic [ref=f16e368]: "+447700900077"
+                - generic [ref=f16e369]:
+                  - generic [ref=f16e370]: Role Type
+                  - generic [ref=f16e371]: DOCTOR
+                - generic [ref=f16e372]:
+                  - generic [ref=f16e373]: Account Status
+                  - generic [ref=f16e374]: APPROVED
+            - generic [ref=f16e375]:
+              - heading "Review Decision Record" [level=2] [ref=f16e377]
+              - generic [ref=f16e378]:
+                - generic [ref=f16e379]:
+                  - generic [ref=f16e380]: "Reviewer:"
+                  - generic [ref=f16e381]: Platform Administrator
+                - generic [ref=f16e382]:
+                  - generic [ref=f16e383]: "Decided At:"
+                  - generic [ref=f16e384]: 26 Oct 2026, 20:22
+                - generic [ref=f16e385]:
+                  - text: "Decision Note:"
+                  - paragraph [ref=f16e386]: "\"Verified SCFHS medical council credentials & MBBS degree.\""
+            - generic [ref=f16e387]:
+              - generic [ref=f16e388]:
+                - heading "Entity Audit Trail" [level=2] [ref=f16e389]
+                - generic [ref=f16e390]: Tamper-Proof
+              - generic [ref=f16e392]:
+                - generic [ref=f16e393]:
+                  - generic [ref=f16e394]: ACCOUNT_APPROVED
+                  - generic [ref=f16e395]: 26 Oct 2026, 20:22
+                - generic [ref=f16e396]:
+                  - strong [ref=f16e397]: "Actor:"
+                  - text: Platform Administrator
+                - generic [ref=f16e398]: "{ \"note\": \"Verified SCFHS medical council credentials & MBBS degree.\", \"role\": \"DOCTOR\", \"newStatus\": \"APPROVED\", \"reviewerId\": \"01a17918-7811-70a7-9e9d-4888ceb4b1fc\", \"reviewerEmail\": \"admin@healtharabia.local\", \"previousStatus\": \"PENDING_REVIEW\" }"
+      - status [ref=f16e399]:
+        - generic [ref=f16e403]: Account "Dr. Sarah Ahmed" has been successfully APPROVED.
+        - button "Dismiss notification" [ref=f16e404] [cursor=pointer]: ×

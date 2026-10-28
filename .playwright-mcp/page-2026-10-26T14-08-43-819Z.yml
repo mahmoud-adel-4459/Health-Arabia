@@ -1,0 +1,57 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "Health Arabia home" [ref=e4] [cursor=pointer]:
+        - /url: /
+        - img "Health Arabia" [ref=e5]
+      - navigation "Main" [ref=e6]:
+        - link "Home" [ref=e7] [cursor=pointer]:
+          - /url: /
+        - link "About" [ref=e8] [cursor=pointer]:
+          - /url: /about
+        - link "Countries" [ref=e9] [cursor=pointer]:
+          - /url: /countries
+        - link "Hospitals" [ref=e12] [cursor=pointer]:
+          - /url: /hospitals
+        - link "FAQ’s" [ref=e13] [cursor=pointer]:
+          - /url: /faqs
+        - link "Contact Us" [ref=e14] [cursor=pointer]:
+          - /url: /contact
+        - link "Available Jobs" [ref=e15] [cursor=pointer]:
+          - /url: /jobs
+      - generic [ref=e18]:
+        - generic [ref=e19]: Nursing Services for Homes
+        - group [ref=e20]:
+          - generic "Join as" [ref=e21] [cursor=pointer]
+  - main [ref=e24]:
+    - generic [ref=e26]:
+      - heading "Welcome Back" [level=1] [ref=e27]
+      - paragraph [ref=e28]: Sign in to your healthcare career portal.
+      - generic [ref=e29]:
+        - generic [ref=e30]:
+          - generic [ref=e31]: Email Address or Mobile Number
+          - textbox "Email Address or Mobile Number" [ref=e32]:
+            - /placeholder: doctor.sarah@healtharabia.com or +966...
+        - generic [ref=e33]:
+          - generic [ref=e34]:
+            - generic [ref=e35]: Password
+            - generic "Contact support to reset password" [ref=e36]: Forgot Password?
+          - generic [ref=e37]:
+            - textbox "Password" [ref=e38]:
+              - /placeholder: ••••••••••••
+            - button "Show password" [ref=e39] [cursor=pointer]
+        - button "Sign In" [ref=e43] [cursor=pointer]
+      - paragraph [ref=e44]:
+        - text: Don't have an account?
+        - link "Create Account" [ref=e45] [cursor=pointer]:
+          - /url: /join
+    - generic [ref=e49]:
+      - heading "Connecting Clinicians with Prime GCC Practices" [level=2] [ref=e50]
+      - paragraph [ref=e51]: Health Arabia partners directly with elite government, military, university, and private healthcare systems to bring medical professionals the region's best career paths.
+      - generic [ref=e52]: Over 12,000+ medical colleagues registered
+  - contentinfo [ref=e55]:
+    - generic [ref=e56]:
+      - generic [ref=e57]: Copyright © 2026
+      - strong [ref=e58]: QEEMATECH
+      - generic [ref=e59]: "| All Rights Reserved"
+  - button "Open Next.js Dev Tools" [ref=e65] [cursor=pointer]

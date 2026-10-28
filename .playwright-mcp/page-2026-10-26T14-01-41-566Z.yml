@@ -1,0 +1,92 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "Health Arabia home" [ref=e4] [cursor=pointer]:
+        - /url: /
+        - img "Health Arabia" [ref=e5]
+      - generic [ref=e6]:
+        - group [ref=e7]:
+          - generic "Join as" [ref=e8] [cursor=pointer]
+        - group [ref=e11]:
+          - generic "Open menu" [ref=e12] [cursor=pointer]
+  - main [ref=e15]:
+    - generic [ref=e17]:
+      - heading "Welcome Back" [level=1] [ref=e18]
+      - paragraph [ref=e19]: Sign in to your healthcare career portal.
+      - generic [ref=e20]:
+        - generic [ref=e21]:
+          - generic [ref=e22]: Email Address or Mobile Number
+          - textbox "Email Address or Mobile Number" [ref=e23]:
+            - /placeholder: doctor.sarah@healtharabia.com or +966...
+        - generic [ref=e24]:
+          - generic [ref=e25]:
+            - generic [ref=e26]: Password
+            - generic "Contact support to reset password" [ref=e27]: Forgot Password?
+          - generic [ref=e28]:
+            - textbox "Password" [ref=e29]:
+              - /placeholder: ••••••••••••
+            - button "Show password" [ref=e30] [cursor=pointer]
+        - button "Sign In" [ref=e34] [cursor=pointer]
+      - paragraph [ref=e35]:
+        - text: Don't have an account?
+        - link "Create Account" [ref=e36] [cursor=pointer]:
+          - /url: /join
+    - generic [ref=e40]:
+      - heading "Connecting Clinicians with Prime GCC Practices" [level=2] [ref=e41]
+      - paragraph [ref=e42]: Health Arabia partners directly with elite government, military, university, and private healthcare systems to bring medical professionals the region's best career paths.
+      - generic [ref=e43]: Over 12,000+ medical colleagues registered
+  - contentinfo [ref=e46]:
+    - generic [ref=e47]:
+      - generic [ref=e48]:
+        - img "Health Arabia" [ref=e49]
+        - paragraph [ref=e50]: Connecting great clinicians to the practices that need them. Trusted partner across the Kingdom of Saudi Arabia and the wider GCC region.
+      - generic [ref=e51]:
+        - heading "Quick Links" [level=2] [ref=e52]
+        - list [ref=e53]:
+          - listitem [ref=e54]:
+            - link "Search Jobs" [ref=e55] [cursor=pointer]:
+              - /url: /jobs
+          - listitem [ref=e56]:
+            - link "For Hospitals" [ref=e57] [cursor=pointer]:
+              - /url: /hospitals
+          - listitem [ref=e58]:
+            - link "About Us" [ref=e59] [cursor=pointer]:
+              - /url: /about
+          - listitem [ref=e60]:
+            - link "Contact Our Consultants" [ref=e61] [cursor=pointer]:
+              - /url: /contact
+          - listitem [ref=e62]: Latest Healthcare News
+      - generic [ref=e63]:
+        - heading "GCC Destinations" [level=2] [ref=e64]
+        - list [ref=e65]:
+          - listitem [ref=e66]:
+            - link "Saudi Arabia" [ref=e67] [cursor=pointer]:
+              - /url: /countries
+          - listitem [ref=e68]:
+            - link "United Arab Emirates" [ref=e69] [cursor=pointer]:
+              - /url: /countries
+          - listitem [ref=e70]:
+            - link "Qatar" [ref=e71] [cursor=pointer]:
+              - /url: /countries
+          - listitem [ref=e72]:
+            - link "Bahrain" [ref=e73] [cursor=pointer]:
+              - /url: /countries
+          - listitem [ref=e74]:
+            - link "Oman & Kuwait" [ref=e75] [cursor=pointer]:
+              - /url: /countries
+      - generic [ref=e76]:
+        - heading "Contact Info" [level=2] [ref=e77]
+        - list [ref=e78]:
+          - listitem [ref=e79]: Al Olaya District, Riyadh, KSA
+          - listitem [ref=e80]:
+            - link "info@healtharabia.com" [ref=e81] [cursor=pointer]:
+              - /url: mailto:info@healtharabia.com
+          - listitem [ref=e82]:
+            - link "+966 11 465 0000" [ref=e83] [cursor=pointer]:
+              - /url: tel:+966114650000
+          - listitem [ref=e84]: "Sunday - Thursday: 9AM - 5PM"
+    - generic [ref=e85]:
+      - generic [ref=e86]: Copyright © 2026
+      - strong [ref=e87]: QEEMATECH
+      - generic [ref=e88]: "| All Rights Reserved"
+  - button "Open Next.js Dev Tools" [ref=e94] [cursor=pointer]

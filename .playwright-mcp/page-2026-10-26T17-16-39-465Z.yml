@@ -1,0 +1,167 @@
+- generic [ref=f14e39]:
+  - complementary [ref=f14e40]:
+    - img "Health Arabia" [ref=f14e43] [cursor=pointer]
+    - generic [ref=f14e44]: Platform Administration
+    - navigation "Admin Navigation" [ref=f14e46]:
+      - generic [ref=f14e47]: Account Verification
+      - button "Review Queue 5" [ref=f14e48] [cursor=pointer]:
+        - generic [ref=f14e53]: Review Queue
+        - generic [ref=f14e54]: "5"
+      - generic [ref=f14e55]:
+        - button "Pending Decisions" [ref=f14e56] [cursor=pointer]
+        - button "Doctor Profiles" [ref=f14e59] [cursor=pointer]
+        - button "Hospital & Clinics" [ref=f14e62] [cursor=pointer]
+        - button "Approved Archive" [ref=f14e65] [cursor=pointer]
+        - button "Rejected Archive" [ref=f14e68] [cursor=pointer]
+    - generic [ref=f14e71]:
+      - generic [ref=f14e72]: API Server Connected
+      - generic [ref=f14e75]:
+        - generic [ref=f14e76]: P
+        - generic [ref=f14e77]:
+          - generic [ref=f14e78]: Platform Administrator
+          - generic "admin@healtharabia.local" [ref=f14e79]
+      - button "Sign Out" [ref=f14e80] [cursor=pointer]
+  - generic [ref=f14e85]:
+    - banner [ref=f14e86]:
+      - navigation "Breadcrumbs" [ref=f14e88]:
+        - generic [ref=f14e89] [cursor=pointer]: Platform Console
+        - generic [ref=f14e90]: /
+        - generic [ref=f14e91]: Review Queue
+      - generic [ref=f14e92]:
+        - generic [ref=f14e93]:
+          - generic [ref=f14e94]: PLATFORM_ADMIN
+          - generic [ref=f14e95]: admin@healtharabia.local
+        - button "Logout" [ref=f14e96] [cursor=pointer]
+    - main [ref=f14e101]:
+      - generic [ref=f14e102]:
+        - generic [ref=f14e103]:
+          - generic [ref=f14e104]:
+            - heading "Account Review Queue" [level=1] [ref=f14e105]
+            - paragraph [ref=f14e106]: Evaluate submitted registrations, review professional credentials and institutional inquiry notes, and decide approvals.
+          - generic [ref=f14e107]: 5 Awaiting Review
+        - region "Review summary metrics" [ref=f14e110]:
+          - button "Pending Review 5 Accounts awaiting administrative review" [ref=f14e111] [cursor=pointer]:
+            - generic [ref=f14e112]: Pending Review
+            - generic [ref=f14e118]: "5"
+            - generic [ref=f14e119]: Accounts awaiting administrative review
+          - button "Doctors Pending 1 Clinicians & specialists pending check" [ref=f14e120] [cursor=pointer]:
+            - generic [ref=f14e121]: Doctors Pending
+            - generic [ref=f14e127]: "1"
+            - generic [ref=f14e128]: Clinicians & specialists pending check
+          - button "Facilities Pending 4 Hospitals & clinics pending check" [ref=f14e129] [cursor=pointer]:
+            - generic [ref=f14e130]: Facilities Pending
+            - generic [ref=f14e136]: "4"
+            - generic [ref=f14e137]: Hospitals & clinics pending check
+          - button "Approved 4 Active verified platform accounts" [ref=f14e138] [cursor=pointer]:
+            - generic [ref=f14e139]: Approved
+            - generic [ref=f14e145]: "4"
+            - generic [ref=f14e146]: Active verified platform accounts
+          - button "Rejected 1 Declined or non-conforming submissions" [ref=f14e147] [cursor=pointer]:
+            - generic [ref=f14e148]: Rejected
+            - generic [ref=f14e155]: "1"
+            - generic [ref=f14e156]: Declined or non-conforming submissions
+        - generic [ref=f14e157]:
+          - textbox "Search by name, email, officer, or phone..." [ref=f14e159]
+          - combobox "Filter by account role" [ref=f14e160] [cursor=pointer]:
+            - option "All Roles" [selected]
+            - option "Healthcare Professionals (Doctors)"
+            - option "Hospitals & Clinics"
+          - combobox "Filter by account status" [ref=f14e161] [cursor=pointer]:
+            - option "Pending Review" [selected]
+            - option "Approved"
+            - option "Rejected"
+            - option "Suspended"
+            - option "Draft"
+            - option "All Statuses"
+          - button "Refresh" [ref=f14e162] [cursor=pointer]
+        - generic [ref=f14e168]:
+          - table [ref=f14e169]:
+            - rowgroup [ref=f14e170]:
+              - row [ref=f14e171]:
+                - columnheader "Candidate / Facility" [ref=f14e172]
+                - columnheader "Role" [ref=f14e173]
+                - columnheader "Contact Credentials" [ref=f14e174]
+                - columnheader "Location" [ref=f14e175]
+                - columnheader "Submitted Date" [ref=f14e176]
+                - columnheader "Status" [ref=f14e177]
+                - columnheader "Action" [ref=f14e178]
+            - rowgroup [ref=f14e179]:
+              - button "Inspect account for Verification Medical Complex" [ref=f14e180] [cursor=pointer]:
+                - cell "V Verification Medical Complex" [ref=f14e181]:
+                  - generic [ref=f14e182]:
+                    - generic [ref=f14e183]: V
+                    - generic [ref=f14e184]: Verification Medical Complex
+                - cell "Facility" [ref=f14e186]
+                - cell "recruiter.tariq@verification-mc.com" [ref=f14e188]
+                - cell "Not specified" [ref=f14e190]
+                - cell "26 Oct 2026, 19:28" [ref=f14e192]
+                - cell "Pending Review" [ref=f14e194]
+                - cell [ref=f14e196]:
+                  - button "Review" [ref=f14e197]
+              - button "Inspect account for Dr. Sulaiman Al Habib Medical Group" [ref=f14e201] [cursor=pointer]:
+                - cell "D Dr. Sulaiman Al Habib Medical Group PRIVATE • Noura Al-Shehri" [ref=f14e202]:
+                  - generic [ref=f14e203]:
+                    - generic [ref=f14e204]: D
+                    - generic [ref=f14e205]:
+                      - generic [ref=f14e206]: Dr. Sulaiman Al Habib Medical Group
+                      - generic [ref=f14e207]: PRIVATE • Noura Al-Shehri
+                - cell "Facility" [ref=f14e208]
+                - cell "noura.recruitment@drsulaimanalhabib.com" [ref=f14e210]
+                - cell "Not specified" [ref=f14e212]
+                - cell "26 Oct 2026, 19:06" [ref=f14e214]
+                - cell "Pending Review" [ref=f14e216]
+                - cell [ref=f14e218]:
+                  - button "Review" [ref=f14e219]
+              - button "Inspect account for King Faisal Specialist Clinic" [ref=f14e223] [cursor=pointer]:
+                - cell "K King Faisal Specialist Clinic" [ref=f14e224]:
+                  - generic [ref=f14e225]:
+                    - generic [ref=f14e226]: K
+                    - generic [ref=f14e227]: King Faisal Specialist Clinic
+                - cell "Facility" [ref=f14e229]
+                - cell "facility@healtharabia.com" [ref=f14e231]
+                - cell "Not specified" [ref=f14e233]
+                - cell "26 Oct 2026, 18:50" [ref=f14e235]
+                - cell "Pending Review" [ref=f14e237]
+                - cell [ref=f14e239]:
+                  - button "Review" [ref=f14e240]
+              - button "Inspect account for eslam" [ref=f14e244] [cursor=pointer]:
+                - cell "E eslam GOVERNMENT • eslam" [ref=f14e245]:
+                  - generic [ref=f14e246]:
+                    - generic [ref=f14e247]: E
+                    - generic [ref=f14e248]:
+                      - generic [ref=f14e249]: eslam
+                      - generic [ref=f14e250]: GOVERNMENT • eslam
+                - cell "Facility" [ref=f14e251]
+                - cell "eslamelbarbary60@gmail.com" [ref=f14e253]
+                - cell "Not specified" [ref=f14e255]
+                - cell "26 Oct 2026, 18:50" [ref=f14e257]
+                - cell "Pending Review" [ref=f14e259]
+                - cell [ref=f14e261]:
+                  - button "Review" [ref=f14e262]
+              - button "Inspect account for Dr. Sarah Ahmed" [ref=f14e266] [cursor=pointer]:
+                - cell "D Dr. Sarah Ahmed Consultant Cardiologist • Cardiology" [ref=f14e267]:
+                  - generic [ref=f14e268]:
+                    - generic [ref=f14e269]: D
+                    - generic [ref=f14e270]:
+                      - generic [ref=f14e271]: Dr. Sarah Ahmed
+                      - generic [ref=f14e272]: Consultant Cardiologist • Cardiology
+                - cell "Doctor" [ref=f14e273]
+                - cell "doctor1.sarah@healtharabia.com +447700900077" [ref=f14e275]:
+                  - generic [ref=f14e276]: doctor1.sarah@healtharabia.com
+                  - generic [ref=f14e277]: "+447700900077"
+                - cell "Not specified" [ref=f14e278]
+                - cell "26 Oct 2026, 17:57" [ref=f14e280]
+                - cell "Pending Review" [ref=f14e282]
+                - cell [ref=f14e284]:
+                  - button "Review" [ref=f14e285]
+          - generic [ref=f14e289]:
+            - generic [ref=f14e290]:
+              - text: Showing
+              - strong [ref=f14e291]: "5"
+              - text: of
+              - strong [ref=f14e292]: "5"
+              - text: accounts
+            - generic [ref=f14e293]:
+              - button "Previous" [disabled] [ref=f14e294]
+              - generic [ref=f14e295]: 1 / 1
+              - button "Next" [disabled] [ref=f14e296]

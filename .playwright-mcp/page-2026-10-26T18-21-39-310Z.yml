@@ -1,0 +1,30 @@
+- generic [active] [ref=f4e1]:
+  - generic [ref=f4e2]:
+    - banner [ref=f4e3]:
+      - generic [ref=f4e4]:
+        - link "Health Arabia home" [ref=f4e5] [cursor=pointer]:
+          - /url: /
+          - img "Health Arabia" [ref=f4e6]
+        - navigation "Main" [ref=f4e7]:
+          - link "Home" [ref=f4e8] [cursor=pointer]:
+            - /url: /
+          - link "About" [ref=f4e9] [cursor=pointer]:
+            - /url: /about
+          - link "Countries" [ref=f4e10] [cursor=pointer]:
+            - /url: /countries
+          - link "Hospitals" [ref=f4e13] [cursor=pointer]:
+            - /url: /hospitals
+          - link "FAQ’s" [ref=f4e14] [cursor=pointer]:
+            - /url: /faqs
+          - link "Contact Us" [ref=f4e15] [cursor=pointer]:
+            - /url: /contact
+          - link "Available Jobs" [ref=f4e16] [cursor=pointer]:
+            - /url: /jobs
+    - main [ref=f4e21]:
+      - paragraph [ref=f4e24]: Loading account settings...
+    - contentinfo [ref=f4e25]:
+      - generic [ref=f4e26]:
+        - generic [ref=f4e27]: Copyright © 2026
+        - strong [ref=f4e28]: QEEMATECH
+        - generic [ref=f4e29]: "| All Rights Reserved"
+  - button "Open Next.js Dev Tools" [ref=f4e35] [cursor=pointer]
