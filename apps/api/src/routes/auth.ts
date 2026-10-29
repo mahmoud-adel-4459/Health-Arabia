@@ -1,15 +1,21 @@
 import { Router, type Request, type Response } from "express";
 import { prisma } from "../lib/prisma";
 import { generateSessionToken, hashPassword, hashSessionToken, verifyPassword } from "../lib/security";
-import { loginRateLimiter, resetLoginRateLimit } from "../lib/rate-limit";
+import { loginRateLimiter, registrationRateLimiter, resetLoginRateLimit } from "../lib/rate-limit";
 
 export const authRouter = Router();
 
 export const SESSION_COOKIE_NAME = "ha_session";
+// Platform admin sessions use their own cookie. Cookies are not port-scoped, so the
+// website (:3000) and dashboard (:5173) share one cookie jar on the same host; a shared
+// name let an admin sign-in/sign-out replace or clear a doctor's/facility's web session.
+export const ADMIN_SESSION_COOKIE_NAME = "ha_admin_session";
 const SESSION_TTL_DAYS = 14;
 
-function setSessionCookie(res: Response, token: string) {
-  res.cookie(SESSION_COOKIE_NAME, token, {
+type SessionCookieName = typeof SESSION_COOKIE_NAME | typeof ADMIN_SESSION_COOKIE_NAME;
+
+function setSessionCookie(res: Response, token: string, name: SessionCookieName = SESSION_COOKIE_NAME) {
+  res.cookie(name, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -18,8 +24,8 @@ function setSessionCookie(res: Response, token: string) {
   });
 }
 
-function clearSessionCookie(res: Response) {
-  res.clearCookie(SESSION_COOKIE_NAME, {
+function clearSessionCookie(res: Response, name: SessionCookieName = SESSION_COOKIE_NAME) {
+  res.clearCookie(name, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -27,9 +33,39 @@ function clearSessionCookie(res: Response) {
   });
 }
 
-export async function getAuthenticatedUser(req: Request) {
-  const token = req.cookies?.[SESSION_COOKIE_NAME] || req.headers.authorization?.replace(/^Bearer\s+/, "");
-  if (!token || typeof token !== "string") {
+/**
+ * Resolve the session token for a request.
+ * - An explicit `Authorization: Bearer` header wins (the dashboard always sends one).
+ * - `prefer: "user"` (default) reads the website session cookie before the admin cookie.
+ * - `prefer: "admin"` reads the admin cookie first (admin-only routes, dashboard file links).
+ */
+export function getSessionToken(
+  req: Request,
+  prefer: "user" | "admin" | "admin-only" = "user"
+): { token: string; cookie: SessionCookieName | null } | null {
+  const bearer = req.headers.authorization?.replace(/^Bearer\s+/, "").trim();
+  if (bearer) {
+    return { token: bearer, cookie: null };
+  }
+  // "admin-only" is what the dashboard uses: it never reads (or signs out) the website session
+  const order: SessionCookieName[] =
+    prefer === "admin-only"
+      ? [ADMIN_SESSION_COOKIE_NAME]
+      : prefer === "admin"
+        ? [ADMIN_SESSION_COOKIE_NAME, SESSION_COOKIE_NAME]
+        : [SESSION_COOKIE_NAME, ADMIN_SESSION_COOKIE_NAME];
+  for (const name of order) {
+    const value = req.cookies?.[name];
+    if (value && typeof value === "string") {
+      return { token: value, cookie: name };
+    }
+  }
+  return null;
+}
+
+export async function getAuthenticatedUser(req: Request, prefer: "user" | "admin" = "user") {
+  const token = getSessionToken(req, prefer)?.token;
+  if (!token) {
     return null;
   }
   const tokenHash = hashSessionToken(token);
@@ -338,7 +374,7 @@ authRouter.post("/login/admin", loginRateLimiter, async (req: Request, res: Resp
     },
   });
 
-  setSessionCookie(res, rawToken);
+  setSessionCookie(res, rawToken, ADMIN_SESSION_COOKIE_NAME);
 
   res.json({
     status: "success",
@@ -359,13 +395,17 @@ authRouter.post("/login/admin", loginRateLimiter, async (req: Request, res: Resp
 // Returns current authenticated user and session status
 // ---------------------------------------------------------------------------
 authRouter.get("/me", async (req: Request, res: Response) => {
-  const token = req.cookies?.[SESSION_COOKIE_NAME] || req.headers.authorization?.replace(/^Bearer\s+/, "");
+  const resolved = getSessionToken(req, req.query.scope === "admin" ? "admin-only" : "user");
 
-  if (!token || typeof token !== "string") {
+  if (!resolved) {
     res.status(401).json({ status: "error", message: "Not authenticated", user: null });
     return;
   }
 
+  const { token, cookie: usedCookie } = resolved;
+  const clearUsedCookie = () => {
+    if (usedCookie) clearSessionCookie(res, usedCookie);
+  };
   const tokenHash = hashSessionToken(token);
 
   const session = await prisma.session.findUnique({
@@ -373,15 +413,15 @@ authRouter.get("/me", async (req: Request, res: Response) => {
     include: {
       user: {
         include: {
-          doctorProfile: { select: { fullName: true, jobTitle: true } },
-          facility: { select: { name: true, officerName: true } },
+          doctorProfile: { select: { fullName: true, jobTitle: true, photoId: true } },
+          facility: { select: { name: true, officerName: true, logoId: true } },
         },
       },
     },
   });
 
   if (!session || session.revokedAt || session.expiresAt < new Date()) {
-    clearSessionCookie(res);
+    clearUsedCookie();
     res.status(401).json({ status: "error", message: "Session expired or revoked", user: null });
     return;
   }
@@ -390,7 +430,7 @@ authRouter.get("/me", async (req: Request, res: Response) => {
 
   // Reject active session if account became rejected, suspended or deactivated
   if (user.status === "REJECTED" || user.status === "SUSPENDED" || user.status === "DEACTIVATED") {
-    clearSessionCookie(res);
+    clearUsedCookie();
     res.status(403).json({
       status: "error",
       message: `Account is ${user.status.toLowerCase()}`,
@@ -414,6 +454,10 @@ authRouter.get("/me", async (req: Request, res: Response) => {
       ? (user.facility?.name ?? user.displayName)
       : (user.displayName ?? "Platform Administrator");
 
+  // Only the approved (live) photo/logo; pending change-request uploads are never exposed here
+  const avatarFileId =
+    user.role === "DOCTOR" ? user.doctorProfile?.photoId : user.role === "FACILITY" ? user.facility?.logoId : null;
+
   res.json({
     status: "success",
     user: {
@@ -424,6 +468,7 @@ authRouter.get("/me", async (req: Request, res: Response) => {
       role: user.role,
       status: user.status,
       isPendingReview: user.status === "PENDING_REVIEW",
+      avatarUrl: avatarFileId ? `/api/files/${avatarFileId}/download` : null,
     },
   });
 });
@@ -433,10 +478,11 @@ authRouter.get("/me", async (req: Request, res: Response) => {
 // Revokes current session and clears session cookie
 // ---------------------------------------------------------------------------
 authRouter.post("/logout", async (req: Request, res: Response) => {
-  const token = req.cookies?.[SESSION_COOKIE_NAME] || req.headers.authorization?.replace(/^Bearer\s+/, "");
+  const adminScope = req.query.scope === "admin";
+  const resolved = getSessionToken(req, adminScope ? "admin-only" : "user");
 
-  if (token && typeof token === "string") {
-    const tokenHash = hashSessionToken(token);
+  if (resolved) {
+    const tokenHash = hashSessionToken(resolved.token);
     await prisma.session
       .updateMany({
         where: { tokenHash, revokedAt: null },
@@ -445,7 +491,14 @@ authRouter.post("/logout", async (req: Request, res: Response) => {
       .catch(() => {});
   }
 
-  clearSessionCookie(res);
+  // Clear only the cookie that carried this session, so signing out of the dashboard
+  // does not sign the same browser out of the website (and vice versa).
+  if (!adminScope && (!resolved || resolved.cookie === SESSION_COOKIE_NAME)) {
+    clearSessionCookie(res, SESSION_COOKIE_NAME);
+  }
+  if (!resolved || resolved.cookie === ADMIN_SESSION_COOKIE_NAME || req.cookies?.[ADMIN_SESSION_COOKIE_NAME] === resolved.token) {
+    clearSessionCookie(res, ADMIN_SESSION_COOKIE_NAME);
+  }
   res.json({ status: "success", message: "Logged out successfully" });
 });
 
@@ -458,7 +511,7 @@ authRouter.post("/logout", async (req: Request, res: Response) => {
 // - status set to PENDING_REVIEW
 // - handles private photo, private CV, educations, licenses, experiences
 // ---------------------------------------------------------------------------
-authRouter.post("/register/doctor", async (req: Request, res: Response) => {
+authRouter.post("/register/doctor", registrationRateLimiter, async (req: Request, res: Response) => {
   try {
     const {
       fullName,
@@ -774,7 +827,7 @@ authRouter.post("/register/doctor", async (req: Request, res: Response) => {
 // POST /api/auth/register/facility
 // Onboarding wizard for Hospital / Clinic registration
 // ---------------------------------------------------------------------------
-authRouter.post("/register/facility", async (req: Request, res: Response) => {
+authRouter.post("/register/facility", registrationRateLimiter, async (req: Request, res: Response) => {
   try {
     const {
       name,

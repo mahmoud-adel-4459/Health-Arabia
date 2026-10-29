@@ -51,6 +51,8 @@ interface ReferenceData {
 export default function FacilityProfilePage() {
   const router = useRouter();
   const [profile, setProfile] = useState<FacilityProfileData | null>(null);
+  const [logoFailed, setLogoFailed] = useState(false);
+  useEffect(() => setLogoFailed(false), [profile?.logoUrl]);
   const [activeChangeRequest, setActiveChangeRequest] = useState<ActiveChangeRequest | null>(null);
   const [referenceData, setReferenceData] = useState<ReferenceData>({
     countries: [],
@@ -91,12 +93,12 @@ export default function FacilityProfilePage() {
       // Verify active session & role
       const sessionRes = await fetch("/api/auth/me", { credentials: "include" });
       if (!sessionRes.ok) {
-        router.replace("/login/facility");
+        router.replace("/login/facility?returnTo=/profile/facility");
         return;
       }
       const sessionData = await sessionRes.json();
       if (sessionData.user?.role !== "FACILITY") {
-        router.replace("/login/facility");
+        router.replace("/login/facility?returnTo=/profile/facility");
         return;
       }
 
@@ -275,11 +277,12 @@ export default function FacilityProfilePage() {
             <div className={styles.profileHeroContent}>
               <div className={styles.profileHeroIdentity}>
                 <div className={styles.facilityAvatarWrap}>
-                  {profile.logoUrl ? (
+                  {profile.logoUrl && !logoFailed ? (
                     <img
                       src={profile.logoUrl}
-                      alt={profile.name}
+                      alt=""
                       style={{ width: "100%", height: "100%", objectFit: "contain", padding: "10px" }}
+                      onError={() => setLogoFailed(true)}
                     />
                   ) : (
                     <span>{getFacilityInitials(profile.name)}</span>

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { FooterContent } from "@/lib/home-content";
+import { Copyright } from "./Copyright";
 import styles from "./site.module.css";
 
 export function SiteFooter({ content }: { content: FooterContent }) {
@@ -9,13 +10,23 @@ export function SiteFooter({ content }: { content: FooterContent }) {
       <div className={`container ${styles.footerGrid}`}>
         <div className={styles.footerBrand}>
           <Image
-            src="/brand/health-arabia-logo.png"
-            alt="Health Arabia"
+            src={content.brand?.logoUrl ?? "/brand/health-arabia-logo.png"}
+            alt={content.brand?.name ?? "Health Arabia"}
             width={272}
             height={48}
             className={styles.footerLogo}
+            unoptimized={!!content.brand?.logoUrl && !content.brand.logoUrl.startsWith("/")}
           />
           <p className={styles.footerTagline}>{content.tagline}</p>
+          {content.social && content.social.length > 0 && (
+            <ul className={styles.footerSocial} aria-label="Social media">
+              {content.social.map((s) => (
+                <li key={s.label}>
+                  <a href={s.href} target="_blank" rel="noopener noreferrer">{s.label}</a>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
 
         {content.columns.map((column) => (
@@ -41,9 +52,7 @@ export function SiteFooter({ content }: { content: FooterContent }) {
       </div>
 
       <div className={`container ${styles.copyright}`}>
-        <span>{content.copyright.prefix}</span>
-        <strong className={styles.copyrightCompany}>{content.copyright.company}</strong>
-        <span>| {content.copyright.suffix}</span>
+        <Copyright {...content.copyright} />
       </div>
     </footer>
   );

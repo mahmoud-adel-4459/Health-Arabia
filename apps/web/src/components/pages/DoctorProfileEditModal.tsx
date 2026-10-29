@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { CloseCircle, Add, Trash, DocumentUpload, Camera, ArrowRight2 } from "iconsax-react";
 import styles from "@/components/portal/portal.module.css";
 import pageStyles from "./pages.module.css";
@@ -101,6 +102,9 @@ export function DoctorProfileEditModal({
   const [preferredCountryIds, setPreferredCountryIds] = useState<string[]>(
     initialData?.preferredCountryIds || []
   );
+  const [additionalSpecialtyIds, setAdditionalSpecialtyIds] = useState<string[]>(
+    initialData?.additionalSpecialtyIds || []
+  );
 
   // Step 3: Education
   const [educations, setEducations] = useState<EducationEntry[]>(
@@ -135,6 +139,58 @@ export function DoctorProfileEditModal({
 
   const photoInputRef = useRef<HTMLInputElement>(null);
   const cvInputRef = useRef<HTMLInputElement>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  // Unsaved-change detection: compare every editable value with its value when the modal opened
+  const formSnapshot = JSON.stringify([
+    fullName, dateOfBirth, gender, nationalityId, residenceCountryId, mobileE164, email, photoAssetId,
+    jobTitle, primarySpecialtyId, about, yearsOfExperience, currentPosition, isAvailable,
+    preferredCountryIds, additionalSpecialtyIds, educations, licenses, experiences, languages, cvAssetId,
+  ]);
+  const initialSnapshotRef = useRef(formSnapshot);
+  const isDirty = formSnapshot !== initialSnapshotRef.current;
+
+  // Close via the X button, Cancel, or Escape. Never discard edits silently (same confirm() pattern as the dashboard).
+  const requestClose = () => {
+    if (submitting) return;
+    if (isDirty && !window.confirm("Discard your unsaved profile changes? They have not been submitted for review.")) {
+      return;
+    }
+    onClose();
+  };
+  const requestCloseRef = useRef(requestClose);
+  requestCloseRef.current = requestClose;
+
+  // Portal target exists only in the browser
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  // Lock background scrolling (compensating for the scrollbar width), focus the dialog, restore both on close
+  useEffect(() => {
+    if (!isOpen || !mounted) return;
+    const body = document.body;
+    const previousOverflow = body.style.overflow;
+    const previousPaddingRight = body.style.paddingRight;
+    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+    body.style.overflow = "hidden";
+    if (scrollbarWidth > 0) body.style.paddingRight = `${scrollbarWidth}px`;
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    dialogRef.current?.focus();
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        requestCloseRef.current();
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      body.style.overflow = previousOverflow;
+      body.style.paddingRight = previousPaddingRight;
+      previouslyFocused?.focus?.();
+    };
+  }, [isOpen, mounted]);
 
   if (!isOpen) return null;
 
@@ -242,6 +298,14 @@ export function DoctorProfileEditModal({
     }
   };
 
+  const toggleAdditionalSpecialty = (id: string) => {
+    if (additionalSpecialtyIds.includes(id)) {
+      setAdditionalSpecialtyIds(additionalSpecialtyIds.filter((sid) => sid !== id));
+    } else {
+      setAdditionalSpecialtyIds([...additionalSpecialtyIds, id]);
+    }
+  };
+
   // Education Helpers
   const addEducation = () => {
     setEducations([...educations, { degree: "", institution: "", graduationYear: 2022, isPrimary: false }]);
@@ -322,6 +386,7 @@ export function DoctorProfileEditModal({
       photoAssetId,
       jobTitle: jobTitle.trim(),
       primarySpecialtyId: primarySpecialtyId || null,
+      additionalSpecialtyIds: additionalSpecialtyIds.filter((id) => id !== primarySpecialtyId),
       about: about.trim(),
       yearsOfExperience: Number(yearsOfExperience) || 0,
       currentPosition: currentPosition.trim(),
@@ -358,23 +423,34 @@ export function DoctorProfileEditModal({
     }
   };
 
-  return (
+  if (!mounted) return null;
+
+  // Rendered into document.body so no ancestor stacking context, transform, or overflow can affect positioning
+  return createPortal(
     <div className={styles.modalOverlay}>
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="doctor-profile-edit-title"
+        tabIndex={-1}
         className={styles.modalCard}
         style={{
           maxWidth: "840px",
-          maxHeight: "90vh",
+          maxHeight: "calc(100dvh - 32px)",
           display: "flex",
           flexDirection: "column",
-          padding: "28px 32px",
+          gap: 0,
+          padding: "clamp(18px, 4vw, 28px) clamp(16px, 4vw, 32px)",
           borderRadius: "20px",
+          overflow: "hidden",
+          outline: "none",
         }}
       >
-        {/* Modal Header */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
-          <div>
-            <h2 style={{ fontSize: "22px", fontWeight: 700, color: "#0a2647", margin: 0 }}>
+        {/* Modal Header (fixed; only the form body scrolls) */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px", marginBottom: "16px", flexShrink: 0 }}>
+          <div style={{ minWidth: 0 }}>
+            <h2 id="doctor-profile-edit-title" style={{ fontSize: "22px", fontWeight: 700, color: "#0a2647", margin: 0 }}>
               Edit Doctor Profile
             </h2>
             <p style={{ fontSize: "14px", color: "#5b6e84", margin: "4px 0 0" }}>
@@ -383,9 +459,10 @@ export function DoctorProfileEditModal({
           </div>
           <button
             type="button"
-            onClick={onClose}
-            style={{ background: "none", border: "none", cursor: "pointer", color: "#64748b" }}
-            aria-label="Close modal"
+            onClick={requestClose}
+            disabled={submitting}
+            style={{ background: "none", border: "none", cursor: "pointer", color: "#64748b", flexShrink: 0 }}
+            aria-label="Close edit profile dialog"
           >
             <CloseCircle size={24} color="currentColor" />
           </button>
@@ -396,11 +473,14 @@ export function DoctorProfileEditModal({
           style={{
             display: "flex",
             justifyContent: "space-between",
+            gap: "4px",
             background: "#f8fafc",
             borderRadius: "12px",
             padding: "8px 12px",
             marginBottom: "20px",
             border: "1px solid #e2e8f0",
+            flexShrink: 0,
+            overflowX: "auto",
           }}
         >
           {STEPS.map((s) => {
@@ -423,6 +503,8 @@ export function DoctorProfileEditModal({
                   fontWeight: isActive ? 600 : 500,
                   cursor: "pointer",
                   transition: "all 0.15s ease",
+                  flexShrink: 0,
+                  whiteSpace: "nowrap",
                 }}
               >
                 <span
@@ -457,14 +539,16 @@ export function DoctorProfileEditModal({
               color: "#991b1b",
               fontSize: "13px",
               marginBottom: "16px",
+              flexShrink: 0,
             }}
+            role="alert"
           >
             {error}
           </div>
         )}
 
         {/* Form Body Scroll Area */}
-        <div style={{ flex: 1, overflowY: "auto", paddingRight: "6px", marginBottom: "20px" }}>
+        <div style={{ flex: 1, minHeight: 0, overflowY: "auto", overflowX: "hidden", paddingRight: "6px", marginBottom: "16px", overscrollBehavior: "contain" }}>
           {/* STEP 1: Personal Info */}
           {currentStep === 1 && (
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -521,7 +605,7 @@ export function DoctorProfileEditModal({
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))", gap: "16px" }}>
                 <div>
                   <label className={styles.formLabel}>Full Legal Name *</label>
                   <input
@@ -543,7 +627,7 @@ export function DoctorProfileEditModal({
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))", gap: "16px" }}>
                 <div>
                   <label className={styles.formLabel}>Gender</label>
                   <select
@@ -571,7 +655,7 @@ export function DoctorProfileEditModal({
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))", gap: "16px" }}>
                 <div>
                   <label className={styles.formLabel}>Country of Residence</label>
                   <select
@@ -613,7 +697,7 @@ export function DoctorProfileEditModal({
           {/* STEP 2: Professional Info */}
           {currentStep === 2 && (
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))", gap: "16px" }}>
                 <div>
                   <label className={styles.formLabel}>Job Title / Clinical Grade *</label>
                   <input
@@ -641,7 +725,7 @@ export function DoctorProfileEditModal({
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))", gap: "16px" }}>
                 <div>
                   <label className={styles.formLabel}>Years of Clinical Experience</label>
                   <input
@@ -674,6 +758,38 @@ export function DoctorProfileEditModal({
                   onChange={(e) => setAbout(e.target.value)}
                   placeholder="Describe your medical training, board certifications, and specialized clinical focus..."
                 />
+              </div>
+
+              {/* Additional Specialties */}
+              <div>
+                <label className={styles.formLabel}>Additional Specialties</label>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "6px" }}>
+                  {options.specialties
+                    .filter((s) => s.id !== primarySpecialtyId)
+                    .map((s) => {
+                      const selected = additionalSpecialtyIds.includes(s.id);
+                      return (
+                        <button
+                          key={s.id}
+                          type="button"
+                          onClick={() => toggleAdditionalSpecialty(s.id)}
+                          style={{
+                            padding: "6px 14px",
+                            borderRadius: "20px",
+                            border: selected ? "1px solid #0284c7" : "1px solid #cbd5e1",
+                            background: selected ? "#e0f2fe" : "#ffffff",
+                            color: selected ? "#0369a1" : "#475569",
+                            fontSize: "13px",
+                            fontWeight: selected ? 600 : 500,
+                            cursor: "pointer",
+                          }}
+                        >
+                          {selected ? "✓ " : "+ "}
+                          {s.name}
+                        </button>
+                      );
+                    })}
+                </div>
               </div>
 
               {/* Preferred GCC Countries */}
@@ -873,7 +989,7 @@ export function DoctorProfileEditModal({
                     )}
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))", gap: "12px" }}>
                     <div>
                       <label className={styles.formLabel}>License Type / Title *</label>
                       <input
@@ -979,7 +1095,7 @@ export function DoctorProfileEditModal({
                     )}
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))", gap: "12px" }}>
                     <div>
                       <label className={styles.formLabel}>Hospital / Healthcare Organization *</label>
                       <input
@@ -1004,7 +1120,7 @@ export function DoctorProfileEditModal({
                     </div>
                   </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "10px" }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 260px), 1fr))", gap: "12px", marginTop: "10px" }}>
                     <div>
                       <label className={styles.formLabel}>Start Date</label>
                       <input
@@ -1171,8 +1287,11 @@ export function DoctorProfileEditModal({
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
+            flexWrap: "wrap",
+            gap: "10px",
             paddingTop: "16px",
             borderTop: "1px solid #e2e8f0",
+            flexShrink: 0,
           }}
         >
           <div>
@@ -1188,8 +1307,8 @@ export function DoctorProfileEditModal({
             )}
           </div>
 
-          <div style={{ display: "flex", gap: "10px" }}>
-            <button type="button" onClick={onClose} className={styles.btnSecondary} disabled={submitting}>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "flex-end", gap: "10px", marginLeft: "auto" }}>
+            <button type="button" onClick={requestClose} className={styles.btnSecondary} disabled={submitting}>
               Cancel
             </button>
             {currentStep < 6 ? (
@@ -1214,6 +1333,7 @@ export function DoctorProfileEditModal({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

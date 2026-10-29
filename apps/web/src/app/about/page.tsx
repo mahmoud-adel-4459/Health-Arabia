@@ -1,15 +1,20 @@
 import { ArrowRight } from "iconsax-react";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { getAboutContent } from "@/lib/public-content";
 import styles from "@/components/pages/pages.module.css";
 
-export const metadata: Metadata = {
+const fallbackMetadata: Metadata = {
   title: "About Our Company | Health Arabia",
   description:
     "HealthArabia is a premier Saudi-owned specialist medical recruitment consultancy assisting world-class clinical leaders to relocate seamlessly across the GCC.",
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("ABOUT", fallbackMetadata);
+}
 
 export default async function AboutPage() {
   const content = await getAboutContent();

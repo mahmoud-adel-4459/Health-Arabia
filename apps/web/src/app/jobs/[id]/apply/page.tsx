@@ -160,8 +160,8 @@ export default function ApplyJobPage({
         }
 
         if (!authRes.ok) {
-          router.replace(`/login/doctor?returnTo=/jobs/${jobId}/apply`);
-          return;
+          // Server/proxy errors are not a signed-out state; do not bounce a signed-in doctor to login.
+          throw new Error("We could not verify your session right now. Please try again in a moment.");
         }
 
         const authData = await authRes.json();
@@ -210,7 +210,8 @@ export default function ApplyJobPage({
         setNationalityId(json.prefill.nationalityId || (json.options.countries[0]?.id ?? ""));
         setCurrentLocation(json.prefill.currentLocation || "");
         setCurrentJobTitle(json.prefill.currentJobTitle || "");
-        setSpecialtyId(json.prefill.specialtyId || (json.options.cities[0]?.id ?? ""));
+        // Empty falls back to the job specialty on the server; never default to an unrelated id.
+        setSpecialtyId(json.prefill.specialtyId || "");
         setYearsOfExperience(json.prefill.yearsOfExperience || 0);
 
         if (json.options.noticePeriods.length > 0) {
@@ -851,20 +852,28 @@ export default function ApplyJobPage({
                         <select
                           value={noticePeriodId}
                           onChange={(e) => setNoticePeriodId(e.target.value)}
+                          // Notice period options are platform-managed and still awaiting client approval;
+                          // until they exist the field is disabled and submits no value.
+                          disabled={data.options.noticePeriods.length === 0}
                           style={{
                             width: "100%",
                             padding: "12px 14px",
                             borderRadius: "10px",
                             border: "1px solid #cbd5e1",
                             fontSize: "14px",
-                            backgroundColor: "#fff",
+                            backgroundColor: data.options.noticePeriods.length === 0 ? "#f8fafc" : "#fff",
+                            color: data.options.noticePeriods.length === 0 ? "#8e9baa" : undefined,
                           }}
                         >
-                          {data.options.noticePeriods.map((np) => (
-                            <option key={np.id} value={np.id}>
-                              {np.name}
-                            </option>
-                          ))}
+                          {data.options.noticePeriods.length === 0 ? (
+                            <option value="">Options pending client approval</option>
+                          ) : (
+                            data.options.noticePeriods.map((np) => (
+                              <option key={np.id} value={np.id}>
+                                {np.name}
+                              </option>
+                            ))
+                          )}
                         </select>
                       </div>
 

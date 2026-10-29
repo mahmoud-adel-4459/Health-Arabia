@@ -27,8 +27,8 @@ interface DoctorProfileData {
   currentPosition: string;
   about: string;
   isAvailable: boolean;
-  grade: string;
-  location: string;
+  primarySpecialtyName: string;
+  location: string | null;
   photoUrl: string | null;
   cv: {
     id: string;
@@ -48,7 +48,7 @@ interface DoctorProfileData {
     id: string;
     degree: string;
     institution: string;
-    year: string;
+    year: string | null;
   }>;
   licenses: Array<{
     id: string;
@@ -86,12 +86,12 @@ export default function DoctorProfilePage() {
       // Verify active session & role
       const sessionRes = await fetch("/api/auth/me", { credentials: "include" });
       if (!sessionRes.ok) {
-        router.replace("/login/doctor");
+        router.replace("/login/doctor?returnTo=/profile/doctor");
         return;
       }
       const sessionData = await sessionRes.json();
       if (sessionData.user?.role !== "DOCTOR") {
-        router.replace("/login/doctor");
+        router.replace("/login/doctor?returnTo=/profile/doctor");
         return;
       }
 
@@ -284,17 +284,21 @@ export default function DoctorProfilePage() {
                     )}
                   </div>
                   <p className={styles.profileHeroSubtitle}>
-                    {profile.jobTitle} • {profile.yearsOfExperience} Years Experience
+                    {[profile.jobTitle, `${profile.yearsOfExperience} Years Experience`].filter(Boolean).join(" • ")}
                   </p>
                   <div className={styles.profileHeroMeta}>
-                    <div style={{ display: "flex", alignContent: "center", gap: "4px" }}>
-                      <Location size={16} color="currentColor" variant="Outline" />
-                      <span>{profile.location}</span>
-                    </div>
-                    <div style={{ display: "flex", alignContent: "center", gap: "4px" }}>
-                      <Teacher size={16} color="currentColor" variant="Outline" />
-                      <span>{profile.grade}</span>
-                    </div>
+                    {profile.location && (
+                      <div style={{ display: "flex", alignContent: "center", gap: "4px" }}>
+                        <Location size={16} color="currentColor" variant="Outline" />
+                        <span>{profile.location}</span>
+                      </div>
+                    )}
+                    {profile.primarySpecialtyName && (
+                      <div style={{ display: "flex", alignContent: "center", gap: "4px" }}>
+                        <Teacher size={16} color="currentColor" variant="Outline" />
+                        <span>{profile.primarySpecialtyName}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -330,7 +334,11 @@ export default function DoctorProfilePage() {
                 {/* ABOUT ME Card */}
                 <div className={styles.profileCard}>
                   <h2 className={styles.profileCardHeading}>About Me</h2>
-                  <p className={styles.profileBodyText}>{profile.about}</p>
+                  {profile.about ? (
+                    <p className={styles.profileBodyText}>{profile.about}</p>
+                  ) : (
+                    <p style={{ color: "#8e9baa", fontSize: "14px" }}>No professional summary added.</p>
+                  )}
                 </div>
 
                 {/* PROFESSIONAL EXPERIENCE Card */}
@@ -362,7 +370,7 @@ export default function DoctorProfilePage() {
                       <div key={edu.id} className={styles.experienceItem}>
                         <h3 className={styles.experienceTitle}>{edu.degree}</h3>
                         <span className={styles.experienceOrg}>
-                          {edu.institution} — {edu.year}
+                          {edu.year ? `${edu.institution} — ${edu.year}` : edu.institution}
                         </span>
                       </div>
                     ))
@@ -377,7 +385,7 @@ export default function DoctorProfilePage() {
                   <h2 className={styles.profileCardHeading}>Medical Specialties</h2>
                   <div className={styles.tagsCloud}>
                     {profile.specialties.length === 0 ? (
-                      <span className={styles.specialtyPill}>Paediatric Cardiology</span>
+                      <p style={{ color: "#8e9baa", fontSize: "14px" }}>No specialties listed.</p>
                     ) : (
                       profile.specialties.map((spec, idx) => (
                         <span key={idx} className={styles.specialtyPill}>
@@ -391,9 +399,11 @@ export default function DoctorProfilePage() {
                 {/* CURRENT POSITION Card */}
                 <div className={styles.profileCard}>
                   <h2 className={styles.profileCardHeading}>Current Position</h2>
-                  <p style={{ fontSize: "16px", fontWeight: 700, color: "#0a2647" }}>
-                    {profile.currentPosition}
-                  </p>
+                  {profile.currentPosition ? (
+                    <p style={{ fontSize: "16px", fontWeight: 700, color: "#0a2647" }}>{profile.currentPosition}</p>
+                  ) : (
+                    <p style={{ color: "#8e9baa", fontSize: "14px" }}>No current position added.</p>
+                  )}
                 </div>
 
                 {/* LICENSES & CERTIFICATIONS Card */}

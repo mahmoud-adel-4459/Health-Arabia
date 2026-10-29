@@ -44,7 +44,7 @@ body {
   margin: 0;
   background: var(--page-bg);
   color: var(--blue-500);
-  font-family: var(--font-carlito), Calibri, "Segoe UI", sans-serif;
+  font-family: var(--font-carlito, Carlito), Calibri, "Segoe UI", sans-serif;
   font-size: 16px;
   line-height: normal;
 }

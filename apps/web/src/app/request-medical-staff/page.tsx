@@ -5,8 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { TickCircle, ArrowLeft, InfoCircle, Briefcase } from "iconsax-react";
 import { SiteHeader } from "@/components/site/SiteHeader";
-import { SiteFooter } from "@/components/site/SiteFooter";
-import { defaultFooterContent, defaultHeaderContent } from "@/lib/home-content";
+import { SimpleAuthFooter } from "@/components/site/SimpleAuthFooter";
+import { defaultHeaderContent } from "@/lib/home-content";
 import styles from "@/components/portal/portal.module.css";
 
 export const dynamic = "force-dynamic";
@@ -96,12 +96,12 @@ export default function RequestMedicalStaffPage() {
         // 1. Check authenticated session
         const sessionRes = await fetch("/api/auth/me", { credentials: "include" }).catch(() => null);
         if (!sessionRes || !sessionRes.ok) {
-          router.replace("/login/facility");
+          router.replace("/login/facility?returnTo=/request-medical-staff");
           return;
         }
         const sessionData = await sessionRes.json();
         if (sessionData.user?.role !== "FACILITY") {
-          router.replace("/login/facility");
+          router.replace("/login/facility?returnTo=/request-medical-staff");
           return;
         }
 
@@ -704,7 +704,8 @@ export default function RequestMedicalStaffPage() {
         </div>
       </main>
 
-      <SiteFooter content={defaultFooterContent} />
+      {/* Figma 440:3528 uses the slim copyright footer */}
+      <SimpleAuthFooter />
     </div>
   );
 }

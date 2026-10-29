@@ -5,59 +5,56 @@ type RateLimitRecord = {
   resetAt: number;
 };
 
-// In-memory sliding window store for rate limiting login attempts by client IP
-const loginAttempts = new Map<string, RateLimitRecord>();
+// In-memory fixed-window limiter keyed by client IP. req.ip honours the app's "trust proxy" setting
+// (TRUST_PROXY), so a client cannot dodge the limit by sending its own X-Forwarded-For header.
+// State is per process: run a shared limiter (e.g. at the proxy) if the API is scaled to several instances.
+const stores: Map<string, RateLimitRecord>[] = [];
 
-const WINDOW_MS = 15 * 60 * 1000; // 15 minutes
-const MAX_ATTEMPTS = 10; // Max 10 attempts per 15 minutes per IP
-
-// Periodically clean up expired records every 5 minutes
 setInterval(() => {
   const now = Date.now();
-  for (const [key, record] of loginAttempts.entries()) {
-    if (now > record.resetAt) {
-      loginAttempts.delete(key);
+  for (const store of stores) {
+    for (const [key, record] of store.entries()) {
+      if (now > record.resetAt) store.delete(key);
     }
   }
 }, 5 * 60 * 1000).unref();
 
-export function loginRateLimiter(req: Request, res: Response, next: NextFunction) {
-  // Use client IP from request or x-forwarded-for
-  const ip =
-    (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
-    req.socket.remoteAddress ||
-    "unknown-ip";
+const clientKey = (req: Request) => req.ip || req.socket.remoteAddress || "unknown-ip";
 
-  const now = Date.now();
-  const record = loginAttempts.get(ip);
+export function createRateLimiter({ windowMs, max, message }: { windowMs: number; max: number; message: string }) {
+  const attempts = new Map<string, RateLimitRecord>();
+  stores.push(attempts);
+  const middleware = (req: Request, res: Response, next: NextFunction) => {
+    const ip = clientKey(req);
+    const now = Date.now();
+    const record = attempts.get(ip);
 
-  if (!record || now > record.resetAt) {
-    loginAttempts.set(ip, { count: 1, resetAt: now + WINDOW_MS });
-    return next();
-  }
+    if (!record || now > record.resetAt) {
+      attempts.set(ip, { count: 1, resetAt: now + windowMs });
+      return next();
+    }
 
-  if (record.count >= MAX_ATTEMPTS) {
-    const retryAfterSec = Math.ceil((record.resetAt - now) / 1000);
-    res.set("Retry-After", String(retryAfterSec));
-    res.status(429).json({
-      status: "error",
-      message: "Too many login attempts. Please try again later.",
-      code: "RATE_LIMITED",
-    });
-    return;
-  }
+    if (record.count >= max) {
+      res.set("Retry-After", String(Math.ceil((record.resetAt - now) / 1000)));
+      res.status(429).json({ status: "error", message, code: "RATE_LIMITED" });
+      return;
+    }
 
-  record.count += 1;
-  next();
+    record.count += 1;
+    next();
+  };
+  return { middleware, reset: (req: Request) => attempts.delete(clientKey(req)) };
 }
 
-/**
- * Reset rate limit counter upon successful authentication
- */
+const login = createRateLimiter({ windowMs: 15 * 60 * 1000, max: 10, message: "Too many login attempts. Please try again later." });
+export const loginRateLimiter = login.middleware;
+
+/** Reset the login counter upon successful authentication */
 export function resetLoginRateLimit(req: Request) {
-  const ip =
-    (req.headers["x-forwarded-for"] as string)?.split(",")[0]?.trim() ||
-    req.socket.remoteAddress ||
-    "unknown-ip";
-  loginAttempts.delete(ip);
+  login.reset(req);
 }
+
+// Anonymous write endpoints (registration, public forms, uploads). Generous enough for real users.
+export const registrationRateLimiter = createRateLimiter({ windowMs: 60 * 60 * 1000, max: 30, message: "Too many registration attempts. Please try again later." }).middleware;
+export const publicFormRateLimiter = createRateLimiter({ windowMs: 60 * 60 * 1000, max: 30, message: "Too many submissions. Please try again later." }).middleware;
+export const uploadRateLimiter = createRateLimiter({ windowMs: 60 * 60 * 1000, max: 120, message: "Too many uploads. Please try again later." }).middleware;

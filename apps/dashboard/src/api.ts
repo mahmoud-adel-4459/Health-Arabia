@@ -11,36 +11,13 @@ import type {
 } from "./types";
 
 const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
-const TOKEN_KEY = "ha_admin_token";
-
-export function getStoredToken(): string | null {
-  try {
-    return localStorage.getItem(TOKEN_KEY);
-  } catch {
-    return null;
-  }
-}
-
-export function setStoredToken(token: string | null) {
-  try {
-    if (token) {
-      localStorage.setItem(TOKEN_KEY, token);
-    } else {
-      localStorage.removeItem(TOKEN_KEY);
-    }
-  } catch {}
-}
-
+// Authentication is the API's HttpOnly admin session cookie (sent via credentials: "include").
+// No token is ever read, stored or sent from JavaScript.
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = getStoredToken();
   const headers = new Headers(options.headers || {});
 
   if (!headers.has("Content-Type") && !(options.body instanceof FormData)) {
     headers.set("Content-Type", "application/json");
-  }
-
-  if (token && !headers.has("Authorization")) {
-    headers.set("Authorization", `Bearer ${token}`);
   }
 
   const response = await fetch(`${API_BASE}${path}`, {
@@ -56,6 +33,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     const error = new Error(errorMsg);
     (error as any).status = response.status;
     (error as any).code = data?.code;
+    (error as any).field = data?.field;
     throw error;
   }
 
@@ -69,39 +47,28 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 export async function loginAdmin(email: string, password: string): Promise<AdminUser> {
   const data = await request<{
     status: string;
-    token?: string;
     user: AdminUser;
   }>("/auth/login/admin", {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
 
-  if (data.token) {
-    setStoredToken(data.token);
-  }
-
   return data.user;
 }
 
 export async function getCurrentAdmin(): Promise<AdminUser | null> {
   try {
-    const data = await request<{ status: string; user: AdminUser | null }>("/auth/me");
-    if (data.user?.role !== "PLATFORM_ADMIN") {
-      setStoredToken(null);
-      return null;
-    }
-    return data.user;
+    const data = await request<{ status: string; user: AdminUser | null }>("/auth/me?scope=admin");
+    return data.user?.role === "PLATFORM_ADMIN" ? data.user : null;
   } catch {
-    setStoredToken(null);
     return null;
   }
 }
 
 export async function logoutAdmin(): Promise<void> {
   try {
-    await request("/auth/logout", { method: "POST" });
+    await request("/auth/logout?scope=admin", { method: "POST" });
   } catch {}
-  setStoredToken(null);
 }
 
 // ---------------------------------------------------------------------------
@@ -153,8 +120,41 @@ export async function rejectAccount(id: string, reason: string): Promise<void> {
   });
 }
 
+export async function suspendAccount(id: string, reason: string): Promise<void> {
+  await request(`/admin/accounts/${id}/suspend`, { method: "POST", body: JSON.stringify({ reason }) });
+}
+
+export async function unsuspendAccount(id: string, reason: string): Promise<void> {
+  await request(`/admin/accounts/${id}/unsuspend`, { method: "POST", body: JSON.stringify({ reason }) });
+}
+
+export async function getDeletionRequests(params: { status?: string; search?: string; page?: number }): Promise<import("./types").DeletionRequestsResponse> {
+  const q = new URLSearchParams();
+  if (params.status && params.status !== "ALL") q.set("status", params.status);
+  if (params.search) q.set("search", params.search);
+  if (params.page) q.set("page", String(params.page));
+  const qs = q.toString();
+  return request(`/admin/deletion-requests${qs ? `?${qs}` : ""}`);
+}
+
+export async function getDeletionRequest(id: string): Promise<import("./types").DeletionRequestDetail> {
+  const res = await request<{ request: import("./types").DeletionRequestDetail }>(`/admin/deletion-requests/${id}`);
+  return res.request;
+}
+
+export async function decideDeletionRequest(id: string, action: "review" | "reject" | "complete", text?: string): Promise<void> {
+  await request(`/admin/deletion-requests/${id}/${action}`, { method: "POST", body: JSON.stringify(action === "reject" ? { reason: text } : { note: text }) });
+}
+
 export function getFileDownloadUrl(fileId: string): string {
   return `${API_BASE}/files/${fileId}/download`;
+}
+
+// API payloads store file links as site-relative "/api/..." paths; on the dashboard origin
+// those must point at the API server instead.
+export function resolveApiUrl(url: string | null | undefined): string | null {
+  if (!url) return null;
+  return url.startsWith("/api/") ? `${API_BASE.replace(/\/api\/?$/, "")}${url}` : url;
 }
 
 // ---------------------------------------------------------------------------
@@ -288,6 +288,10 @@ export async function getJobSubmissionDetail(id: string): Promise<import("./type
   return res.job;
 }
 
+export async function requestJobChanges(id: string, reason: string): Promise<{ message: string }> {
+  return request(`/admin/jobs/${id}/request-changes`, { method: "POST", body: JSON.stringify({ reason }) });
+}
+
 export async function approveJobSubmission(id: string): Promise<void> {
   await request(`/admin/jobs/${id}/approve`, {
     method: "POST",
@@ -307,16 +311,136 @@ export async function rejectJobSubmission(id: string, reason: string): Promise<v
 
 export async function getAdminHireRequests(params: {
   status?: string;
+  search?: string;
+  attention?: string;
   page?: number;
   limit?: number;
 }): Promise<import("./types").AdminHireRequestsResponse> {
   const q = new URLSearchParams();
   if (params.status && params.status !== "ALL") q.set("status", params.status);
+  if (params.search) q.set("search", params.search);
+  if (params.attention) q.set("attention", params.attention);
   if (params.page) q.set("page", String(params.page));
   if (params.limit) q.set("limit", String(params.limit));
 
   const qs = q.toString();
   return request(`/admin/hire-requests${qs ? `?${qs}` : ""}`);
+}
+
+export async function getAdminHireRequestDetail(id: string): Promise<import("./types").AdminHireRequestDetail> {
+  const data = await request<{ hireRequest: import("./types").AdminHireRequestDetail }>(`/admin/hire-requests/${id}`);
+  return data.hireRequest;
+}
+
+export async function getContactSubmission(id: string): Promise<import("./types").ContactSubmissionDetail> {
+  const data = await request<{ submission: import("./types").ContactSubmissionDetail }>(`/admin/contact-submissions/${id}`);
+  return data.submission;
+}
+
+// ---------------------------------------------------------------------------
+// Doctor Applications (platform view: doctor identity + job + facility)
+// ---------------------------------------------------------------------------
+
+export async function getAdminApplications(params: {
+  status?: string;
+  search?: string;
+  jobId?: string;
+  facilityId?: string;
+  page?: number;
+  limit?: number;
+}): Promise<import("./types").AdminApplicationsResponse> {
+  const q = new URLSearchParams();
+  if (params.status && params.status !== "ALL") q.set("status", params.status);
+  if (params.search) q.set("search", params.search);
+  if (params.jobId) q.set("jobId", params.jobId);
+  if (params.facilityId) q.set("facilityId", params.facilityId);
+  if (params.page) q.set("page", String(params.page));
+  if (params.limit) q.set("limit", String(params.limit));
+  const qs = q.toString();
+  return request(`/admin/applications${qs ? `?${qs}` : ""}`);
+}
+
+export async function getAdminApplicationDetail(id: string): Promise<import("./types").AdminApplicationDetail> {
+  const data = await request<{ application: import("./types").AdminApplicationDetail }>(`/admin/applications/${id}`);
+  return data.application;
+}
+
+export async function completePlacement(id: string, note?: string): Promise<{ message: string; hireRequestCompleted: boolean }> {
+  return request(`/admin/applications/${id}/complete-placement`, { method: "POST", body: JSON.stringify({ note }) });
+}
+
+// ---------------------------------------------------------------------------
+// Platform areas: overview, directory listings, reference data, contact submissions, audit history
+// ---------------------------------------------------------------------------
+
+export async function getAdminOverview(days = 30): Promise<import("./types").AdminOverview> {
+  const data = await request<{ overview: import("./types").AdminOverview }>(`/admin/overview?days=${days}`);
+  return data.overview;
+}
+
+export async function getFacilityListings(filter = "ALL"): Promise<import("./types").FacilityListingRow[]> {
+  const data = await request<{ facilities: import("./types").FacilityListingRow[] }>(`/admin/facility-listings?filter=${encodeURIComponent(filter)}`);
+  return data.facilities;
+}
+
+// Content / reference-data editing (all admin-only; nothing is deleted, records are hidden or deactivated)
+type Save = { changed?: boolean; message: string; id?: string };
+const send = (method: string, path: string, body: unknown): Promise<Save> => request(path, { method, body: JSON.stringify(body) });
+
+export const getBadgeCounts = () => request<{ counts: import("./types").BadgeCounts }>("/admin/badge-counts").then((r) => r.counts);
+export const getContentBlocks = (q: { page?: string; locale?: string }) => request<{ blocks: import("./types").ContentBlockRow[] }>(`/admin/content/blocks?${new URLSearchParams(Object.entries(q).filter(([, v]) => v) as [string, string][])}`).then((r) => r.blocks);
+export const updateContentBlock = (id: string, body: Record<string, unknown>) => send("PATCH", `/admin/content/blocks/${id}`, body);
+export const getFaqs = () => request<{ faqs: import("./types").FaqRow[] }>("/admin/content/faqs").then((r) => r.faqs);
+export const createFaq = (body: Record<string, unknown>) => send("POST", "/admin/content/faqs", body);
+export const updateFaq = (id: string, body: Record<string, unknown>) => send("PATCH", `/admin/content/faqs/${id}`, body);
+export const getCountryContent = () => request<{ countries: import("./types").CountryContentRow[] }>("/admin/content/countries").then((r) => r.countries);
+export const createCountry = (body: Record<string, unknown>) => send("POST", "/admin/content/countries", body) as Promise<{ id: string; message?: string }>;
+export const getSiteGeneral = () => request<{ general: import("./types").SiteGeneral; builtIn: { brandName: string; logoUrl: string } }>("/admin/settings/general");
+export const saveSiteGeneral = (body: Record<string, unknown>) => send("PATCH", "/admin/settings/general", body);
+export const getSeoSettings = () => request<import("./types").SeoSettings>("/admin/settings/seo");
+export const saveSeoSettings = (scope: string, values: Record<string, unknown>) => send("PATCH", "/admin/settings/seo", { scope, values });
+export const updateCountry = (id: string, body: Record<string, unknown>) => send("PATCH", `/admin/content/countries/${id}`, body);
+export const addGuideSection = (countryId: string, body: Record<string, unknown>) => send("POST", `/admin/content/countries/${countryId}/sections`, body);
+export const updateGuideSection = (id: string, body: Record<string, unknown>) => send("PATCH", `/admin/content/sections/${id}`, body);
+export const getContentLists = () => request<{ lists: Record<string, import("./types").ListRow[]> }>("/admin/content/lists").then((r) => r.lists);
+export const updateListItem = (list: string, id: string, body: Record<string, unknown>) => send("PATCH", `/admin/content/lists/${list}/${id}`, body);
+export const createListItem = (list: string, body: Record<string, unknown>) => send("POST", `/admin/content/lists/${list}`, body);
+
+export async function getReferenceData(): Promise<import("./types").ReferenceDataResponse> {
+  return request("/admin/reference-data");
+}
+
+export async function getContactSubmissions(params: { status?: string; search?: string; page?: number }): Promise<import("./types").ContactSubmissionsResponse> {
+  const q = new URLSearchParams();
+  if (params.status && params.status !== "ALL") q.set("status", params.status);
+  if (params.search) q.set("search", params.search);
+  if (params.page) q.set("page", String(params.page));
+  const qs = q.toString();
+  return request(`/admin/contact-submissions${qs ? `?${qs}` : ""}`);
+}
+
+export async function updateContactSubmissionStatus(id: string, status: string, internalNote?: string): Promise<{ message: string }> {
+  return request(`/admin/contact-submissions/${id}/status`, { method: "POST", body: JSON.stringify({ status, internalNote }) });
+}
+
+export async function getAuditLogs(params: { action?: string; entityType?: string; page?: number }): Promise<import("./types").AuditLogsResponse> {
+  const q = new URLSearchParams();
+  if (params.action) q.set("action", params.action);
+  if (params.entityType) q.set("entityType", params.entityType);
+  if (params.page) q.set("page", String(params.page));
+  const qs = q.toString();
+  return request(`/admin/audit-logs${qs ? `?${qs}` : ""}`);
+}
+
+// Facility public Hospitals-directory listing (approved facilities only)
+export async function setFacilityPublicListing(
+  accountId: string,
+  enabled: boolean
+): Promise<{ changed: boolean; isListedPublicly: boolean; message: string }> {
+  return request(`/admin/accounts/${accountId}/public-listing`, {
+    method: "POST",
+    body: JSON.stringify({ enabled }),
+  });
 }
 
 export async function approveIdentityRelease(

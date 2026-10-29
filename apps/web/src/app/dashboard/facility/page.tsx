@@ -34,8 +34,12 @@ interface FacilityDashboardData {
     totalApplicants: number;
     recentApplicants: number;
   };
+  // Last 6 calendar months, oldest first. admitted = applications received that month;
+  // completed = of those, applications with a final outcome (hired, not selected, withdrawn).
   analytics: Array<{
-    day: string;
+    month: string;
+    label: string;
+    year: number;
     admitted: number;
     completed: number;
   }>;
@@ -123,12 +127,12 @@ export default function FacilityDashboardPage() {
         // Verify active session & role
         const sessionRes = await fetch("/api/auth/me", { credentials: "include" });
         if (!sessionRes.ok) {
-          router.replace("/login/facility");
+          router.replace("/login/facility?returnTo=/dashboard/facility");
           return;
         }
         const sessionData = await sessionRes.json();
         if (sessionData.user?.role !== "FACILITY") {
-          router.replace("/login/facility");
+          router.replace("/login/facility?returnTo=/dashboard/facility");
           return;
         }
 
@@ -342,17 +346,24 @@ export default function FacilityDashboardPage() {
             </div>
 
             {/* Main 2-Column Grid */}
-            <div className={styles.dashboardGrid}>
+            <div className={`${styles.dashboardGrid} ${styles.dashboardGridFacility}`}>
               {/* Left Column */}
               <div className={styles.mainColumn}>
                 {/* JOB APPLICATIONS OVERVIEW Card */}
                 <div className={styles.panelCard} style={{ padding: "28px" }}>
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "8px" }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px", marginBottom: "8px" }}>
                     <div>
                       <h2 className={styles.panelTitle} style={{ fontSize: "16px" }}>
                         Job Applications Overview
                       </h2>
-                      <p style={{ fontSize: "14px", color: "#8e9baa" }}>Analytics for the last 30 days</p>
+                      <p style={{ fontSize: "14px", color: "#8e9baa" }}>
+                        Applications received per month
+                        {data.analytics.length > 0
+                          ? ` (${data.analytics[0].label} ${data.analytics[0].year} – ${
+                              data.analytics[data.analytics.length - 1].label
+                            } ${data.analytics[data.analytics.length - 1].year})`
+                          : ""}
+                      </p>
                     </div>
 
                     <div className={styles.chartLegend}>
@@ -365,24 +376,54 @@ export default function FacilityDashboardPage() {
                     </div>
                   </div>
 
-                  {/* Visual Bar Chart */}
-                  <div className={styles.barChartContainer}>
-                    {data.analytics.map((item, idx) => {
-                      const maxVal = 50;
-                      const tealHeight = Math.min(100, Math.round((item.admitted / maxVal) * 100));
-                      const slateHeight = Math.min(100, Math.round((item.completed / maxVal) * 100));
-
+                  {/* Visual Bar Chart: real monthly counts, scaled to the largest month */}
+                  {(() => {
+                    const totalAdmitted = data.analytics.reduce((sum, m) => sum + m.admitted, 0);
+                    if (totalAdmitted === 0) {
                       return (
-                        <div key={idx} className={styles.chartColumn}>
-                          <div className={styles.barsGroup}>
-                            <div className={styles.barTeal} style={{ height: `${tealHeight}%` }} title={`Admitted: ${item.admitted}`} />
-                            <div className={styles.barSlate} style={{ height: `${slateHeight}%` }} title={`Completed: ${item.completed}`} />
-                          </div>
-                          <span className={styles.chartDayLabel}>{item.day}</span>
+                        <div
+                          className={styles.barChartContainer}
+                          style={{ alignItems: "center", justifyContent: "center" }}
+                          role="status"
+                        >
+                          <p style={{ fontSize: "14px", color: "#8e9baa", textAlign: "center" }}>
+                            {data.analytics.length === 0
+                              ? "Application analytics are available once your facility account is approved."
+                              : "No applications received in this period yet."}
+                          </p>
                         </div>
                       );
-                    })}
-                  </div>
+                    }
+                    const maxVal = Math.max(1, ...data.analytics.map((m) => Math.max(m.admitted, m.completed)));
+                    const summary = data.analytics
+                      .map((m) => `${m.label} ${m.year}: ${m.admitted} received, ${m.completed} completed`)
+                      .join("; ");
+                    return (
+                      <div className={styles.barChartContainer} role="img" aria-label={`Applications per month. ${summary}`}>
+                        {data.analytics.map((item) => {
+                          const tealHeight = Math.round((item.admitted / maxVal) * 100);
+                          const slateHeight = Math.round((item.completed / maxVal) * 100);
+                          return (
+                            <div key={item.month} className={styles.chartColumn}>
+                              <div className={styles.barsGroup}>
+                                <div
+                                  className={styles.barTeal}
+                                  style={{ height: `${tealHeight}%` }}
+                                  title={`${item.label} ${item.year} · Admitted (received): ${item.admitted}`}
+                                />
+                                <div
+                                  className={styles.barSlate}
+                                  style={{ height: `${slateHeight}%` }}
+                                  title={`${item.label} ${item.year} · Completed (final outcome): ${item.completed}`}
+                                />
+                              </div>
+                              <span className={styles.chartDayLabel}>{item.label}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* LAST ADDED JOBS Section */}
@@ -430,6 +471,21 @@ export default function FacilityDashboardPage() {
                                 ✓ Published
                               </span>
                             )}
+                            {job.status === "CHANGES_REQUESTED" && (
+                              <span
+                                style={{
+                                  fontSize: "12px",
+                                  fontWeight: 700,
+                                  backgroundColor: "#fff7ed",
+                                  color: "#c2410c",
+                                  border: "1px solid #fed7aa",
+                                  borderRadius: "12px",
+                                  padding: "2px 10px",
+                                }}
+                              >
+                                ✎ Changes requested
+                              </span>
+                            )}
                             {job.status === "REJECTED" && (
                               <span
                                 style={{
@@ -448,6 +504,23 @@ export default function FacilityDashboardPage() {
                           </div>
                           <span className={styles.jobTypePill}>{job.employmentType}</span>
                         </div>
+
+                        {job.status === "CHANGES_REQUESTED" && job.reviewNote && (
+                          <div
+                            role="note"
+                            style={{
+                              marginTop: "8px",
+                              padding: "8px 12px",
+                              backgroundColor: "#fff7ed",
+                              border: "1px solid #fed7aa",
+                              borderRadius: "8px",
+                              fontSize: "13px",
+                              color: "#9a3412",
+                            }}
+                          >
+                            <strong>The platform asked for changes:</strong> {job.reviewNote}
+                          </div>
+                        )}
 
                         {job.status === "REJECTED" && job.reviewNote && (
                           <div
@@ -494,9 +567,13 @@ export default function FacilityDashboardPage() {
                             <Link href={`/jobs/${job.id}`} className={styles.jobActionLink}>
                               View public details <ArrowRight size={16} color="currentColor" />
                             </Link>
+                          ) : job.status === "CHANGES_REQUESTED" ? (
+                            <Link href={`/dashboard/facility/jobs/${job.id}/edit`} className={styles.jobActionLink}>
+                              Edit and resubmit <ArrowRight size={16} color="currentColor" />
+                            </Link>
                           ) : (
                             <span style={{ fontSize: "13px", color: "#64748b", fontWeight: 600 }}>
-                              {job.status === "PENDING_REVIEW" ? "Under platform review" : "Submission rejected"}
+                              {job.status === "PENDING_REVIEW" ? "Under platform review" : job.status === "REJECTED" ? "Submission rejected" : "Not published"}
                             </span>
                           )}
                         </div>
@@ -587,54 +664,22 @@ export default function FacilityDashboardPage() {
                         };
 
                         return (
-                          <div
-                            key={jobGroup.jobId}
-                            style={{
-                              background: "#f8fafc",
-                              border: "1px solid #e2e8f0",
-                              borderRadius: "12px",
-                              padding: "16px",
-                              display: "flex",
-                              flexDirection: "column",
-                              gap: "12px",
-                            }}
-                          >
-                            {/* Job Group Header */}
-                            <div
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "space-between",
-                                flexWrap: "wrap",
-                                gap: "8px",
-                              }}
-                            >
-                              <div>
-                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                  <span className={styles.candidateCodeTag} style={{ marginLeft: 0 }}>
-                                    {jobGroup.jobRef}
-                                  </span>
-                                  <h3 style={{ fontSize: "15px", fontWeight: 700, color: "#0a2647", margin: 0 }}>
-                                    {jobGroup.jobTitle}
-                                  </h3>
+                          <div key={jobGroup.jobId} className={styles.applicantGroup}>
+                            {/* Job Group Header: requisition, applicant count, Select All, selected count and Request Hire stay together */}
+                            <div className={styles.applicantGroupHeader}>
+                              <div className={styles.applicantGroupTitleBlock}>
+                                <div className={styles.applicantGroupTitleRow}>
+                                  <span className={styles.candidateCodeTag}>{jobGroup.jobRef}</span>
+                                  <h3 className={styles.applicantGroupTitle}>{jobGroup.jobTitle}</h3>
                                 </div>
-                                <span style={{ fontSize: "12px", color: "#5b6e84" }}>
+                                <span className={styles.applicantMeta}>
                                   {jobGroup.totalApplicants} candidate{jobGroup.totalApplicants === 1 ? "" : "s"} applied
                                 </span>
                               </div>
 
                               {/* Per-job Batch Action Bar */}
-                              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                                <label
-                                  style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: "6px",
-                                    cursor: "pointer",
-                                    fontSize: "12px",
-                                    color: "#3b516c",
-                                  }}
-                                >
+                              <div className={styles.applicantGroupActions}>
+                                <label className={styles.selectAllLabel}>
                                   <input
                                     type="checkbox"
                                     className={styles.applicantCheckbox}
@@ -665,6 +710,13 @@ export default function FacilityDashboardPage() {
                               {jobGroup.applicants.map((applicant) => {
                                 const isSelected = selectedApplicantIds.includes(applicant.applicationId);
                                 const isRequested = applicant.status === "HIRE_REQUESTED";
+                                const releaseStatus = applicant.isIdentityReleased
+                                  ? { label: "Identity released", tone: styles.releaseReleased }
+                                  : isRequested
+                                    ? applicant.doctorConsentStatus === "DECLINED"
+                                      ? { label: "Declined by doctor", tone: styles.releaseDeclined }
+                                      : { label: "Awaiting consent", tone: styles.releasePending }
+                                    : { label: "Not requested", tone: styles.releaseNone };
 
                                 return (
                                   <div
@@ -678,39 +730,26 @@ export default function FacilityDashboardPage() {
                                         checked={isSelected}
                                         onChange={() => toggleSelectApplicant(applicant.applicationId)}
                                         disabled={data.canManageApplicants === false}
+                                        aria-label={`Select ${applicant.candidateCode}`}
                                       />
                                       <div className={styles.applicantInfo}>
-                                        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-                                          <h4 className={styles.applicantJobTitle} style={{ margin: 0 }}>
-                                            {applicant.jobTitle}
-                                          </h4>
-                                          <span className={styles.candidateCodeTag}>ID: {applicant.candidateCode}</span>
-                                        </div>
+                                        <h4 className={styles.applicantJobTitle}>{applicant.jobTitle}</h4>
                                         <span className={styles.applicantMeta}>
                                           {applicant.specialty} • {applicant.yearsOfExperience} yrs
                                         </span>
+                                        <div className={styles.applicantTagRow}>
+                                          <span className={styles.candidateCodeTag}>ID: {applicant.candidateCode}</span>
+                                          <span className={`${styles.releaseStatus} ${releaseStatus.tone}`}>{releaseStatus.label}</span>
+                                        </div>
                                       </div>
                                     </div>
 
-                                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                    <div className={styles.applicantActions}>
                                       {applicant.isIdentityReleased ? (
                                         <>
-                                          <span
-                                            style={{
-                                              fontSize: "12px",
-                                              fontWeight: 700,
-                                              color: "#1b8a8a",
-                                              background: "#e8f3f3",
-                                              padding: "4px 8px",
-                                              borderRadius: "6px",
-                                            }}
-                                          >
-                                            ● Identity Released
-                                          </span>
                                           <button
                                             type="button"
                                             className={styles.hireRequestBtn}
-                                            style={{ background: "#1b8a8a", color: "#ffffff" }}
                                             onClick={() => handleOpenRevealedCandidate(applicant.applicationId)}
                                             disabled={loadingRevealedCandidate}
                                           >
@@ -719,26 +758,14 @@ export default function FacilityDashboardPage() {
                                           {applicant.conversationId && (
                                             <button
                                               type="button"
-                                              className={styles.hireRequestBtn}
-                                              style={{ background: "#0a2647", color: "#ffffff" }}
+                                              className={`${styles.hireRequestBtn} ${styles.chatBtn}`}
                                               onClick={() => setActiveChatConversationId(applicant.conversationId || null)}
                                             >
                                               Chat
                                             </button>
                                           )}
                                         </>
-                                      ) : isRequested ? (
-                                        <button
-                                          type="button"
-                                          className={styles.hireRequestBtn}
-                                          disabled={true}
-                                          style={{ opacity: 0.7, cursor: "not-allowed" }}
-                                        >
-                                          {applicant.doctorConsentStatus === "DECLINED"
-                                            ? "Declined by Doctor"
-                                            : "Awaiting Consent"}
-                                        </button>
-                                      ) : (
+                                      ) : !isRequested ? (
                                         <button
                                           type="button"
                                           className={styles.hireRequestBtn}
@@ -747,7 +774,7 @@ export default function FacilityDashboardPage() {
                                         >
                                           Request to hire
                                         </button>
-                                      )}
+                                      ) : null}
                                     </div>
                                   </div>
                                 );

@@ -63,8 +63,9 @@ publicCountriesRouter.get("/:slug", async (req, res) => {
   const { slug } = req.params;
 
   const [country, settings] = await Promise.all([
-    prisma.country.findUnique({
-      where: { slug },
+    // Hidden countries and unpublished guides are not reachable by their address
+    prisma.country.findFirst({
+      where: { slug, isActive: true, isGuidePublished: true },
       select: {
         id: true,
         slug: true,

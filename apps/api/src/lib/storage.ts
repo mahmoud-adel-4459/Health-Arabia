@@ -2,10 +2,10 @@ import fs from "fs";
 import path from "path";
 import crypto from "crypto";
 import { prisma } from "./prisma";
+import { env } from "../config/env";
 import type { FileKind } from "../generated/prisma/client";
 
-const PRIVATE_STORAGE_DIR =
-  process.env.PRIVATE_STORAGE_PATH || path.resolve(process.cwd(), "private-storage");
+const PRIVATE_STORAGE_DIR = env.privateStoragePath;
 
 function ensureStorageDirExists(dirPath: string) {
   if (!fs.existsSync(dirPath)) {

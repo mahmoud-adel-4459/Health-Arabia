@@ -122,7 +122,8 @@ facilityRouter.get("/dashboard", async (req: Request, res: Response) => {
       }));
 
     // Flat available applicants list matching Figma cards (440:2294) with privacy protection
-    const availableApplicants = allApplications.slice(0, 10).map((app) => ({
+    // Every application (anonymous fields only); the dashboard select-all relies on the complete list
+    const availableApplicants = allApplications.map((app) => ({
       applicationId: app.id,
       jobId: app.jobId,
       jobTitle: app.jobTitle,
@@ -134,16 +135,29 @@ facilityRouter.get("/dashboard", async (req: Request, res: Response) => {
       submittedAt: app.submittedAt,
     }));
 
-    // Weekly analytics for the chart (Mon - Sun, admitted & completed)
-    const analytics = [
-      { day: "Mon", admitted: 24, completed: 14 },
-      { day: "Tue", admitted: 32, completed: 18 },
-      { day: "Wed", admitted: 40, completed: 22 },
-      { day: "Thu", admitted: 30, completed: 16 },
-      { day: "Fri", admitted: 22, completed: 12 },
-      { day: "Sat", admitted: 15, completed: 8 },
-      { day: "Sun", admitted: 18, completed: 10 },
-    ];
+    // Monthly application analytics for the chart: last 6 calendar months (UTC), oldest first.
+    //   admitted  = applications received that month (by submittedAt)
+    //   completed = of those, applications that reached a final outcome (hired, not selected, withdrawn)
+    const CHART_MONTHS = 6;
+    const FINAL_STATUSES = new Set(["HIRED", "NOT_SELECTED", "WITHDRAWN"]);
+    const now = new Date();
+    const analytics = Array.from({ length: CHART_MONTHS }, (_, i) => {
+      const monthStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - (CHART_MONTHS - 1 - i), 1));
+      return {
+        month: monthStart.toISOString().slice(0, 7), // YYYY-MM
+        label: monthStart.toLocaleString("en-US", { month: "short", timeZone: "UTC" }),
+        year: monthStart.getUTCFullYear(),
+        admitted: 0,
+        completed: 0,
+      };
+    });
+    const bucketByMonth = new Map(analytics.map((bucket) => [bucket.month, bucket]));
+    for (const app of allApplications) {
+      const bucket = bucketByMonth.get(app.submittedAt.toISOString().slice(0, 7));
+      if (!bucket) continue;
+      bucket.admitted++;
+      if (FINAL_STATUSES.has(app.status)) bucket.completed++;
+    }
 
     // Facility notifications
     const dbNotifications = await prisma.notification.findMany({
@@ -165,32 +179,7 @@ facilityRouter.get("/dashboard", async (req: Request, res: Response) => {
               type: n.type,
             };
           })
-        : [
-            {
-              id: "f-notif-1",
-              title: "New candidate application received",
-              body: "A verified Consultant Cardiologist applied to Consultant Paediatric ICU.",
-              createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-              readAt: null,
-              type: "APPLICATION_UPDATE",
-            },
-            {
-              id: "f-notif-2",
-              title: "Your facility profile was updated successfully",
-              body: "Institutional information and contact details are saved.",
-              createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-              readAt: new Date().toISOString(),
-              type: "ACCOUNT_STATUS",
-            },
-            {
-              id: "f-notif-3",
-              title: "Job requisition approved by platform",
-              body: "Consultant Paediatric ICU is now published on the active job board.",
-              createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-              readAt: new Date().toISOString(),
-              type: "JOB_REVIEW",
-            },
-          ];
+        : [] // no fabricated notifications: show the real (possibly empty) list
 
     const isApproved = user.status === "APPROVED";
 
@@ -566,6 +555,30 @@ facilityRouter.post("/hire-requests", async (req: Request, res: Response) => {
       return;
     }
 
+    // Candidates who are already hired, or who withdrew, cannot be requested again
+    const closedApplications = validApplications.filter((app) => app.status === "HIRED" || app.status === "WITHDRAWN");
+    if (closedApplications.length > 0) {
+      res.status(409).json({
+        status: "error",
+        code: "APPLICATION_CLOSED",
+        message: `These candidates can no longer be requested (already hired or withdrawn): ${closedApplications.map((app) => app.candidateCode).join(", ")}.`,
+      });
+      return;
+    }
+    // An applicant can have only one open hire request item at a time (also enforced by the database)
+    const alreadyOpen = await prisma.hireRequestItem.findMany({
+      where: { applicationId: { in: validApplications.map((a) => a.id) }, status: { notIn: ["HIRED", "REJECTED", "WITHDRAWN", "CANCELLED"] } },
+      select: { application: { select: { candidateCode: true } } },
+    });
+    if (alreadyOpen.length > 0) {
+      res.status(409).json({
+        status: "error",
+        code: "ALREADY_REQUESTED",
+        message: `A hire request is already open for: ${alreadyOpen.map((i) => i.application.candidateCode).join(", ")}. Remove them from this selection or wait for the open request to finish.`,
+      });
+      return;
+    }
+
     // Execute in transaction: create HireRequest, individual HireRequestItems, IdentityReleases, and notify doctors
     const result = await prisma.$transaction(async (tx) => {
       const hireRequest = await tx.hireRequest.create({
@@ -905,6 +918,16 @@ facilityRouter.post("/jobs", async (req: Request, res: Response) => {
   try {
     const user = (req as any).facilityUser;
 
+    // Protected feature: only platform-approved facilities can submit jobs
+    if (user.status !== "APPROVED") {
+      res.status(403).json({
+        status: "error",
+        code: "ACCOUNT_NOT_APPROVED",
+        message: "Your facility account is still awaiting platform approval. You can submit job requests once it is approved.",
+      });
+      return;
+    }
+
     const facility = await prisma.facility.findUnique({
       where: { userId: user.id },
       include: { country: true, city: true },
@@ -1173,3 +1196,172 @@ facilityRouter.get("/jobs", async (req: Request, res: Response) => {
   }
 });
 
+// ---------------------------------------------------------------------------
+// GET /api/facility/jobs/:id
+// One of the facility's own jobs, in full, for editing. Includes the platform's reason when changes were requested.
+// ---------------------------------------------------------------------------
+facilityRouter.get("/jobs/:id", async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).facilityUser;
+    const job = await prisma.job.findFirst({
+      where: { id: String(req.params.id), facility: { userId: user.id } },
+      include: { specialty: true, country: true, city: true, employmentType: true, salaryPeriod: true },
+    });
+    if (!job) {
+      res.status(404).json({ status: "error", code: "NOT_FOUND", message: "Job not found." });
+      return;
+    }
+    res.json({
+      status: "success",
+      job: {
+        id: job.id,
+        referenceNumber: `JO${String(job.referenceNumber).padStart(10, "0")}`,
+        title: job.title,
+        status: job.status,
+        reviewNote: job.reviewNote,
+        reviewedAt: job.reviewedAt,
+        canEdit: job.status === "CHANGES_REQUESTED",
+        aboutHospital: job.aboutHospital,
+        description: job.description,
+        responsibilities: job.responsibilities,
+        requirements: job.requirements,
+        benefits: job.benefits,
+        positions: job.positions,
+        minYearsExperience: job.minYearsExperience,
+        salaryMin: job.salaryMin?.toString() ?? null,
+        salaryMax: job.salaryMax?.toString() ?? null,
+        salaryCurrencyCode: job.salaryCurrencyCode,
+        salaryPeriodId: job.salaryPeriodId,
+        isUrgent: job.isUrgent,
+        specialtyId: job.specialtyId,
+        countryId: job.countryId,
+        cityId: job.cityId,
+        employmentTypeId: job.employmentTypeId,
+      },
+    });
+  } catch (error) {
+    console.error("Facility get job error:", error);
+    res.status(500).json({ status: "error", message: "Failed to load job." });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// PATCH /api/facility/jobs/:id
+// Edit and resubmit a job the platform sent back (CHANGES_REQUESTED -> PENDING_REVIEW).
+// Any other state cannot be edited here. The job stays unpublished until an admin approves it again.
+// ---------------------------------------------------------------------------
+facilityRouter.patch("/jobs/:id", async (req: Request, res: Response) => {
+  try {
+    const user = (req as any).facilityUser;
+    if (user.status !== "APPROVED") {
+      res.status(403).json({ status: "error", code: "ACCOUNT_NOT_APPROVED", message: "Your facility account is not approved." });
+      return;
+    }
+    const id = String(req.params.id);
+    const job = await prisma.job.findFirst({ where: { id, facility: { userId: user.id } } });
+    if (!job) {
+      res.status(404).json({ status: "error", code: "NOT_FOUND", message: "Job not found." });
+      return;
+    }
+    if (job.status !== "CHANGES_REQUESTED") {
+      res.status(409).json({
+        status: "error",
+        code: "INVALID_TRANSITION",
+        message: "This job can only be edited when the platform has asked for changes.",
+      });
+      return;
+    }
+
+    const b = req.body ?? {};
+    const bad = (field: string, message: string) => res.status(400).json({ status: "error", code: "INVALID_INPUT", field, message });
+    const changes: Record<string, unknown> = {};
+    const text = (field: string, value: unknown, required: boolean, max: number): string | null | undefined => {
+      if (value === undefined) return undefined;
+      const t = typeof value === "string" ? value.trim() : "";
+      if (required && !t) { bad(field, `${field === "title" ? "Job title" : "Description"} is required.`); return undefined; }
+      if (t.length > max) { bad(field, `That text is too long (max ${max} characters).`); return undefined; }
+      return t || null;
+    };
+    const list = (value: unknown): string[] =>
+      Array.isArray(value) ? value.map((i) => String(i).trim()).filter(Boolean)
+        : typeof value === "string" ? value.split("\n").map((l) => l.replace(/^[-*\u2022\d.)\s]+/, "").trim()).filter(Boolean) : [];
+
+    if (b.title !== undefined) { const t = text("title", b.title, true, 200); if (t === undefined) return; changes.title = t; }
+    if (b.description !== undefined) { const t = text("description", b.description, true, 10000); if (t === undefined) return; changes.description = t; }
+    if (b.aboutHospital !== undefined) { const t = text("aboutHospital", b.aboutHospital, false, 5000); if (t === undefined) return; changes.aboutHospital = t; }
+    for (const field of ["responsibilities", "requirements", "benefits"] as const) {
+      if (b[field] !== undefined) {
+        const items = list(b[field]);
+        if (items.length === 0) return void bad(field, "Please keep at least one item.");
+        changes[field] = items;
+      }
+    }
+    if (b.positions !== undefined) changes.positions = Math.max(1, parseInt(String(b.positions), 10) || 1);
+    if (b.minYearsExperience !== undefined) changes.minYearsExperience = b.minYearsExperience === null || b.minYearsExperience === "" ? null : Math.max(0, parseInt(String(b.minYearsExperience), 10) || 0);
+    for (const field of ["salaryMin", "salaryMax"] as const) {
+      if (b[field] !== undefined) changes[field] = b[field] === null || b[field] === "" ? null : Number(b[field]) || null;
+    }
+    if (b.salaryCurrencyCode !== undefined) changes.salaryCurrencyCode = b.salaryCurrencyCode ? String(b.salaryCurrencyCode).trim().toUpperCase() : null;
+    if (b.salaryPeriodId !== undefined) changes.salaryPeriodId = b.salaryPeriodId ? String(b.salaryPeriodId) : null;
+    if (b.isUrgent !== undefined) changes.isUrgent = Boolean(b.isUrgent);
+    for (const field of ["specialtyId", "countryId", "cityId", "employmentTypeId"] as const) {
+      if (b[field] !== undefined) {
+        if (!b[field] || typeof b[field] !== "string") return void bad(field, "Please choose a value.");
+        changes[field] = b[field];
+      }
+    }
+    if (changes.specialtyId && !(await prisma.specialty.findUnique({ where: { id: String(changes.specialtyId) } }))) return void bad("specialtyId", "Invalid specialty selected.");
+
+    // Only fields that actually differ count as changes
+    const stored: Record<string, any> = { ...job, salaryMin: job.salaryMin === null ? null : Number(job.salaryMin), salaryMax: job.salaryMax === null ? null : Number(job.salaryMax) };
+    const changedFields = Object.keys(changes).filter((k) => JSON.stringify(changes[k]) !== JSON.stringify(stored[k]));
+    if (changedFields.length === 0) {
+      res.status(400).json({ status: "error", code: "NO_CHANGES", message: "Please make at least one change before resubmitting." });
+      return;
+    }
+
+    const now = new Date();
+    const previousReason = job.reviewNote;
+    await prisma.$transaction(async (tx) => {
+      const claimed = await tx.job.updateMany({
+        where: { id, status: "CHANGES_REQUESTED", facility: { userId: user.id } },
+        data: { ...(changes as any), status: "PENDING_REVIEW", submittedAt: now, reviewNote: null },
+      });
+      if (claimed.count === 0) throw Object.assign(new Error("changed"), { code: "STATE_CHANGED" });
+      await tx.auditLog.create({
+        data: {
+          actorId: user.id,
+          action: "JOB_RESUBMITTED",
+          entityType: "Job",
+          entityId: id,
+          metadata: { jobTitle: (changes.title as string) ?? job.title, referenceNumber: job.referenceNumber, facilityId: job.facilityId, changedFields, previousReason },
+        },
+      });
+      await tx.notification.create({
+        data: {
+          userId: user.id,
+          type: "JOB_REVIEW",
+          data: {
+            title: "Job resubmitted for platform review",
+            body: `Your updated job '${(changes.title as string) ?? job.title}' was resubmitted and is pending review.`,
+            jobId: id,
+            status: "PENDING_REVIEW",
+          },
+        },
+      });
+    });
+
+    res.json({ status: "success", message: "Job resubmitted for platform review. It stays private until it is approved.", changedFields });
+  } catch (error: any) {
+    if (error?.code === "STATE_CHANGED") {
+      res.status(409).json({ status: "error", code: "INVALID_TRANSITION", message: "This job was updated elsewhere. Reload and try again." });
+      return;
+    }
+    if (error?.code === "P2003") {
+      res.status(400).json({ status: "error", code: "INVALID_INPUT", field: "cityId", message: "The selected city does not belong to the selected country." });
+      return;
+    }
+    console.error("Facility resubmit job error:", error);
+    res.status(500).json({ status: "error", message: "Failed to resubmit job." });
+  }
+});

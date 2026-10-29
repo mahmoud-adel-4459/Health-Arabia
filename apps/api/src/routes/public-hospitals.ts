@@ -17,8 +17,10 @@ publicHospitalsRouter.get("/", async (req, res) => {
   const limit = Math.max(1, Math.min(50, parseInt(req.query.limit as string, 10) || 9));
   const skip = (page - 1) * limit;
 
+  // Public directory rule (schema): APPROVED account AND listing explicitly enabled by the platform
   const where = {
     isListedPublicly: true,
+    publicListingEnabledAt: { not: null },
     user: { status: "APPROVED" as const },
   };
 
@@ -51,7 +53,8 @@ publicHospitalsRouter.get("/", async (req, res) => {
   const setting = (key: string) => settings.find((s) => s.key === key)?.value;
   const heroBlock = blocks[0] ?? null;
 
-  res.set("Cache-Control", "public, max-age=60");
+  // Listing visibility is an admin moderation decision: never serve a cached (possibly delisted) result
+  res.set("Cache-Control", "no-store");
   res.json({
     locale,
     header: pickLocale(setting("header"), locale),
@@ -86,6 +89,7 @@ publicHospitalsRouter.get("/:slug", async (req, res) => {
       where: {
         slug,
         isListedPublicly: true,
+        publicListingEnabledAt: { not: null },
         user: { status: "APPROVED" },
       },
       select: {
@@ -112,7 +116,8 @@ publicHospitalsRouter.get("/:slug", async (req, res) => {
 
   const setting = (key: string) => settings.find((s) => s.key === key)?.value;
 
-  res.set("Cache-Control", "public, max-age=60");
+  // Listing visibility is an admin moderation decision: never serve a cached (possibly delisted) result
+  res.set("Cache-Control", "no-store");
   res.json({
     locale,
     header: pickLocale(setting("header"), locale),

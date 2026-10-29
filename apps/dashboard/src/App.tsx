@@ -1,7 +1,10 @@
 import { useState, useEffect } from "react";
 import type { AdminUser } from "./types";
-import { getCurrentAdmin, logoutAdmin, getReviewAccounts, getFacilityChangeRequests, getDoctorChangeRequests, getJobSubmissions, getAdminHireRequests } from "./api";
+import { getCurrentAdmin, logoutAdmin, getBadgeCounts } from "./api";
 import { RouterProvider, useRouter } from "./router";
+import { DeletionRequestsPage, DeletionRequestDetailPage } from "./pages/DeletionRequestPages";
+import { CountriesListPage, CountryCreatePage, CountryDetailPage } from "./pages/CountryPages";
+import { SettingsPage } from "./pages/SettingsPage";
 import { AdminShell } from "./components/AdminShell";
 import { AdminLoginForm } from "./components/AdminLoginForm";
 import { ReviewQueuePage } from "./pages/ReviewQueuePage";
@@ -13,6 +16,13 @@ import { DoctorChangeDetailPage } from "./pages/DoctorChangeDetailPage";
 import { JobQueuePage } from "./pages/JobQueuePage";
 import { JobDetailPage } from "./pages/JobDetailPage";
 import { HireRequestsQueuePage } from "./pages/HireRequestsQueuePage";
+import { ApplicationsQueuePage } from "./pages/ApplicationsQueuePage";
+import { ApplicationDetailPage } from "./pages/ApplicationDetailPage";
+import { OverviewPage } from "./pages/OverviewPage";
+import { DirectoryPage, AuditPage } from "./pages/PlatformPages";
+import { ContactDetailPage, ContactSubmissionsPage } from "./pages/ContactPages";
+import { HireRequestDetailPage } from "./pages/HireRequestDetailPage";
+import { ContentPage } from "./pages/ContentPage";
 import "./dashboard.css";
 
 function DashboardContent() {
@@ -25,6 +35,9 @@ function DashboardContent() {
   const [pendingDoctorChangesCount, setPendingDoctorChangesCount] = useState<number>(0);
   const [pendingJobsCount, setPendingJobsCount] = useState<number>(0);
   const [pendingHiresCount, setPendingHiresCount] = useState<number>(0);
+  const [newContactCount, setNewContactCount] = useState<number>(0);
+  const [placementsReadyCount, setPlacementsReadyCount] = useState<number>(0);
+  const [deletionOpenCount, setDeletionOpenCount] = useState<number>(0);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Check administrator session on initial load
@@ -52,18 +65,16 @@ function DashboardContent() {
   // Fetch pending count for sidebar badge
   const refreshPendingCount = async () => {
     try {
-      const [accRes, changesRes, doctorChangesRes, jobsRes, hiresRes] = await Promise.all([
-        getReviewAccounts({ status: "PENDING_REVIEW", page: 1, limit: 1 }),
-        getFacilityChangeRequests({ status: "PENDING", page: 1, limit: 1 }),
-        getDoctorChangeRequests({ status: "PENDING", page: 1, limit: 1 }),
-        getJobSubmissions({ status: "PENDING_REVIEW", page: 1, limit: 1 }),
-        getAdminHireRequests({ page: 1, limit: 1 }),
-      ]);
-      setPendingCount(accRes.meta.counts.pending);
-      setPendingChangesCount(changesRes.meta.counts.PENDING);
-      setPendingDoctorChangesCount(doctorChangesRes.counts.PENDING || 0);
-      setPendingJobsCount(jobsRes.meta.counts.pendingReview);
-      setPendingHiresCount(hiresRes.meta.pendingReleaseCount || 0);
+      // Count-only endpoint: no personal data is read and no audit entries are written
+      const c = await getBadgeCounts();
+      setPendingCount(c.pendingAccounts);
+      setPendingChangesCount(c.facilityChanges);
+      setPendingDoctorChangesCount(c.doctorChanges);
+      setPendingJobsCount(c.jobsPending);
+      setPendingHiresCount(c.releasesToDecide);
+      setNewContactCount(c.contactNew);
+      setPlacementsReadyCount(c.placementsReady);
+      setDeletionOpenCount(c.deletionOpen);
     } catch {
       // non-blocking
     }
@@ -115,7 +126,7 @@ function DashboardContent() {
       <AdminLoginForm
         onLoginSuccess={(user) => {
           setCurrentUser(user);
-          navigate("/accounts", { replace: true });
+          navigate("/overview", { replace: true });
         }}
       />
     );
@@ -129,6 +140,9 @@ function DashboardContent() {
       pendingDoctorChangesCount={pendingDoctorChangesCount}
       pendingJobsCount={pendingJobsCount}
       pendingHiresCount={pendingHiresCount}
+      newContactCount={newContactCount}
+      placementsReadyCount={placementsReadyCount}
+      deletionOpenCount={deletionOpenCount}
       onLogout={handleLogout}
     >
       {path === "/accounts/:id" && params.id ? (
@@ -157,8 +171,38 @@ function DashboardContent() {
         />
       ) : path === "/jobs" ? (
         <JobQueuePage />
+      ) : path === "/countries/new" ? (
+        <CountryCreatePage onActionComplete={handleActionComplete} />
+      ) : path === "/countries/:id" && params.id ? (
+        <CountryDetailPage countryId={params.id} onActionComplete={handleActionComplete} />
+      ) : path === "/countries" ? (
+        <CountriesListPage />
+      ) : path === "/settings" ? (
+        <SettingsPage onActionComplete={handleActionComplete} />
+      ) : path === "/deletion-requests/:id" && params.id ? (
+        <DeletionRequestDetailPage requestId={params.id} onActionComplete={handleActionComplete} />
+      ) : path === "/deletion-requests" ? (
+        <DeletionRequestsPage />
+      ) : path === "/hire-requests/:id" && params.id ? (
+        <HireRequestDetailPage requestId={params.id} onActionComplete={handleActionComplete} />
       ) : path === "/hire-requests" ? (
-        <HireRequestsQueuePage onActionComplete={handleActionComplete} />
+        <HireRequestsQueuePage />
+      ) : path === "/applications/:id" && params.id ? (
+        <ApplicationDetailPage applicationId={params.id} onActionComplete={handleActionComplete} />
+      ) : path === "/applications" ? (
+        <ApplicationsQueuePage />
+      ) : path === "/overview" ? (
+        <OverviewPage />
+      ) : path === "/directory" ? (
+        <DirectoryPage onActionComplete={handleActionComplete} />
+      ) : path === "/reference-data" ? (
+        <ContentPage onActionComplete={handleActionComplete} />
+      ) : path === "/contact-submissions/:id" && params.id ? (
+        <ContactDetailPage submissionId={params.id} onActionComplete={handleActionComplete} />
+      ) : path === "/contact-submissions" ? (
+        <ContactSubmissionsPage />
+      ) : path === "/audit" ? (
+        <AuditPage />
       ) : (
         <ReviewQueuePage />
       )}

@@ -33,7 +33,7 @@ publicJobsRouter.get("/", async (req, res) => {
   // STRICT RULE: Only PUBLISHED jobs
   // STRICT RULE: Do not expose facility name or identifying facility details to doctors/public
   const where: any = {
-    status: "PUBLISHED",
+    status: "PUBLISHED", facility: { user: { status: "APPROVED" } },
   };
 
   if (specialty) {
@@ -193,7 +193,7 @@ publicJobsRouter.get("/:id", async (req, res) => {
     prisma.job.findFirst({
       where: {
         id,
-        status: "PUBLISHED",
+        status: "PUBLISHED", facility: { user: { status: "APPROVED" } },
       },
       select: {
         id: true,

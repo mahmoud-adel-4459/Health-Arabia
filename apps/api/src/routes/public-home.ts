@@ -36,7 +36,7 @@ publicHomeRouter.get("/", async (req, res) => {
         },
       }),
       prisma.job.findMany({
-        where: { status: "PUBLISHED" },
+        where: { status: "PUBLISHED", facility: { user: { status: "APPROVED" } } },
         orderBy: { publishedAt: "desc" },
         take: 2,
         select: {
@@ -48,7 +48,7 @@ publicHomeRouter.get("/", async (req, res) => {
           salaryMin: true,
           salaryMax: true,
           salaryCurrencyCode: true,
-          facility: { select: { name: true } },
+          // facility is deliberately not selected: public job listings stay anonymous
           city: { select: { nameEn: true, nameAr: true } },
           country: { select: { nameEn: true, nameAr: true } },
           employmentType: { select: { nameEn: true, nameAr: true } },
@@ -101,7 +101,7 @@ publicHomeRouter.get("/", async (req, res) => {
       id: job.id,
       referenceNumber: job.referenceNumber,
       title: job.title,
-      facilityName: job.facility.name,
+      facilityName: "Confidential Client Institution",
       description: job.description,
       isUrgent: job.isUrgent,
       employmentType: name(job.employmentType),

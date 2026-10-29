@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import type { FacilityChangeDetail, FieldComparison } from "../types";
 import {
+  resolveApiUrl,
   getFacilityChangeRequestDetail,
   approveFacilityChangeRequest,
   rejectFacilityChangeRequest,
@@ -249,7 +250,7 @@ export function FacilityChangeDetailPage({ requestId, onActionComplete }: Props)
                       c.currentImageUrl ? (
                         <div className="diffImageThumbWrap">
                           <img
-                            src={c.currentImageUrl}
+                            src={resolveApiUrl(c.currentImageUrl) ?? undefined}
                             alt="Current Logo"
                             className="diffLogoThumb"
                             onError={(e) => {
@@ -272,7 +273,7 @@ export function FacilityChangeDetailPage({ requestId, onActionComplete }: Props)
                       c.proposedImageUrl ? (
                         <div className="diffImageThumbWrap">
                           <img
-                            src={c.proposedImageUrl}
+                            src={resolveApiUrl(c.proposedImageUrl) ?? undefined}
                             alt="Proposed Logo"
                             className="diffLogoThumb"
                             onError={(e) => {
@@ -323,7 +324,7 @@ export function FacilityChangeDetailPage({ requestId, onActionComplete }: Props)
                 type="button"
                 disabled={actionSubmitting}
                 onClick={() => setIsApproving(false)}
-                className="btnModalCancel"
+                className="modalCancelBtn"
               >
                 Cancel
               </button>
@@ -371,7 +372,7 @@ export function FacilityChangeDetailPage({ requestId, onActionComplete }: Props)
                   type="button"
                   disabled={actionSubmitting}
                   onClick={() => setIsRejecting(false)}
-                  className="btnModalCancel"
+                  className="modalCancelBtn"
                 >
                   Cancel
                 </button>

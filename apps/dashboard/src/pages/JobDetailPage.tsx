@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import type { JobSubmissionDetail } from "../types";
-import { getJobSubmissionDetail, approveJobSubmission, rejectJobSubmission } from "../api";
+import { requestJobChanges, getJobSubmissionDetail, approveJobSubmission, rejectJobSubmission } from "../api";
 import { useRouter } from "../router";
 
 interface JobDetailPageProps {
@@ -19,6 +19,8 @@ export function JobDetailPage({ jobId, onActionComplete }: JobDetailPageProps) {
   const [showApproveConfirm, setShowApproveConfirm] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [rejectionReason, setRejectionReason] = useState("");
+  const [showChangesModal, setShowChangesModal] = useState(false);
+  const [changesReason, setChangesReason] = useState("");
   const [processing, setProcessing] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
 
@@ -61,6 +63,25 @@ export function JobDetailPage({ jobId, onActionComplete }: JobDetailPageProps) {
       setJob(refreshed);
     } catch (err: any) {
       setActionError(err.message || "Failed to approve job requisition.");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleRequestChanges = async () => {
+    if (!changesReason.trim()) {
+      setActionError("Please explain which changes the facility should make.");
+      return;
+    }
+    try {
+      setProcessing(true);
+      setActionError(null);
+      await requestJobChanges(jobId, changesReason.trim());
+      setShowChangesModal(false);
+      onActionComplete(`Changes requested for '${job?.title}'. The facility has been notified and the job stays private.`);
+      setJob(await getJobSubmissionDetail(jobId));
+    } catch (err: any) {
+      setActionError(err.message || "Failed to request changes.");
     } finally {
       setProcessing(false);
     }
@@ -119,6 +140,7 @@ export function JobDetailPage({ jobId, onActionComplete }: JobDetailPageProps) {
   const isPending = job.status === "PENDING_REVIEW";
   const isPublished = job.status === "PUBLISHED";
   const isRejected = job.status === "REJECTED";
+  const isChangesRequested = job.status === "CHANGES_REQUESTED";
 
   const formatDate = (isoString?: string | null) => {
     if (!isoString) return "—";
@@ -159,6 +181,16 @@ export function JobDetailPage({ jobId, onActionComplete }: JobDetailPageProps) {
             <polyline points="15 18 9 12 15 6" />
           </svg>
           <span>Back to Job Moderation Queue</span>
+        </button>
+        <button
+          type="button"
+          className="btnBackToQueue"
+          style={{ marginLeft: "auto" }}
+          onClick={() => navigate(`/applications?jobId=${job.id}`)}
+        >
+          <span>
+            View applications ({job.stats.applicationsCount}) · hire requests ({job.stats.hireRequestsCount})
+          </span>
         </button>
       </div>
 
@@ -209,6 +241,7 @@ export function JobDetailPage({ jobId, onActionComplete }: JobDetailPageProps) {
                 {isPending && <span className="statusBadge badgePending">Pending Platform Review</span>}
                 {isPublished && <span className="statusBadge badgeApproved">Published Live</span>}
                 {isRejected && <span className="statusBadge badgeRejected">Rejected</span>}
+                {isChangesRequested && <span className="statusBadge badgeWarning">Changes requested</span>}
               </div>
 
               <h1 className="detailHeaderTitle" style={{ marginTop: "6px" }}>{job.title}</h1>
@@ -253,7 +286,36 @@ export function JobDetailPage({ jobId, onActionComplete }: JobDetailPageProps) {
                   </svg>
                   <span>Reject Submission</span>
                 </button>
+
+                <button
+                  type="button"
+                  className="modalCancelBtn"
+                  onClick={() => {
+                    setActionError(null);
+                    setChangesReason("");
+                    setShowChangesModal(true);
+                  }}
+                >
+                  <span>Request Changes</span>
+                </button>
               </>
+            ) : isChangesRequested ? (
+              <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+                <span style={{ fontSize: "13px", color: "#92400e", fontWeight: 600 }}>
+                  Waiting for the facility to edit and resubmit (asked on {formatDate(job.reviewedAt)})
+                </span>
+                <button
+                  type="button"
+                  className="rejectDecisionBtn"
+                  onClick={() => {
+                    setActionError(null);
+                    setRejectionReason("");
+                    setShowRejectModal(true);
+                  }}
+                >
+                  <span>Reject Submission</span>
+                </button>
+              </div>
             ) : isPublished ? (
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <span style={{ fontSize: "13px", color: "#047857", fontWeight: 600 }}>
@@ -269,13 +331,22 @@ export function JobDetailPage({ jobId, onActionComplete }: JobDetailPageProps) {
                   View Public Page ↗
                 </a>
               </div>
-            ) : (
+            ) : isRejected ? (
               <span style={{ fontSize: "13px", color: "#b91c1c", fontWeight: 600 }}>
                 ✕ Rejected on {formatDate(job.reviewedAt)}
               </span>
+            ) : (
+              <span style={{ fontSize: "13px", color: "#64748b", fontWeight: 600 }}>This job is {job.status.toLowerCase()}</span>
             )}
           </div>
         </div>
+
+        {isChangesRequested && job.reviewNote && (
+          <div className="noticeBanner pendingBanner" style={{ marginTop: "16px" }}>
+            <strong>Changes requested from the facility:</strong>
+            <p style={{ marginTop: "4px" }}>{job.reviewNote}</p>
+          </div>
+        )}
 
         {/* Rejection Note Warning Banner */}
         {isRejected && job.reviewNote && (
@@ -592,6 +663,36 @@ export function JobDetailPage({ jobId, onActionComplete }: JobDetailPageProps) {
               >
                 {processing ? "Publishing..." : "Confirm & Publish"}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Request Changes Modal */}
+      {showChangesModal && (
+        <div className="modalBackdrop">
+          <div className="modalCard" style={{ maxWidth: "560px" }}>
+            <h3 className="modalTitle">Request changes</h3>
+            <p className="modalSubtitle" style={{ marginTop: "8px" }}>
+              Tell the facility what to change in <strong>{job.title}</strong>. The job stays private; they can edit it and send it back for review.
+            </p>
+            <div style={{ marginTop: "16px" }}>
+              <label htmlFor="changes-reason" style={{ fontSize: "13px", fontWeight: 700, color: "var(--navy)", display: "block", marginBottom: "6px" }}>
+                What should the facility change? *
+              </label>
+              <textarea
+                id="changes-reason"
+                className="rejectionTextarea"
+                rows={4}
+                value={changesReason}
+                onChange={(e) => setChangesReason(e.target.value)}
+                placeholder="e.g. Please add the required licence, clarify the salary range, or shorten the description."
+              />
+            </div>
+            {actionError && <div className="modalErrorMessage" role="alert">{actionError}</div>}
+            <div className="modalActionRow">
+              <button type="button" className="modalCancelBtn" disabled={processing} onClick={() => setShowChangesModal(false)}>Cancel</button>
+              <button type="button" className="btnApprove" disabled={processing} onClick={handleRequestChanges}>{processing ? "Sending..." : "Send to facility"}</button>
             </div>
           </div>
         </div>

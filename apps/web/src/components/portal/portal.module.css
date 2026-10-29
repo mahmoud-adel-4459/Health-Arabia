@@ -39,6 +39,23 @@
     padding: 24px 16px 48px 16px;
     gap: 24px;
   }
+
+  /* Application rows stack so the status pill and date never push the page wider than the screen */
+  .applicationCard {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .applicantCardRow {
+    flex-wrap: wrap;
+  }
+
+  .appCardRight {
+    flex-shrink: 1;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
 }
 
 /* Page Welcome Headers */
@@ -120,18 +137,31 @@
 /* 2-Column Dashboard Layout */
 .dashboardGrid {
   display: grid;
-  grid-template-columns: 1fr 380px;
+  grid-template-columns: minmax(0, 1fr) 380px;
   gap: 32px;
   align-items: start;
 }
 
+/* Hospital dashboard (Figma 440:2294): two equal columns (604px each at 1248px) with a 40px gap */
+.dashboardGridFacility {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 40px;
+}
+
 @media (max-width: 1080px) {
   .dashboardGrid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 1080px) {
+  .dashboardGridFacility {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
 .mainColumn {
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 32px;
@@ -389,6 +419,7 @@
 
 /* Notifications Panel */
 .panelCard {
+  min-width: 0;
   background: #ffffff;
   border: 1px solid #e7e9ed;
   border-radius: 16px;
@@ -569,11 +600,12 @@
   background: #1b8a8a;
   color: #ffffff;
   border: none;
-  border-radius: 8px;
-  padding: 6px 14px;
+  border-radius: 12px;
+  padding: 8px 16px;
   font-size: 12px;
   font-weight: 700;
   cursor: pointer;
+  white-space: nowrap;
   transition: background 0.15s ease;
 }
 
@@ -586,21 +618,85 @@
   background: #136969;
 }
 
+/* One card per job requisition; its header and rows share the same width */
+.applicantGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid #e7e9ed;
+  border-radius: 16px;
+  background: #ffffff;
+}
+
+.applicantGroupHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+
+.applicantGroupTitleBlock {
+  flex: 1 1 220px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.applicantGroupTitleRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.applicantGroupTitle {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: #0a2647;
+  overflow-wrap: anywhere;
+}
+
+.applicantGroupActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+}
+
+.selectAllLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #3b516c;
+  white-space: nowrap;
+}
+
 .applicantRowsList {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  min-width: 0;
 }
 
+/* Applicant card (Figma 440:3473): 12px padding, 16px gap, 16px radius. It wraps instead of squeezing the text. */
 .applicantCardRow {
-  background: #ffffff;
+  background: #f8fafc;
   border: 1px solid #e7e9ed;
-  border-radius: 12px;
-  padding: 14px 16px;
+  border-radius: 16px;
+  padding: 12px;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 12px 16px;
+  min-width: 0;
   transition: border-color 0.15s ease, background 0.15s ease;
 }
 
@@ -613,11 +709,14 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  flex: 1 1 220px;
+  min-width: 0;
 }
 
 .applicantCheckbox {
   width: 18px;
   height: 18px;
+  flex-shrink: 0;
   accent-color: #1b8a8a;
   cursor: pointer;
 }
@@ -626,17 +725,30 @@
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
+  flex: 1;
 }
 
 .applicantJobTitle {
-  font-size: 15px;
+  margin: 0;
+  font-size: 14px;
   font-weight: 700;
   color: #0a2647;
+  overflow-wrap: anywhere;
 }
 
 .applicantMeta {
-  font-size: 13px;
+  font-size: 12px;
   color: #5b6e84;
+  overflow-wrap: anywhere;
+}
+
+.applicantTagRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  margin-top: 2px;
 }
 
 .candidateCodeTag {
@@ -647,20 +759,68 @@
   font-weight: 700;
   padding: 2px 6px;
   border-radius: 4px;
-  margin-left: 6px;
+  white-space: nowrap;
+}
+
+.releaseStatus {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.releaseReleased {
+  color: #1b8a8a;
+  background: #e8f3f3;
+}
+
+.releasePending {
+  color: #92400e;
+  background: #fffbeb;
+}
+
+.releaseDeclined {
+  color: #991b1b;
+  background: #fef2f2;
+}
+
+.releaseNone {
+  color: #5b6e84;
+  background: #eef1f5;
+}
+
+/* Actions stay inside the card: right-aligned beside the text on wide cards, wrapping below it on narrow ones */
+.applicantActions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex: 0 1 auto;
+  min-width: 0;
 }
 
 .hireRequestBtn {
   background: #1b8a8a;
   color: #ffffff;
   border: none;
-  border-radius: 8px;
-  padding: 8px 16px;
-  font-size: 13px;
+  border-radius: 12px;
+  padding: 8px 20px;
+  font-size: 12px;
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
   transition: background 0.15s ease;
+}
+
+.hireRequestBtn.chatBtn {
+  background: #0a2647;
+}
+
+.hireRequestBtn.chatBtn:hover:not(:disabled) {
+  background: #07203d;
 }
 
 .hireRequestBtn:hover {
@@ -671,6 +831,26 @@
   background: #e2e8f0;
   color: #94a3b8;
   cursor: not-allowed;
+}
+
+@media (max-width: 560px) {
+  .applicantGroup {
+    padding: 12px;
+  }
+
+  .applicantGroupActions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .applicantActions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .applicantActions .hireRequestBtn {
+    flex: 1 1 auto;
+  }
 }
 
 /* ==========================================================================
@@ -1127,12 +1307,35 @@
   border-radius: 8px;
   background: #ffffff;
   font-size: 15px;
+  font-family: inherit;
   color: #0a2647;
   outline: none;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .formInput:focus {
+  border-color: #1b8a8a;
+  box-shadow: 0 0 0 3px rgba(27, 138, 138, 0.12);
+}
+
+/* Multi-line fields (Figma 440:3528: ~100px tall text areas) */
+.formTextarea {
+  width: 100%;
+  min-height: 100px;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.45;
+  color: #0a2647;
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.formTextarea:focus {
   border-color: #1b8a8a;
   box-shadow: 0 0 0 3px rgba(27, 138, 138, 0.12);
 }
@@ -1199,6 +1402,21 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
+}
+
+/* Full-viewport modal layer: dims the page and centres the dialog above the header (z-index 60) and footer */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(10, 38, 71, 0.6);
+  backdrop-filter: blur(3px);
+  overflow: hidden;
+  overscroll-behavior: contain;
 }
 
 .modalCard {

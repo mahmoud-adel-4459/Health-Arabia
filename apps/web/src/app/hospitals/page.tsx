@@ -1,16 +1,21 @@
 import { ArrowLeft, ArrowRight } from "iconsax-react";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { getHospitalsContent } from "@/lib/public-content";
 import styles from "@/components/pages/pages.module.css";
 
-export const metadata: Metadata = {
+const fallbackMetadata: Metadata = {
   title: "Hospital & Healthcare Directory | Health Arabia",
   description:
     "Discover verified partner hospitals and leading clinical healthcare complexes across Saudi Arabia and the GCC.",
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("HOSPITALS", fallbackMetadata);
+}
 
 type Props = {
   searchParams: Promise<{ page?: string }>;

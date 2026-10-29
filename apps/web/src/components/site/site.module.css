@@ -178,21 +178,21 @@
   padding: 0 12px;
   border-radius: 12px;
   background: var(--white);
-  border: 1px solid var(--border, #e2e8f0);
+  border: 1px solid transparent;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .accountTrigger:hover {
   background: #f8fafc;
-  border-color: #cbd5e1;
+  border-color: transparent;
 }
 
 .doctorAvatarBox {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
-  background: #0284c7;
+  border-radius: 50%;
+  background: var(--green-500);
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -217,14 +217,15 @@
 .facilityAvatarBox {
   width: 32px;
   height: 32px;
-  border-radius: 8px;
-  background: #7c3aed;
+  border-radius: 50%;
+  background: var(--green-500);
   color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
   font-weight: 700;
+  overflow: hidden;
   flex-shrink: 0;
 }
 
@@ -441,6 +442,15 @@
     height: 72px;
   }
 
+  /* Signed-in header: avatar + chevron only, so logo, account and menu fit a phone screen */
+  .headerActions {
+    gap: 10px;
+  }
+
+  .accountUserName {
+    display: none;
+  }
+
   .logo img {
     width: 180px;
     height: auto;
@@ -510,7 +520,7 @@
   gap: 8px;
   height: 60px;
   margin-top: 64px;
-  font-family: var(--font-alexandria), sans-serif;
+  font-family: var(--font-alexandria, Alexandria), "Segoe UI", sans-serif;
   font-size: 18px;
 }
 
@@ -543,4 +553,37 @@
     font-size: 14px;
     text-align: center;
   }
+}
+
+.footerSocial {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footerSocial a {
+  color: inherit;
+  font-size: 14px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.copyrightLink {
+  color: inherit;
+  text-decoration: none;
+}
+
+.copyrightLink:hover,
+.copyrightLink:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.copyrightLink:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+  border-radius: 2px;
 }

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import type { AccountDetail } from "../types";
-import { getAccountDetail, approveAccount, rejectAccount, getFileDownloadUrl } from "../api";
+import { getAccountDetail, approveAccount, rejectAccount, suspendAccount, unsuspendAccount, getFileDownloadUrl, setFacilityPublicListing } from "../api";
 import { useRouter } from "../router";
 
 interface AccountDetailPageProps {
@@ -25,8 +25,18 @@ export function AccountDetailPage({ accountId, onActionComplete }: AccountDetail
   const [showRejectDialog, setShowRejectDialog] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
 
+  // Suspension state
+  const [showSuspendDialog, setShowSuspendDialog] = useState(false);
+  const [showUnsuspendDialog, setShowUnsuspendDialog] = useState(false);
+  const [unsuspendReason, setUnsuspendReason] = useState("");
+  const [suspendReason, setSuspendReason] = useState("");
+
   // Success Feedback
   const [feedbackBanner, setFeedbackBanner] = useState<string | null>(null);
+
+  // Public Hospitals-directory listing (facility accounts)
+  const [listingSubmitting, setListingSubmitting] = useState(false);
+  const [listingError, setListingError] = useState<string | null>(null);
 
   const fetchDetail = async () => {
     setLoading(true);
@@ -47,12 +57,17 @@ export function AccountDetailPage({ accountId, onActionComplete }: AccountDetail
 
   const handleApprove = async () => {
     if (!account) return;
+    if (account.status === "REJECTED" && approveNote.trim().length < 3) {
+      setActionError("A reason of at least 3 characters is required to review a rejected account again.");
+      return;
+    }
     setActionError(null);
     setActionSubmitting(true);
 
     try {
       await approveAccount(account.id, approveNote.trim() || undefined);
       setShowApproveDialog(false);
+      setApproveNote("");
       const msg = `Account "${account.displayName || account.email}" has been successfully APPROVED.`;
       setFeedbackBanner(msg);
       if (onActionComplete) onActionComplete(msg);
@@ -60,6 +75,70 @@ export function AccountDetailPage({ accountId, onActionComplete }: AccountDetail
       await fetchDetail();
     } catch (err: any) {
       setActionError(err.message || "Failed to approve account.");
+    } finally {
+      setActionSubmitting(false);
+    }
+  };
+
+  const handleTogglePublicListing = async (enabled: boolean) => {
+    if (!account) return;
+    setListingError(null);
+    setListingSubmitting(true);
+    try {
+      const result = await setFacilityPublicListing(account.id, enabled);
+      setFeedbackBanner(result.message);
+      if (onActionComplete) onActionComplete(result.message);
+      await fetchDetail();
+    } catch (err: any) {
+      setListingError(err.message || "Failed to update the public listing.");
+    } finally {
+      setListingSubmitting(false);
+    }
+  };
+
+  const handleSuspend = async () => {
+    if (!account) return;
+    const cleanReason = suspendReason.trim();
+    if (cleanReason.length < 3) {
+      setActionError("A specific suspension reason of at least 3 characters is mandatory.");
+      return;
+    }
+    setActionError(null);
+    setActionSubmitting(true);
+    try {
+      await suspendAccount(account.id, cleanReason);
+      setShowSuspendDialog(false);
+      setSuspendReason("");
+      const msg = `Account "${account.displayName || account.email}" has been SUSPENDED.`;
+      setFeedbackBanner(msg);
+      if (onActionComplete) onActionComplete(msg);
+      await fetchDetail();
+    } catch (err: any) {
+      setActionError(err.message || "Failed to suspend account.");
+    } finally {
+      setActionSubmitting(false);
+    }
+  };
+
+  const handleUnsuspend = async () => {
+    if (!account) return;
+    const cleanReason = unsuspendReason.trim();
+    if (cleanReason.length < 3) {
+      setActionError("A reason of at least 3 characters is required to lift a suspension.");
+      return;
+    }
+    setActionError(null);
+    setActionSubmitting(true);
+    try {
+      await unsuspendAccount(account.id, cleanReason);
+      setShowUnsuspendDialog(false);
+      setUnsuspendReason("");
+      const msg = `Account "${account.displayName || account.email}" is APPROVED again. The user must sign in again${account.role === "FACILITY" ? "; the public directory listing stays off until you enable it" : ""}.`;
+      setFeedbackBanner(msg);
+      if (onActionComplete) onActionComplete(msg);
+      await fetchDetail();
+    } catch (err: any) {
+      setActionError(err.message || "Failed to unsuspend account.");
     } finally {
       setActionSubmitting(false);
     }
@@ -169,6 +248,8 @@ export function AccountDetailPage({ accountId, onActionComplete }: AccountDetail
   const isPending = account.status === "PENDING_REVIEW";
   const isApproved = account.status === "APPROVED";
   const isRejected = account.status === "REJECTED";
+  const isSuspended = account.status === "SUSPENDED";
+  const canSuspend = isApproved && (account.role === "DOCTOR" || account.role === "FACILITY");
 
   return (
     <div className="detailPageWrapper">
@@ -324,8 +405,122 @@ export function AccountDetailPage({ accountId, onActionComplete }: AccountDetail
               </div>
             </div>
           ) : null}
+          {isRejected && (
+            <button
+              type="button"
+              className="btnApproveAction"
+              onClick={() => {
+                setActionError(null);
+                setShowApproveDialog(true);
+                setShowRejectDialog(false);
+              }}
+            >
+              <span>Review again</span>
+            </button>
+          )}
+          {isSuspended && (
+            <button
+              type="button"
+              className="btnApproveAction"
+              onClick={() => {
+                setActionError(null);
+                setShowUnsuspendDialog(true);
+              }}
+            >
+              <span>Unsuspend</span>
+            </button>
+          )}
+          {isSuspended && (
+            <div className="decisionStatusBanner rejectedBanner">
+              <div>
+                <strong>Suspended Account</strong>
+                <span className="decisionSub">
+                  Suspended by {account.reviewedBy?.displayName || account.reviewedBy?.email || "Platform Admin"} on {formatDate(account.reviewedAt)}
+                  {account.reviewNote ? ` — "${account.reviewNote}"` : ""}. Sign-in is blocked until the suspension is lifted.
+                </span>
+              </div>
+            </div>
+          )}
+          {account.status === "DEACTIVATED" && (
+            <div className="decisionStatusBanner rejectedBanner">
+              <div>
+                <strong>Deactivated Account</strong>
+                <span className="decisionSub">Closed through an account deletion request. Records are kept; this is final.</span>
+              </div>
+            </div>
+          )}
+          {canSuspend && (
+            <button
+              type="button"
+              className="btnRejectAction"
+              onClick={() => {
+                setActionError(null);
+                setShowSuspendDialog(true);
+              }}
+            >
+              <span>Suspend Account</span>
+            </button>
+          )}
         </div>
       </section>
+
+      {showUnsuspendDialog && (
+        <div className="modalBackdrop" role="dialog" aria-modal="true" aria-label="Unsuspend account">
+          <div className="modalCard" style={{ maxWidth: "560px" }}>
+            <h3 className="modalTitle">Unsuspend this account?</h3>
+            <p className="modalSubtitle" style={{ marginTop: "8px" }}>
+              <strong>{account.displayName || account.email}</strong> will be APPROVED again and can sign in with a new session; earlier sessions are not restored.
+              {account.role === "FACILITY" ? " The hospital stays out of the public Hospitals directory until you enable the listing again. Its jobs that are still published become visible once the account is approved." : ""} The suspension stays in the history.
+            </p>
+            {actionError && <div className="modalErrorMessage">{actionError}</div>}
+            <div style={{ marginTop: "16px" }}>
+              <label htmlFor="unsuspend-reason" style={{ fontSize: "13px", fontWeight: 700, color: "var(--navy)", display: "block", marginBottom: "6px" }}>
+                Reason for lifting the suspension *
+              </label>
+              <textarea id="unsuspend-reason" className="rejectionTextarea" rows={4} value={unsuspendReason} onChange={(e) => setUnsuspendReason(e.target.value)} disabled={actionSubmitting} />
+            </div>
+            <div style={{ marginTop: "20px", display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+              <button type="button" className="secondaryButton" onClick={() => setShowUnsuspendDialog(false)} disabled={actionSubmitting}>Cancel</button>
+              <button type="button" className="confirmApproveBtn" onClick={handleUnsuspend} disabled={actionSubmitting}>
+                {actionSubmitting ? "Unsuspending..." : "Unsuspend account"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showSuspendDialog && (
+        <div className="modalBackdrop" role="dialog" aria-modal="true" aria-label="Suspend account">
+          <div className="modalCard" style={{ maxWidth: "560px" }}>
+            <h3 className="modalTitle">Suspend this account?</h3>
+            <p className="modalSubtitle" style={{ marginTop: "8px" }}>
+              <strong>{account.displayName || account.email}</strong> will be signed out everywhere and blocked from signing in or acting on the platform.
+              {account.role === "FACILITY" ? " If the hospital is listed publicly it is removed from the Hospitals directory." : ""} Applications, hire requests, chats and the audit history are kept.
+              This cannot be undone from the dashboard.
+            </p>
+            {actionError && <div className="modalErrorMessage">{actionError}</div>}
+            <div style={{ marginTop: "16px" }}>
+              <label htmlFor="suspend-reason" style={{ fontSize: "13px", fontWeight: 700, color: "var(--navy)", display: "block", marginBottom: "6px" }}>
+                Reason for suspension *
+              </label>
+              <textarea
+                id="suspend-reason"
+                className="rejectionTextarea"
+                rows={4}
+                value={suspendReason}
+                onChange={(e) => setSuspendReason(e.target.value)}
+                disabled={actionSubmitting}
+              />
+            </div>
+            <div className="modalActions" style={{ marginTop: "20px", display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+              <button type="button" className="secondaryButton" onClick={() => setShowSuspendDialog(false)} disabled={actionSubmitting}>Cancel</button>
+              <button type="button" className="confirmRejectBtn" onClick={handleSuspend} disabled={actionSubmitting}>
+                {actionSubmitting ? "Suspending..." : "Suspend account"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Confirmation Card for Approval */}
       {showApproveDialog && (
@@ -353,7 +548,7 @@ export function AccountDetailPage({ accountId, onActionComplete }: AccountDetail
 
           <div className="formGroup" style={{ marginTop: "16px" }}>
             <label htmlFor="approve-note" className="formLabel">
-              Approval Note (Optional administrator note)
+              {isRejected ? "Reason for approving this rejected account again *" : "Approval Note (Optional administrator note)"}
             </label>
             <input
               id="approve-note"
@@ -373,7 +568,7 @@ export function AccountDetailPage({ accountId, onActionComplete }: AccountDetail
               onClick={handleApprove}
               disabled={actionSubmitting}
             >
-              {actionSubmitting ? "Approving..." : "Confirm & Approve Account"}
+              {actionSubmitting ? "Approving..." : isRejected ? "Confirm & review again" : "Confirm & Approve Account"}
             </button>
             <button
               type="button"
@@ -556,6 +751,74 @@ export function AccountDetailPage({ accountId, onActionComplete }: AccountDetail
                       )}
                     </p>
                   </div>
+                </div>
+              </div>
+
+              {/* Public Hospitals Directory listing (platform-controlled) */}
+              <div className="contentCard">
+                <div className="cardHeader">
+                  <h2 className="cardTitle">Public Hospitals Directory</h2>
+                  <span className="cardPill">{account.facility.publicListing?.isListedPublicly ? "Listed" : "Not listed"}</span>
+                </div>
+
+                <div className="profileInfoGrid">
+                  <div className="profileField">
+                    <span className="fieldLabel">Listing Status</span>
+                    <span className="fieldValue highlightValue">
+                      {account.facility.publicListing?.isListedPublicly
+                        ? "Visible in the public Hospitals directory"
+                        : "Hidden from the public Hospitals directory"}
+                    </span>
+                  </div>
+                  <div className="profileField">
+                    <span className="fieldLabel">Last Enabled</span>
+                    <span className="fieldValue">
+                      {account.facility.publicListing?.enabledAt
+                        ? `${new Date(account.facility.publicListing.enabledAt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" })}${
+                            account.facility.publicListing.enabledBy ? ` by ${account.facility.publicListing.enabledBy.name}` : ""
+                          }`
+                        : "Never enabled"}
+                    </span>
+                  </div>
+                </div>
+
+                <p className="fieldDescription" style={{ marginTop: "12px" }}>
+                  Only approved facilities can be listed. Job listings stay anonymous either way: the directory never links
+                  a facility to its jobs or recruitment contact.
+                </p>
+
+                {listingError && (
+                  <div className="actionErrorBanner" role="alert" style={{ marginTop: "12px" }}>
+                    {listingError}
+                  </div>
+                )}
+
+                <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "16px" }}>
+                  {account.facility.publicListing?.isListedPublicly ? (
+                    <button
+                      type="button"
+                      className="btnRejectAction"
+                      disabled={listingSubmitting}
+                      onClick={() => handleTogglePublicListing(false)}
+                    >
+                      {listingSubmitting ? "Updating..." : "Remove from Directory"}
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="btnApproveAction"
+                      disabled={listingSubmitting || account.status !== "APPROVED"}
+                      title={account.status !== "APPROVED" ? "Approve the facility account before listing it publicly." : undefined}
+                      onClick={() => handleTogglePublicListing(true)}
+                    >
+                      {listingSubmitting ? "Updating..." : "List in Public Directory"}
+                    </button>
+                  )}
+                  {account.status !== "APPROVED" && !account.facility.publicListing?.isListedPublicly && (
+                    <span className="fieldDescription" style={{ alignSelf: "center", margin: 0 }}>
+                      Available after the facility account is approved.
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -980,12 +1243,15 @@ export function AccountDetailPage({ accountId, onActionComplete }: AccountDetail
                       <strong>Actor:</strong> {log.actor}
                     </div>
 
-                    {log.metadata && (
-                      <pre className="auditMetaSnippet">
-                        {typeof log.metadata === "string"
-                          ? log.metadata
-                          : JSON.stringify(log.metadata, null, 2)}
-                      </pre>
+                    {(log.metadata?.reason || log.metadata?.note) && (
+                      <div className="auditActorRow">
+                        <strong>Reason:</strong> {log.metadata.reason || log.metadata.note}
+                      </div>
+                    )}
+                    {log.metadata?.previousStatus && log.metadata?.newStatus && (
+                      <div className="auditActorRow">
+                        <strong>Status:</strong> {String(log.metadata.previousStatus).toLowerCase().replace(/_/g, " ")} → {String(log.metadata.newStatus).toLowerCase().replace(/_/g, " ")}
+                      </div>
                     )}
                   </div>
                 ))}

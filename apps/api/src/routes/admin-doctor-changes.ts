@@ -1,8 +1,12 @@
 import { Router, type Request, type Response } from "express";
 import { prisma } from "../lib/prisma";
+import { recordAdminIdentityRead } from "../lib/admin-audit";
 import { requirePlatformAdmin } from "./admin-accounts";
 
 export const adminDoctorChangesRouter = Router();
+
+// Thrown inside review transactions to roll back and report a 409 to the reviewer
+class ChangeRequestConflict extends Error {}
 
 // Apply platform admin authorization guard
 adminDoctorChangesRouter.use(requirePlatformAdmin);
@@ -107,6 +111,13 @@ adminDoctorChangesRouter.get("/", async (req: Request, res: Response) => {
             }
           : null,
       };
+    });
+
+    await recordAdminIdentityRead({
+      actorId: (req as any).adminUser.id,
+      entityType: "DoctorProfileChangeRequest",
+      entityIds: requests.map((r) => r.id),
+      context: "GET /api/admin/doctor-changes",
     });
 
     res.json({
@@ -269,6 +280,13 @@ adminDoctorChangesRouter.get("/:id", async (req: Request, res: Response) => {
       },
     };
 
+    await recordAdminIdentityRead({
+      actorId: (req as any).adminUser.id,
+      entityType: "DoctorProfileChangeRequest",
+      entityIds: [request.id],
+      context: "GET /api/admin/doctor-changes/:id",
+    });
+
     res.json({
       status: "success",
       changeRequest: {
@@ -340,18 +358,22 @@ adminDoctorChangesRouter.post("/:id/approve", async (req: Request, res: Response
     }
 
     const proposed = (changeRequest.proposedValues as Record<string, any>) || {};
+    const optionalText = (value: unknown) => (value === null || value === undefined ? null : String(value).trim());
 
     // Execute atomic update in a transaction
     await prisma.$transaction(async (tx) => {
-      // 1. Mark change request as APPROVED
-      await tx.doctorProfileChangeRequest.update({
-        where: { id: changeRequest.id },
+      // 1. Claim the request: only one reviewer can move it out of PENDING
+      const claimed = await tx.doctorProfileChangeRequest.updateMany({
+        where: { id: changeRequest.id, status: "PENDING" },
         data: {
           status: "APPROVED",
           reviewedById: adminUser.id,
           reviewedAt: new Date(),
         },
       });
+      if (claimed.count === 0) {
+        throw new ChangeRequestConflict("Change request was already reviewed by another administrator.");
+      }
 
       // Parse date of birth if proposed
       let parsedDob: Date | null | undefined = undefined;
@@ -377,16 +399,16 @@ adminDoctorChangesRouter.post("/:id/approve", async (req: Request, res: Response
             : {}),
           ...(proposed.photoAssetId !== undefined ? { photoId: proposed.photoAssetId || null } : {}),
           ...(proposed.cvAssetId !== undefined ? { cvId: proposed.cvAssetId || null } : {}),
-          ...(proposed.jobTitle !== undefined ? { jobTitle: String(proposed.jobTitle).trim() } : {}),
+          ...(proposed.jobTitle !== undefined ? { jobTitle: optionalText(proposed.jobTitle) } : {}),
           ...(proposed.primarySpecialtyId !== undefined
             ? { primarySpecialtyId: proposed.primarySpecialtyId || null }
             : {}),
-          ...(proposed.about !== undefined ? { about: String(proposed.about).trim() } : {}),
+          ...(proposed.about !== undefined ? { about: optionalText(proposed.about) } : {}),
           ...(proposed.yearsOfExperience !== undefined
             ? { yearsOfExperience: Number(proposed.yearsOfExperience) || 0 }
             : {}),
           ...(proposed.currentPosition !== undefined
-            ? { currentPosition: String(proposed.currentPosition).trim() }
+            ? { currentPosition: optionalText(proposed.currentPosition) }
             : {}),
           ...(proposed.isAvailable !== undefined ? { isAvailable: Boolean(proposed.isAvailable) } : {}),
         },
@@ -397,23 +419,29 @@ adminDoctorChangesRouter.post("/:id/approve", async (req: Request, res: Response
       if (proposed.fullName) {
         userUpdateData.displayName = String(proposed.fullName).trim();
       }
-      if (proposed.email && proposed.email !== changeRequest.doctor.user.email) {
-        // verify uniqueness
-        const existingEmail = await tx.user.findFirst({
-          where: { email: proposed.email.trim().toLowerCase(), id: { not: changeRequest.doctor.userId } },
-        });
-        if (!existingEmail) {
-          userUpdateData.email = proposed.email.trim().toLowerCase();
+      // Email is optional for doctors: a proposed null clears it. Never skip a conflicting
+      // change silently; fail the approval so the admin sees why.
+      const proposedEmail =
+        proposed.email === undefined ? undefined : proposed.email ? String(proposed.email).trim().toLowerCase() : null;
+      if (proposedEmail !== undefined && proposedEmail !== changeRequest.doctor.user.email) {
+        if (proposedEmail) {
+          const existingEmail = await tx.user.findFirst({
+            where: { email: proposedEmail, id: { not: changeRequest.doctor.userId } },
+          });
+          if (existingEmail) {
+            throw new ChangeRequestConflict("The proposed email address is already used by another account.");
+          }
         }
+        userUpdateData.email = proposedEmail;
       }
       if (proposed.mobileE164 && proposed.mobileE164 !== changeRequest.doctor.user.mobileE164) {
-        // verify uniqueness
         const existingPhone = await tx.user.findFirst({
           where: { mobileE164: proposed.mobileE164.trim(), id: { not: changeRequest.doctor.userId } },
         });
-        if (!existingPhone) {
-          userUpdateData.mobileE164 = proposed.mobileE164.trim();
+        if (existingPhone) {
+          throw new ChangeRequestConflict("The proposed mobile number is already used by another account.");
         }
+        userUpdateData.mobileE164 = proposed.mobileE164.trim();
       }
       if (Object.keys(userUpdateData).length > 0) {
         await tx.user.update({
@@ -580,6 +608,10 @@ adminDoctorChangesRouter.post("/:id/approve", async (req: Request, res: Response
       message: "Doctor profile changes approved successfully and applied live.",
     });
   } catch (error) {
+    if (error instanceof ChangeRequestConflict) {
+      res.status(409).json({ status: "error", code: "CHANGE_REQUEST_CONFLICT", message: error.message });
+      return;
+    }
     console.error("Admin approve doctor changes error:", error);
     res.status(500).json({ status: "error", message: "Failed to approve doctor change request." });
   }
@@ -626,9 +658,9 @@ adminDoctorChangesRouter.post("/:id/reject", async (req: Request, res: Response)
 
     // Execute rejection in transaction
     await prisma.$transaction(async (tx) => {
-      // 1. Mark change request as REJECTED
-      await tx.doctorProfileChangeRequest.update({
-        where: { id: changeRequest.id },
+      // 1. Mark change request as REJECTED (only if still PENDING)
+      const claimed = await tx.doctorProfileChangeRequest.updateMany({
+        where: { id: changeRequest.id, status: "PENDING" },
         data: {
           status: "REJECTED",
           rejectionReason: reason.trim(),
@@ -636,6 +668,9 @@ adminDoctorChangesRouter.post("/:id/reject", async (req: Request, res: Response)
           reviewedAt: new Date(),
         },
       });
+      if (claimed.count === 0) {
+        throw new ChangeRequestConflict("Change request was already reviewed by another administrator.");
+      }
 
       // 2. Record decision in AuditLog
       await tx.auditLog.create({
@@ -672,6 +707,10 @@ adminDoctorChangesRouter.post("/:id/reject", async (req: Request, res: Response)
       message: "Doctor profile change request rejected. Live profile remains unchanged.",
     });
   } catch (error) {
+    if (error instanceof ChangeRequestConflict) {
+      res.status(409).json({ status: "error", code: "CHANGE_REQUEST_CONFLICT", message: error.message });
+      return;
+    }
     console.error("Admin reject doctor changes error:", error);
     res.status(500).json({ status: "error", message: "Failed to reject doctor change request." });
   }

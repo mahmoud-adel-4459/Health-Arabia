@@ -163,6 +163,16 @@ export function JobQueuePage() {
 
           <button
             type="button"
+            className={`filterTabBtn ${currentStatus === "CHANGES_REQUESTED" ? "filterTabActive" : ""}`}
+            onClick={() => updateFilters("CHANGES_REQUESTED", undefined, 1)}
+          >
+            <span className="tabDot pendingDot" />
+            <span>Changes requested</span>
+            <span className="tabCounterPill">{meta.counts.changesRequested ?? 0}</span>
+          </button>
+
+          <button
+            type="button"
             className={`filterTabBtn ${currentStatus === "REJECTED" ? "filterTabActive" : ""}`}
             onClick={() => updateFilters("REJECTED", undefined, 1)}
           >
@@ -274,7 +284,7 @@ export function JobQueuePage() {
                             {job.referenceNumber}
                           </span>
                           {job.isUrgent && (
-                            <span style={{ fontSize: "11px", backgroundColor: "#fff1f2", color: "#e11d48", padding: "1px 6px", borderRadius: "10px", fontWeight: 700 }}>
+                            <span style={{ fontSize: "11px", backgroundColor: "#fff1f2", color: "#e11d48", padding: "1px 6px", borderRadius: "10px", fontWeight: 700, whiteSpace: "nowrap" }}>
                               🔥 Urgent
                             </span>
                           )}
@@ -397,13 +407,13 @@ export function JobQueuePage() {
         {/* Pagination Bar */}
         {totalPages > 1 && (
           <div className="tablePaginationFooter">
-            <span className="paginationSummaryText">
+            <span>
               Showing page {currentPage} of {totalPages} ({totalCount} total requisitions)
             </span>
-            <div className="paginationControls">
+            <div className="paginationBtnGroup">
               <button
                 type="button"
-                className="pageNavBtn"
+                className="paginationBtn"
                 disabled={currentPage <= 1}
                 onClick={() => updateFilters(undefined, undefined, currentPage - 1)}
               >
@@ -411,7 +421,7 @@ export function JobQueuePage() {
               </button>
               <button
                 type="button"
-                className="pageNavBtn"
+                className="paginationBtn"
                 disabled={currentPage >= totalPages}
                 onClick={() => updateFilters(undefined, undefined, currentPage + 1)}
               >

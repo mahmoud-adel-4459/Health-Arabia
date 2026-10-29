@@ -1,16 +1,21 @@
 import { Call, Clock, Location } from "iconsax-react";
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { ContactForm } from "@/components/pages/ContactForm";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { getContactContent } from "@/lib/public-content";
 import styles from "@/components/pages/pages.module.css";
 
-export const metadata: Metadata = {
+const fallbackMetadata: Metadata = {
   title: "Contact Our Consultants | Health Arabia",
   description:
     "Get in touch with Health Arabia's medical recruitment specialists in London and Riyadh for confidential clinical career and staffing inquiries.",
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("CONTACT", fallbackMetadata);
+}
 
 export default async function ContactPage() {
   const content = await getContactContent();

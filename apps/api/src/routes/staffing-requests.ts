@@ -1,3 +1,4 @@
+import { publicFormRateLimiter } from "../lib/rate-limit";
 import { Router, type Request, type Response } from "express";
 import { prisma } from "../lib/prisma";
 import { getAuthenticatedUser } from "./auth";
@@ -51,7 +52,7 @@ staffingRequestsRouter.get("/meta", async (_req: Request, res: Response) => {
 // POST /api/staffing-requests
 // Submit general medical staffing inquiry matching Figma node 440:3528
 // ---------------------------------------------------------------------------
-staffingRequestsRouter.post("/", async (req: Request, res: Response) => {
+staffingRequestsRouter.post("/", publicFormRateLimiter, async (req: Request, res: Response) => {
   try {
     const authUser = await getAuthenticatedUser(req);
 

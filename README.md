@@ -80,3 +80,22 @@ Health checks:
 - UX audit: `docs/ux-audit.md`
 - Screen references: `reference/figma/`
 "# Health-Arabia" 
+
+## Production build and migration
+
+Never run `pnpm db:migrate` (`prisma migrate dev`), `db:seed:demo` or any seed against production. Use:
+
+```bash
+corepack pnpm install --frozen-lockfile
+corepack pnpm db:migrate:deploy        # applies committed migrations only; DATABASE_URL points at the production database
+API_ORIGIN=https://<api-host> corepack pnpm build   # API_ORIGIN is read at build time for the website's /api rewrite
+NODE_ENV=production node apps/api/dist/server.js
+corepack pnpm --filter @health-arabia/web start     # website (next start)
+# apps/dashboard/dist is a static site: serve it from any static host
+```
+
+API variables: `DATABASE_URL` (required), `PORT`, `CORS_ORIGINS` (required in production), `PRIVATE_STORAGE_PATH` (required in production: an absolute persistent path outside the Git checkout), `TRUST_PROXY`, `ADMIN_EMAIL` and `ADMIN_PASSWORD` (first start only, 12+ characters, no placeholder), `NODE_ENV=production`. Uploaded private files are stored on the API's local disk: back up `PRIVATE_STORAGE_PATH` together with the database.
+
+### Dashboard sign-in and private-file safeguards
+- The admin dashboard authenticates only with the API's HttpOnly `ha_admin_session` cookie (`credentials: "include"`); no token is stored in browser storage. The dashboard and the API must share a registrable domain (for example `admin.example.com` and `api.example.com`) so the SameSite=Lax cookie is sent. State-changing requests from origins not listed in `CORS_ORIGINS` are refused.
+- `pnpm install` enables the versioned Git hook in `.githooks`, and CI runs the same check (`.github/workflows/private-storage-guard.yml`): new or modified files under `private-storage/` are rejected; deletions are allowed. Run it manually with `pnpm guard:private-storage`.

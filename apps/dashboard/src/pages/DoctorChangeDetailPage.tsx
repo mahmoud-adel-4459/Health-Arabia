@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import type { DoctorChangeDetail } from "../types";
 import {
+  resolveApiUrl,
   getDoctorChangeRequestDetail,
   approveDoctorChangeRequest,
   rejectDoctorChangeRequest,
@@ -164,7 +165,7 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
             </span>
             <span>•</span>
             <span>
-              <strong>Modifications:</strong> {totalModifications} fields/collections modified
+              <strong>Modifications:</strong> {totalModifications} {totalModifications === 1 ? "field/collection" : "fields/collections"} modified
             </span>
           </div>
         </div>
@@ -265,16 +266,16 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
                     {c.type === "image" ? (
                       c.currentImageUrl ? (
                         <div className="diffImageThumbWrap">
-                          <img src={c.currentImageUrl} alt="Current" className="diffImageThumb" />
+                          <img src={resolveApiUrl(c.currentImageUrl) ?? undefined} alt="Current" className="diffLogoThumb" />
                           <span className="diffValText">Current Photo</span>
                         </div>
                       ) : (
-                        <span className="diffValEmpty">None on file</span>
+                        <span className="diffEmptyVal">None on file</span>
                       )
                     ) : c.type === "file" ? (
                       c.currentImageUrl ? (
                         <a
-                          href={c.currentImageUrl}
+                          href={resolveApiUrl(c.currentImageUrl) ?? undefined}
                           target="_blank"
                           rel="noreferrer"
                           className="docFileLink"
@@ -282,7 +283,7 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
                           📎 {c.currentFileName || "Download Current CV"}
                         </a>
                       ) : (
-                        <span className="diffValEmpty">None on file</span>
+                        <span className="diffEmptyVal">None on file</span>
                       )
                     ) : c.type === "boolean" ? (
                       <span className={c.currentValue ? "textSuccess" : "textMuted"}>
@@ -298,16 +299,16 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
                     {c.type === "image" ? (
                       c.proposedImageUrl ? (
                         <div className="diffImageThumbWrap">
-                          <img src={c.proposedImageUrl} alt="Proposed" className="diffImageThumb" />
+                          <img src={resolveApiUrl(c.proposedImageUrl) ?? undefined} alt="Proposed" className="diffLogoThumb" />
                           <span className="diffValText">New Photo</span>
                         </div>
                       ) : (
-                        <span className="diffValEmpty">Removed</span>
+                        <span className="diffEmptyVal">{c.currentImageUrl ? "Removed" : "None on file"}</span>
                       )
                     ) : c.type === "file" ? (
                       c.proposedImageUrl ? (
                         <a
-                          href={c.proposedImageUrl}
+                          href={resolveApiUrl(c.proposedImageUrl) ?? undefined}
                           target="_blank"
                           rel="noreferrer"
                           className="docFileLink"
@@ -315,7 +316,7 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
                           📎 {c.proposedFileName || "Download Proposed CV"}
                         </a>
                       ) : (
-                        <span className="diffValEmpty">Removed</span>
+                        <span className="diffEmptyVal">{c.currentImageUrl ? "Removed" : "None on file"}</span>
                       )
                     ) : c.type === "boolean" ? (
                       <span className={c.proposedValue ? "textSuccess" : "textMuted"}>
@@ -329,9 +330,9 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
                   {/* Changed Status Badge */}
                   <td style={{ textAlign: "center" }}>
                     {c.hasChanged ? (
-                      <span className="badgeModified">MODIFIED</span>
+                      <span className="pillModified">MODIFIED</span>
                     ) : (
-                      <span className="badgeSame">SAME</span>
+                      <span className="pillSame">SAME</span>
                     )}
                   </td>
                 </tr>
@@ -347,9 +348,9 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
           <h2 className="sectionCardTitle">Target GCC Practice Destinations</h2>
           <span className="sectionSubtitle">
             {listComparisons.preferredCountries.hasChanged ? (
-              <span className="badgeModified">MODIFIED</span>
+              <span className="pillModified">MODIFIED</span>
             ) : (
-              <span className="badgeSame">SAME</span>
+              <span className="pillSame">SAME</span>
             )}
           </span>
         </div>
@@ -366,7 +367,7 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
                   </span>
                 ))
               ) : (
-                <span className="diffValEmpty">No preferred countries recorded</span>
+                <span className="diffEmptyVal">No preferred countries recorded</span>
               )}
             </div>
           </div>
@@ -386,7 +387,7 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
                   </span>
                 ))
               ) : (
-                <span className="diffValEmpty">None specified</span>
+                <span className="diffEmptyVal">None specified</span>
               )}
             </div>
           </div>
@@ -399,9 +400,9 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
           <h2 className="sectionCardTitle">Additional Clinical Specialties</h2>
           <span className="sectionSubtitle">
             {listComparisons.additionalSpecialties.hasChanged ? (
-              <span className="badgeModified">MODIFIED</span>
+              <span className="pillModified">MODIFIED</span>
             ) : (
-              <span className="badgeSame">SAME</span>
+              <span className="pillSame">SAME</span>
             )}
           </span>
         </div>
@@ -418,7 +419,7 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
                   </span>
                 ))
               ) : (
-                <span className="diffValEmpty">None recorded</span>
+                <span className="diffEmptyVal">None recorded</span>
               )}
             </div>
           </div>
@@ -438,7 +439,7 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
                   </span>
                 ))
               ) : (
-                <span className="diffValEmpty">None specified</span>
+                <span className="diffEmptyVal">None specified</span>
               )}
             </div>
           </div>
@@ -451,9 +452,9 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
           <h2 className="sectionCardTitle">Education &amp; Academic Qualifications</h2>
           <span className="sectionSubtitle">
             {listComparisons.educations.hasChanged ? (
-              <span className="badgeModified">MODIFIED</span>
+              <span className="pillModified">MODIFIED</span>
             ) : (
-              <span className="badgeSame">SAME</span>
+              <span className="pillSame">SAME</span>
             )}
           </span>
         </div>
@@ -485,7 +486,7 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
               </div>
             ))}
             {listComparisons.educations.current.length === 0 && (
-              <span className="diffValEmpty">No education records</span>
+              <span className="diffEmptyVal">No education records</span>
             )}
           </div>
           <div style={{ borderLeft: "1px solid #e2e8f0", paddingLeft: "24px" }}>
@@ -515,7 +516,7 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
               </div>
             ))}
             {listComparisons.educations.proposed.length === 0 && (
-              <span className="diffValEmpty">None submitted</span>
+              <span className="diffEmptyVal">None submitted</span>
             )}
           </div>
         </div>
@@ -527,9 +528,9 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
           <h2 className="sectionCardTitle">Medical Practice Licenses &amp; Certifications</h2>
           <span className="sectionSubtitle">
             {listComparisons.licenses.hasChanged ? (
-              <span className="badgeModified">MODIFIED</span>
+              <span className="pillModified">MODIFIED</span>
             ) : (
-              <span className="badgeSame">SAME</span>
+              <span className="pillSame">SAME</span>
             )}
           </span>
         </div>
@@ -559,7 +560,7 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
               </div>
             ))}
             {listComparisons.licenses.current.length === 0 && (
-              <span className="diffValEmpty">No licenses on file</span>
+              <span className="diffEmptyVal">No licenses on file</span>
             )}
           </div>
           <div style={{ borderLeft: "1px solid #e2e8f0", paddingLeft: "24px" }}>
@@ -587,7 +588,7 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
               </div>
             ))}
             {listComparisons.licenses.proposed.length === 0 && (
-              <span className="diffValEmpty">None submitted</span>
+              <span className="diffEmptyVal">None submitted</span>
             )}
           </div>
         </div>
@@ -599,9 +600,9 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
           <h2 className="sectionCardTitle">Work &amp; Clinical Experience</h2>
           <span className="sectionSubtitle">
             {listComparisons.experiences.hasChanged ? (
-              <span className="badgeModified">MODIFIED</span>
+              <span className="pillModified">MODIFIED</span>
             ) : (
-              <span className="badgeSame">SAME</span>
+              <span className="pillSame">SAME</span>
             )}
           </span>
         </div>
@@ -635,7 +636,7 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
               </div>
             ))}
             {listComparisons.experiences.current.length === 0 && (
-              <span className="diffValEmpty">No experience records</span>
+              <span className="diffEmptyVal">No experience records</span>
             )}
           </div>
           <div style={{ borderLeft: "1px solid #e2e8f0", paddingLeft: "24px" }}>
@@ -667,7 +668,7 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
               </div>
             ))}
             {listComparisons.experiences.proposed.length === 0 && (
-              <span className="diffValEmpty">None submitted</span>
+              <span className="diffEmptyVal">None submitted</span>
             )}
           </div>
         </div>
@@ -679,9 +680,9 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
           <h2 className="sectionCardTitle">Languages &amp; Proficiency</h2>
           <span className="sectionSubtitle">
             {listComparisons.languages.hasChanged ? (
-              <span className="badgeModified">MODIFIED</span>
+              <span className="pillModified">MODIFIED</span>
             ) : (
-              <span className="badgeSame">SAME</span>
+              <span className="pillSame">SAME</span>
             )}
           </span>
         </div>
@@ -697,7 +698,7 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
                 </span>
               ))}
               {listComparisons.languages.current.length === 0 && (
-                <span className="diffValEmpty">None recorded</span>
+                <span className="diffEmptyVal">None recorded</span>
               )}
             </div>
           </div>
@@ -716,7 +717,7 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
                 </span>
               ))}
               {listComparisons.languages.proposed.length === 0 && (
-                <span className="diffValEmpty">None submitted</span>
+                <span className="diffEmptyVal">None submitted</span>
               )}
             </div>
           </div>
@@ -728,7 +729,7 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
         <div className="modalBackdrop">
           <div className="modalCard" style={{ maxWidth: "520px" }}>
             <h2 className="modalTitle">Approve Doctor Profile Changes?</h2>
-            <p className="modalDescription">
+            <p className="modalBodyText">
               Are you sure you want to approve the modifications for <strong>{doctor.fullName}</strong>?
               All proposed personal details, qualifications, licenses, experiences, languages, and CV assets will be
               atomically merged into the live profile and made active. An audit log will be recorded.
@@ -737,7 +738,7 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
               <button
                 type="button"
                 onClick={() => setIsApproving(false)}
-                className="btnCancel"
+                className="modalCancelBtn"
                 disabled={actionSubmitting}
               >
                 Cancel
@@ -745,7 +746,7 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
               <button
                 type="button"
                 onClick={handleApprove}
-                className="btnConfirmApprove"
+                className="btnApprove"
                 disabled={actionSubmitting}
               >
                 {actionSubmitting ? "Approving..." : "Yes, Approve & Publish Live"}
@@ -760,7 +761,7 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
         <div className="modalBackdrop">
           <div className="modalCard" style={{ maxWidth: "540px" }}>
             <h2 className="modalTitle">Decline Doctor Profile Changes</h2>
-            <p className="modalDescription">
+            <p className="modalBodyText">
               Decline the requested updates for <strong>{doctor.fullName}</strong>. The doctor&apos;s live approved profile
               will remain completely unchanged. A clear administrative explanation is required.
             </p>
@@ -768,7 +769,7 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
               <div className="formGroup">
                 <label className="formLabel">Reason for Rejection *</label>
                 <textarea
-                  className="formTextarea"
+                  className="modalTextarea"
                   rows={4}
                   required
                   placeholder="Explain why these updates are declined (e.g. unverified license registration number, missing graduation proof)..."
@@ -780,14 +781,14 @@ export function DoctorChangeDetailPage({ requestId, onActionComplete }: Props) {
                 <button
                   type="button"
                   onClick={() => setIsRejecting(false)}
-                  className="btnCancel"
+                  className="modalCancelBtn"
                   disabled={actionSubmitting}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="btnConfirmReject"
+                  className="btnReject"
                   disabled={actionSubmitting || !rejectionReason.trim()}
                 >
                   {actionSubmitting ? "Declining..." : "Decline Change Request"}

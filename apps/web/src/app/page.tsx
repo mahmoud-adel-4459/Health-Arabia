@@ -7,6 +7,8 @@ import {
   Stats,
   TeamCta,
 } from "@/components/home/HomeSections";
+import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { Testimonials } from "@/components/home/Testimonials";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
@@ -23,6 +25,10 @@ import {
 } from "@/lib/home-content";
 
 export const dynamic = "force-dynamic";
+
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("HOME", {});
+}
 
 export default async function HomePage() {
   const content = await getHomeContent();

@@ -86,7 +86,7 @@ doctorRouter.get("/dashboard", async (req: Request, res: Response) => {
     // Recommended Opportunities: active published jobs matching doctor's specialty or general top jobs
     const recommendedJobs = await prisma.job.findMany({
       where: {
-        status: "PUBLISHED",
+        status: "PUBLISHED", facility: { user: { status: "APPROVED" } },
         ...(doctorProfile.primarySpecialtyId ? { specialtyId: doctorProfile.primarySpecialtyId } : {}),
       },
       include: {
@@ -106,7 +106,7 @@ doctorRouter.get("/dashboard", async (req: Request, res: Response) => {
       recommendedJobs.length > 0
         ? recommendedJobs
         : await prisma.job.findMany({
-            where: { status: "PUBLISHED" },
+            where: { status: "PUBLISHED", facility: { user: { status: "APPROVED" } } },
             include: {
               facility: { select: { name: true } },
               city: { select: { nameEn: true } },
@@ -139,40 +139,7 @@ doctorRouter.get("/dashboard", async (req: Request, res: Response) => {
               type: n.type,
             };
           })
-        : [
-            {
-              id: "notif-1",
-              title: "New Internal Medicine opportunity matches your profile",
-              body: "National Guard Hospital posted a Consultant Paediatric ICU opening.",
-              createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-              readAt: null,
-              type: "JOB_MATCH",
-            },
-            {
-              id: "notif-2",
-              title: "Your application at Cleveland Clinic Abu Dhabi has been reviewed",
-              body: "Application status updated to Under Review.",
-              createdAt: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-              readAt: new Date().toISOString(),
-              type: "APPLICATION_UPDATE",
-            },
-            {
-              id: "notif-3",
-              title: "Interview invitation from King Faisal Specialist Hospital received",
-              body: "Clinical interview request scheduled for next week.",
-              createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
-              readAt: new Date().toISOString(),
-              type: "HIRE_REQUEST_UPDATE",
-            },
-            {
-              id: "notif-4",
-              title: "Complete your professional licenses section to improve matches",
-              body: "Ensure SCFHS license details are up to date.",
-              createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-              readAt: new Date().toISOString(),
-              type: "PROFILE_REMINDER",
-            },
-          ];
+        : [] // no fabricated notifications: show the real (possibly empty) list
 
     const isApproved = user.status === "APPROVED";
 
@@ -301,7 +268,7 @@ doctorRouter.get("/jobs/:id/application-form", async (req: Request, res: Respons
           },
         }),
         prisma.job.findFirst({
-          where: { id: jobId, status: "PUBLISHED" },
+          where: { id: jobId, status: "PUBLISHED", facility: { user: { status: "APPROVED" } } },
           include: {
             specialty: true,
             city: true,
@@ -378,8 +345,8 @@ doctorRouter.get("/jobs/:id/application-form", async (req: Request, res: Respons
         dateOfBirth: doctorProfile.dateOfBirth,
         gender: doctorProfile.gender,
         nationalityId: doctorProfile.nationalityId,
-        currentLocation: doctorProfile.residenceCountry?.nameEn || "Riyadh, Saudi Arabia",
-        currentJobTitle: doctorProfile.currentPosition || doctorProfile.jobTitle || "Medical Specialist",
+        currentLocation: doctorProfile.residenceCountry?.nameEn || "",
+        currentJobTitle: doctorProfile.currentPosition || doctorProfile.jobTitle || "",
         specialtyId: doctorProfile.primarySpecialtyId,
         yearsOfExperience: doctorProfile.yearsOfExperience || 0,
         cv: doctorProfile.cv
@@ -437,7 +404,7 @@ doctorRouter.post("/jobs/:id/apply", async (req: Request, res: Response) => {
     }
 
     const job = await prisma.job.findFirst({
-      where: { id: jobId, status: "PUBLISHED" },
+      where: { id: jobId, status: "PUBLISHED", facility: { user: { status: "APPROVED" } } },
     });
 
     if (!job) {
@@ -963,7 +930,7 @@ doctorRouter.post("/jobs/:id/save", async (req: Request, res: Response) => {
     }
 
     const job = await prisma.job.findFirst({
-      where: { id: jobId, status: "PUBLISHED" },
+      where: { id: jobId, status: "PUBLISHED", facility: { user: { status: "APPROVED" } } },
     });
 
     if (!job) {
@@ -1044,23 +1011,20 @@ doctorRouter.get("/profile", async (req: Request, res: Response) => {
       profile: {
         id: profile.id,
         fullName: profile.fullName,
-        jobTitle: profile.jobTitle ?? "Medical Specialist",
+        jobTitle: profile.jobTitle ?? "",
         yearsOfExperience: profile.yearsOfExperience ?? 0,
-        currentPosition: profile.currentPosition ?? profile.jobTitle ?? "Medical Specialist",
-        about:
-          profile.about ??
-          "Board-certified specialist dedicated to excellence in patient care and clinical practice across the GCC region.",
+        currentPosition: profile.currentPosition ?? "",
+        about: profile.about ?? "",
         isAvailable: profile.isAvailable,
         dateOfBirth: profile.dateOfBirth ? profile.dateOfBirth.toISOString().split("T")[0] : null,
-        gender: profile.gender ?? "MALE",
+        gender: profile.gender,
         nationalityId: profile.nationalityId,
-        nationalityName: profile.nationality?.nameEn ?? "Saudi Arabia",
+        nationalityName: profile.nationality?.nameEn ?? null,
         residenceCountryId: profile.residenceCountryId,
-        residenceCountryName: profile.residenceCountry?.nameEn ?? "Saudi Arabia",
+        residenceCountryName: profile.residenceCountry?.nameEn ?? null,
         mobileE164: profile.user?.mobileE164 ?? "",
         email: profile.user?.email ?? "",
-        grade: "Consultant Grade",
-        location: profile.residenceCountry ? `${profile.residenceCountry.nameEn}` : "Riyadh, Saudi Arabia",
+        location: profile.residenceCountry?.nameEn ?? null,
         photoAssetId: profile.photoId,
         photoUrl: profile.photo ? `/api/files/${profile.photo.id}/download` : null,
         cv: profile.cv
@@ -1100,7 +1064,7 @@ doctorRouter.get("/profile", async (req: Request, res: Response) => {
           degree: edu.degree,
           institution: edu.institution,
           graduationYear: edu.graduationYear,
-          year: edu.graduationYear ? String(edu.graduationYear) : "2018",
+          year: edu.graduationYear ? String(edu.graduationYear) : null,
           isPrimary: edu.isPrimary,
         })),
         licenses: profile.licenses.map((lic) => ({
@@ -1319,96 +1283,200 @@ const submitDoctorChangeRequest = async (req: Request, res: Response) => {
       })),
     };
 
-    // Lookup reference display names for proposed values
-    const [propNat, propRes, propSpec, propCountries, propSpecs, propPhoto, propCv] = await Promise.all([
-      nationalityId ? prisma.country.findUnique({ where: { id: nationalityId } }) : null,
-      residenceCountryId ? prisma.country.findUnique({ where: { id: residenceCountryId } }) : null,
-      primarySpecialtyId ? prisma.specialty.findUnique({ where: { id: primarySpecialtyId } }) : null,
-      Array.isArray(preferredCountryIds) && preferredCountryIds.length > 0
-        ? prisma.country.findMany({ where: { id: { in: preferredCountryIds } } })
-        : [],
-      Array.isArray(additionalSpecialtyIds) && additionalSpecialtyIds.length > 0
-        ? prisma.specialty.findMany({ where: { id: { in: additionalSpecialtyIds } } })
-        : [],
-      photoAssetId ? prisma.fileAsset.findUnique({ where: { id: photoAssetId } }) : null,
-      cvAssetId ? prisma.fileAsset.findUnique({ where: { id: cvAssetId } }) : null,
-    ]);
+    // A field omitted from the request keeps its current approved value, so a partial
+    // submission can never blank out live data when the request is approved.
+    const badRequest = (message: string, code = "INVALID_CHANGE_REQUEST") => {
+      res.status(400).json({ status: "error", message, code });
+    };
+    const toDateOnly = (value: unknown): string | null | "invalid" => {
+      if (value === null || value === undefined || value === "") return null;
+      const d = new Date(String(value));
+      return isNaN(d.getTime()) ? "invalid" : d.toISOString().split("T")[0];
+    };
+    const idList = (value: unknown, current: string[]): string[] | null =>
+      value === undefined ? current : Array.isArray(value) ? [...new Set(value.map(String))] : null;
+
+    const proposedDob = dateOfBirth === undefined ? currentValues.dateOfBirth : toDateOnly(dateOfBirth);
+    if (proposedDob === "invalid") return badRequest("Date of birth is not a valid date.");
+
+    const proposedGender = gender === undefined ? currentValues.gender : gender || null;
+    if (proposedGender !== null && proposedGender !== "MALE" && proposedGender !== "FEMALE") {
+      return badRequest("Gender must be MALE or FEMALE.");
+    }
+
+    const proposedPreferredCountryIds = idList(preferredCountryIds, currentValues.preferredCountryIds);
+    const proposedAdditionalSpecialtyIds = idList(additionalSpecialtyIds, currentValues.additionalSpecialtyIds);
+    if (!proposedPreferredCountryIds || !proposedAdditionalSpecialtyIds) {
+      return badRequest("Preferred countries and additional specialties must be lists.");
+    }
+
+    const proposedNationalityId = nationalityId === undefined ? currentValues.nationalityId : nationalityId || null;
+    const proposedResidenceId =
+      residenceCountryId === undefined ? currentValues.residenceCountryId : residenceCountryId || null;
+    const proposedSpecialtyId =
+      primarySpecialtyId === undefined ? currentValues.primarySpecialtyId : primarySpecialtyId || null;
+    const proposedPhotoId = photoAssetId === undefined ? doctorProfile.photoId : photoAssetId || null;
+    const proposedCvId = cvAssetId === undefined ? doctorProfile.cvId : cvAssetId || null;
+    const proposedMobile = String(mobileE164).trim().replace(/\s+/g, "");
+    const proposedEmail =
+      email === undefined
+        ? currentValues.email
+        : email && typeof email === "string" && email.trim()
+        ? email.trim().toLowerCase()
+        : null;
+
+    // Lookup reference display names for proposed values (and confirm they exist)
+    const [propNat, propRes, propSpec, propCountries, propSpecs, propPhoto, propCv, mobileOwner, emailOwner] =
+      await Promise.all([
+        proposedNationalityId ? prisma.country.findUnique({ where: { id: proposedNationalityId } }) : null,
+        proposedResidenceId ? prisma.country.findUnique({ where: { id: proposedResidenceId } }) : null,
+        proposedSpecialtyId ? prisma.specialty.findUnique({ where: { id: proposedSpecialtyId } }) : null,
+        proposedPreferredCountryIds.length > 0
+          ? prisma.country.findMany({ where: { id: { in: proposedPreferredCountryIds } } })
+          : [],
+        proposedAdditionalSpecialtyIds.length > 0
+          ? prisma.specialty.findMany({ where: { id: { in: proposedAdditionalSpecialtyIds } } })
+          : [],
+        proposedPhotoId ? prisma.fileAsset.findUnique({ where: { id: proposedPhotoId } }) : null,
+        proposedCvId ? prisma.fileAsset.findUnique({ where: { id: proposedCvId } }) : null,
+        prisma.user.findFirst({ where: { mobileE164: proposedMobile, id: { not: user.id } }, select: { id: true } }),
+        proposedEmail
+          ? prisma.user.findFirst({ where: { email: proposedEmail, id: { not: user.id } }, select: { id: true } })
+          : null,
+      ]);
+
+    if ((proposedNationalityId && !propNat) || (proposedResidenceId && !propRes)) {
+      return badRequest("Selected nationality or country of residence was not found.");
+    }
+    if (proposedSpecialtyId && !propSpec) return badRequest("Selected primary specialty was not found.");
+    if (propCountries.length !== proposedPreferredCountryIds.length) {
+      return badRequest("One or more preferred countries were not found.");
+    }
+    if (propSpecs.length !== proposedAdditionalSpecialtyIds.length) {
+      return badRequest("One or more additional specialties were not found.");
+    }
+
+    // Files must be the doctor's own uploads of the right kind (or the currently approved file)
+    const ownsFile = (
+      asset: { id: string; ownerId: string | null; kind: string } | null,
+      kind: string,
+      currentId: string | null
+    ) => !!asset && asset.kind === kind && (asset.ownerId === user.id || asset.id === currentId);
+    if (proposedPhotoId && !ownsFile(propPhoto, "PROFILE_PHOTO", doctorProfile.photoId)) {
+      return badRequest("Profile photo upload was not found for this account.", "INVALID_FILE");
+    }
+    if (proposedCvId && !ownsFile(propCv, "CV", doctorProfile.cvId)) {
+      return badRequest("CV upload was not found for this account.", "INVALID_FILE");
+    }
+
+    if (mobileOwner) {
+      res.status(409).json({ status: "error", code: "MOBILE_IN_USE", message: "This mobile number is already registered to another account." });
+      return;
+    }
+    if (emailOwner) {
+      res.status(409).json({ status: "error", code: "EMAIL_IN_USE", message: "This email address is already registered to another account." });
+      return;
+    }
+
+    const textOr = (value: unknown, current: string | null) =>
+      value === undefined ? current : typeof value === "string" ? value.trim() : current;
+
+    const proposedEducations = Array.isArray(educations)
+      ? educations.map((e: any, idx: number) => ({
+          degree: String(e.degree || "").trim(),
+          institution: String(e.institution || "").trim(),
+          graduationYear: e.graduationYear ? parseInt(String(e.graduationYear), 10) || null : null,
+          isPrimary: Boolean(e.isPrimary || idx === 0),
+        }))
+      : currentValues.educations;
+    const proposedLicenses = Array.isArray(licenses)
+      ? licenses.map((l: any) => ({
+          licenseType: String(l.licenseType || "").trim(),
+          registrationNumber: String(l.registrationNumber || "").trim(),
+          issuingAuthority: String(l.issuingAuthority || "").trim(),
+          expiryDate: toDateOnly(l.expiryDate),
+        }))
+      : currentValues.licenses;
+    const proposedExperiences = Array.isArray(experiences)
+      ? experiences.map((exp: any) => ({
+          organization: String(exp.organization || "").trim(),
+          position: String(exp.position || "").trim(),
+          startDate: toDateOnly(exp.startDate) ?? "",
+          endDate: toDateOnly(exp.endDate),
+          responsibilities: exp.responsibilities ? String(exp.responsibilities).trim() : null,
+        }))
+      : currentValues.experiences;
+    const proposedLanguages = Array.isArray(languages)
+      ? languages.map((lang: any) => ({
+          language: String(lang.language || "").trim(),
+          proficiency: lang.proficiency || "PROFESSIONAL",
+        }))
+      : currentValues.languages;
+
+    if (
+      proposedLicenses.some((l: any) => l.expiryDate === "invalid") ||
+      proposedExperiences.some((e: any) => e.startDate === "invalid" || e.endDate === "invalid")
+    ) {
+      return badRequest("One or more license or experience dates are not valid.");
+    }
+    if (proposedExperiences.some((e: any) => (e.organization || e.position) && !e.startDate)) {
+      return badRequest("Each experience entry needs a start date.");
+    }
+    if (proposedLanguages.some((l: any) => !["NATIVE", "FLUENT", "PROFESSIONAL", "BASIC"].includes(l.proficiency))) {
+      return badRequest("Language proficiency must be NATIVE, FLUENT, PROFESSIONAL, or BASIC.");
+    }
+
+    const proposedYears =
+      yearsOfExperience === undefined
+        ? currentValues.yearsOfExperience
+        : Math.max(0, parseInt(String(yearsOfExperience), 10) || 0);
 
     const proposedValues: Record<string, any> = {
       fullName: String(fullName).trim(),
-      dateOfBirth: dateOfBirth ? new Date(dateOfBirth).toISOString().split("T")[0] : null,
-      gender: gender || doctorProfile.gender || "MALE",
-      nationalityId: nationalityId || null,
-      nationalityName: propNat?.nameEn ?? currentValues.nationalityName,
-      residenceCountryId: residenceCountryId || null,
-      residenceCountryName: propRes?.nameEn ?? currentValues.residenceCountryName,
-      mobileE164: String(mobileE164).trim(),
-      email: email && typeof email === "string" && email.trim() ? email.trim().toLowerCase() : null,
-      photoAssetId: photoAssetId || doctorProfile.photoId,
-      photoUrl: photoAssetId
-        ? `/api/files/${photoAssetId}/download`
-        : currentValues.photoUrl,
-      jobTitle: jobTitle && typeof jobTitle === "string" ? jobTitle.trim() : "Medical Specialist",
-      primarySpecialtyId: primarySpecialtyId || null,
-      primarySpecialtyName: propSpec?.nameEn ?? currentValues.primarySpecialtyName,
-      about: about && typeof about === "string" ? about.trim() : "",
-      yearsOfExperience: typeof yearsOfExperience === "number" ? yearsOfExperience : parseInt(String(yearsOfExperience), 10) || 0,
-      currentPosition: currentPosition && typeof currentPosition === "string" ? currentPosition.trim() : "",
-      isAvailable: isAvailable !== undefined ? Boolean(isAvailable) : true,
-      cvAssetId: cvAssetId || doctorProfile.cvId,
-      cvFileName: propCv?.originalName ?? currentValues.cvFileName,
-      cvUrl: cvAssetId ? `/api/files/${cvAssetId}/download` : currentValues.cvUrl,
-      preferredCountryIds: Array.isArray(preferredCountryIds) ? preferredCountryIds : [],
+      dateOfBirth: proposedDob,
+      gender: proposedGender,
+      nationalityId: proposedNationalityId,
+      nationalityName: propNat?.nameEn ?? "—",
+      residenceCountryId: proposedResidenceId,
+      residenceCountryName: propRes?.nameEn ?? "—",
+      mobileE164: proposedMobile,
+      email: proposedEmail,
+      photoAssetId: proposedPhotoId,
+      photoUrl: proposedPhotoId ? `/api/files/${proposedPhotoId}/download` : null,
+      jobTitle: textOr(jobTitle, currentValues.jobTitle),
+      primarySpecialtyId: proposedSpecialtyId,
+      primarySpecialtyName: propSpec?.nameEn ?? "—",
+      about: textOr(about, currentValues.about),
+      yearsOfExperience: proposedYears,
+      currentPosition: textOr(currentPosition, currentValues.currentPosition),
+      isAvailable: isAvailable === undefined ? currentValues.isAvailable : Boolean(isAvailable),
+      cvAssetId: proposedCvId,
+      cvFileName: propCv?.originalName ?? null,
+      cvUrl: proposedCvId ? `/api/files/${proposedCvId}/download` : null,
+      preferredCountryIds: proposedPreferredCountryIds,
       preferredCountryNames: propCountries.map((c) => c.nameEn),
-      additionalSpecialtyIds: Array.isArray(additionalSpecialtyIds) ? additionalSpecialtyIds : [],
+      additionalSpecialtyIds: proposedAdditionalSpecialtyIds,
       additionalSpecialtyNames: propSpecs.map((s) => s.nameEn),
-      educations: Array.isArray(educations)
-        ? educations.map((e: any, idx: number) => ({
-            degree: String(e.degree || "").trim(),
-            institution: String(e.institution || "").trim(),
-            graduationYear: e.graduationYear ? parseInt(String(e.graduationYear), 10) || null : null,
-            isPrimary: Boolean(e.isPrimary || idx === 0),
-          }))
-        : [],
-      licenses: Array.isArray(licenses)
-        ? licenses.map((l: any) => ({
-            licenseType: String(l.licenseType || "").trim(),
-            registrationNumber: String(l.registrationNumber || "").trim(),
-            issuingAuthority: String(l.issuingAuthority || "").trim(),
-            expiryDate: l.expiryDate ? new Date(l.expiryDate).toISOString().split("T")[0] : null,
-          }))
-        : [],
-      experiences: Array.isArray(experiences)
-        ? experiences.map((exp: any) => ({
-            organization: String(exp.organization || "").trim(),
-            position: String(exp.position || "").trim(),
-            startDate: exp.startDate ? new Date(exp.startDate).toISOString().split("T")[0] : "",
-            endDate: exp.endDate ? new Date(exp.endDate).toISOString().split("T")[0] : null,
-            responsibilities: exp.responsibilities ? String(exp.responsibilities).trim() : null,
-          }))
-        : [],
-      languages: Array.isArray(languages)
-        ? languages.map((lang: any) => ({
-            language: String(lang.language || "").trim(),
-            proficiency: lang.proficiency || "PROFESSIONAL",
-          }))
-        : [],
+      educations: proposedEducations,
+      licenses: proposedLicenses,
+      experiences: proposedExperiences,
+      languages: proposedLanguages,
     };
 
-    // Mark previous PENDING change requests as CANCELLED
-    await prisma.doctorProfileChangeRequest.updateMany({
-      where: { doctorId: doctorProfile.id, status: "PENDING" },
-      data: { status: "CANCELLED" },
-    });
-
-    // Create new pending change request
-    const changeRequest = await prisma.doctorProfileChangeRequest.create({
-      data: {
-        doctorId: doctorProfile.id,
-        status: "PENDING",
-        currentValues,
-        proposedValues,
-      },
+    // Supersede any previous PENDING request and create the new one atomically
+    const changeRequest = await prisma.$transaction(async (tx) => {
+      await tx.doctorProfileChangeRequest.updateMany({
+        where: { doctorId: doctorProfile.id, status: "PENDING" },
+        data: { status: "CANCELLED" },
+      });
+      return tx.doctorProfileChangeRequest.create({
+        data: {
+          doctorId: doctorProfile.id,
+          status: "PENDING",
+          currentValues,
+          proposedValues,
+        },
+      });
     });
 
     res.status(201).json({

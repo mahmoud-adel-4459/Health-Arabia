@@ -183,7 +183,7 @@ accountRouter.post("/change-password", async (req: Request, res: Response) => {
       return;
     }
 
-    const isCurrentValid = await verifyPassword(userRecord.passwordHash, currentPassword);
+    const isCurrentValid = await verifyPassword(currentPassword, userRecord.passwordHash);
     if (!isCurrentValid) {
       res.status(400).json({ status: "error", message: "Current password is incorrect." });
       return;

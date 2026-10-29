@@ -1,3 +1,4 @@
+import { publicFormRateLimiter } from "../lib/rate-limit";
 import { Router } from "express";
 import { prisma } from "../lib/prisma";
 
@@ -47,7 +48,7 @@ publicContactRouter.get("/", async (req, res) => {
   });
 });
 
-publicContactRouter.post("/", async (req, res) => {
+publicContactRouter.post("/", publicFormRateLimiter, async (req, res) => {
   const { fullName, email, phone, subjectId, message, locale } = req.body ?? {};
 
   if (!fullName || typeof fullName !== "string" || !fullName.trim()) {

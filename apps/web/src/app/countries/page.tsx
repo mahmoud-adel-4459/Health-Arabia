@@ -1,15 +1,20 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import Link from "next/link";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { getCountriesContent } from "@/lib/public-content";
 import styles from "@/components/pages/pages.module.css";
 
-export const metadata: Metadata = {
+const fallbackMetadata: Metadata = {
   title: "GCC Destinations & Countries | Health Arabia",
   description:
     "Explore healthcare and medical consultant relocation opportunities across Saudi Arabia, UAE, Qatar, Bahrain, Oman, and Kuwait.",
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("COUNTRIES", fallbackMetadata);
+}
 
 export default async function CountriesPage() {
   const content = await getCountriesContent();

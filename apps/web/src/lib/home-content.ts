@@ -1,7 +1,10 @@
 export type LinkItem = { label: string; href: string | null };
 export type Option = { value: string; label: string };
 
+export type SiteBrand = { name: string; logoUrl: string };
+
 export type HeaderContent = {
+  brand?: SiteBrand;
   nav: (LinkItem & { hasMenu?: boolean })[];
   jobsLink: LinkItem;
   secondaryLink: LinkItem | null;
@@ -9,6 +12,8 @@ export type HeaderContent = {
 };
 
 export type FooterContent = {
+  brand?: SiteBrand;
+  social?: { label: string; href: string }[];
   tagline: string;
   columns: { title: string; links: LinkItem[] }[];
   copyright: { prefix: string; company: string; suffix: string };

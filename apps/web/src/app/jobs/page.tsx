@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { getJobsContent } from "@/lib/public-content";
@@ -10,11 +11,15 @@ import homeStyles from "@/components/home/home.module.css";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
+const fallbackMetadata: Metadata = {
   title: "Available Jobs | HealthArabia",
   description:
     "Explore premier consultant, specialist, and medical leadership opportunities across leading healthcare complexes in Saudi Arabia and the GCC.",
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("JOBS", fallbackMetadata);
+}
 
 type PageProps = {
   searchParams: Promise<{

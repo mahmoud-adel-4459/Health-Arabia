@@ -6,6 +6,7 @@ coverage/
 *.tsbuildinfo
 next-env.d.ts
 apps/api/src/generated/
+apps/api/private-storage/
 
 *.log
 npm-debug.log*

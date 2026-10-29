@@ -3,6 +3,7 @@ import { savePrivateFile, getPrivateFile } from "../lib/storage";
 import type { FileKind } from "../generated/prisma/client";
 import { getAuthenticatedUser } from "./auth";
 import { prisma } from "../lib/prisma";
+import { uploadRateLimiter } from "../lib/rate-limit";
 
 export const filesRouter = Router();
 
@@ -14,7 +15,24 @@ const ALLOWED_KINDS: FileKind[] = [
   "SUPPORTING_DOCUMENT",
 ];
 
-filesRouter.post("/upload-private", async (req: Request, res: Response) => {
+// Uploads are served inline from the API origin, so only inert document and raster-image types are accepted
+// (never HTML or SVG). Bytes are stored as sent; the type check is on the declared MIME type.
+const IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const DOCUMENT_TYPES = [
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+];
+const ALLOWED_MIME_BY_KIND: Partial<Record<FileKind, string[]>> = {
+  CV: DOCUMENT_TYPES,
+  PROFILE_PHOTO: IMAGE_TYPES,
+  FACILITY_LOGO: IMAGE_TYPES,
+  CERTIFICATE: [...DOCUMENT_TYPES, ...IMAGE_TYPES],
+  SUPPORTING_DOCUMENT: [...DOCUMENT_TYPES, ...IMAGE_TYPES],
+};
+const SERVABLE_MIME = new Set([...DOCUMENT_TYPES, ...IMAGE_TYPES, "image/gif"]);
+
+filesRouter.post("/upload-private", uploadRateLimiter, async (req: Request, res: Response) => {
   try {
     const { filename, mimeType, base64Data, kind } = req.body ?? {};
 
@@ -32,6 +50,15 @@ filesRouter.post("/upload-private", async (req: Request, res: Response) => {
         status: "error",
         message: `Invalid file kind. Allowed kinds: ${ALLOWED_KINDS.join(", ")}`,
         code: "INVALID_FILE_KIND",
+      });
+      return;
+    }
+
+    if (!ALLOWED_MIME_BY_KIND[kind as FileKind]?.includes(String(mimeType).toLowerCase())) {
+      res.status(400).json({
+        status: "error",
+        message: "This file type is not allowed for this upload.",
+        code: "INVALID_FILE_TYPE",
       });
       return;
     }
@@ -103,12 +130,19 @@ async function serveFileAsset(req: Request, res: Response) {
 
     const isPublicKind =
       fileData.asset.kind === "FACILITY_LOGO" ||
-      fileData.asset.kind === "PROFILE_PHOTO" ||
       fileData.asset.kind === "CONTENT_IMAGE" ||
       fileData.asset.visibility === "PUBLIC";
 
     if (!isPublicKind) {
-      const user = await getAuthenticatedUser(req);
+      let user = await getAuthenticatedUser(req);
+      // Dashboard file links open without a bearer header; when this browser also holds a
+      // website session that does not own the file, fall back to its platform admin session.
+      if (!user || (user.role !== "PLATFORM_ADMIN" && fileData.asset.ownerId !== user.id)) {
+        const adminUser = await getAuthenticatedUser(req, "admin");
+        if (adminUser?.role === "PLATFORM_ADMIN") {
+          user = adminUser;
+        }
+      }
       if (!user) {
         res.status(401).json({
           status: "error",
@@ -187,13 +221,15 @@ async function serveFileAsset(req: Request, res: Response) {
       }
     }
 
-    res.setHeader("Content-Type", fileData.asset.mimeType);
+    // Never let an unexpected stored type (e.g. text/html) execute from the API origin
+    res.setHeader("Content-Type", SERVABLE_MIME.has(fileData.asset.mimeType) ? fileData.asset.mimeType : "application/octet-stream");
+    res.setHeader("X-Content-Type-Options", "nosniff");
     res.setHeader("Content-Length", fileData.buffer.length);
     res.setHeader(
       "Cache-Control",
       isPublicKind ? "public, max-age=3600" : "private, no-cache, no-store, must-revalidate"
     );
-    res.setHeader("Content-Disposition", `inline; filename="${fileData.asset.originalName}"`);
+    res.setHeader("Content-Disposition", `inline; filename*=UTF-8''${encodeURIComponent(fileData.asset.originalName)}`);
     res.send(fileData.buffer);
   } catch (error) {
     console.error("File download error:", error);

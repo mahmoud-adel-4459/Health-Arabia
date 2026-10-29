@@ -129,6 +129,12 @@ export interface FacilityDetailProfile {
   officerPhone: string | null;
   city?: string | null;
   country?: string | null;
+  slug?: string | null;
+  publicListing?: {
+    isListedPublicly: boolean;
+    enabledAt: string | null;
+    enabledBy: { id: string; name: string } | null;
+  };
   logo: {
     id: string;
     name: string;
@@ -341,6 +347,7 @@ export interface JobQueueMeta {
     pendingReview: number;
     published: number;
     rejected: number;
+    changesRequested?: number;
   };
 }
 
@@ -415,47 +422,36 @@ export interface JobSubmissionDetail {
   };
 }
 
+export interface AdminReleaseSummary {
+  id: string;
+  status: "PENDING" | "APPROVED" | "REJECTED" | "REVOKED";
+  doctorConsentStatus: "PENDING" | "GRANTED" | "DECLINED" | "REVOKED";
+  doctorConsentAt: string | null;
+  decidedAt: string | null;
+  revokedAt: string | null;
+  conversationId: string | null;
+  conversationStatus: string | null;
+}
+
 export interface AdminHireRequestItem {
   id: string;
-  status: string;
+  applicationId: string;
   candidateCode: string;
+  jobTitle: string;
   specialty: string;
   yearsOfExperience: number;
-  notes: string | null;
-  application: {
-    id: string;
-    candidateCode: string;
-    status: string;
-  };
-  identityRelease: {
-    id: string;
-    status: "PENDING" | "APPROVED" | "REJECTED" | "REVOKED";
-    doctorConsentStatus: "PENDING" | "GRANTED" | "DECLINED" | "REVOKED";
-    doctorConsentAt: string | null;
-    releaseApprovedAt: string | null;
-    releaseRevokedAt: string | null;
-    conversation: {
-      id: string;
-      status: "ACTIVE" | "ARCHIVED" | "READ_ONLY";
-    } | null;
-  } | null;
+  status: string;
+  identityRelease: AdminReleaseSummary | null;
 }
 
 export interface AdminHireRequest {
   id: string;
   status: "SUBMITTED" | "IN_COORDINATION" | "COMPLETED" | "CANCELLED";
-  createdAt: string;
-  facility: {
-    id: string;
-    nameEn: string;
-    nameAr: string | null;
-    city: string | null;
-    country: string | null;
-  };
-  job: {
-    id: string;
-    title: string;
-  };
+  submittedAt: string | null;
+  facilityNote: string | null;
+  itemsCount: number;
+  facility: { id: string; name: string; officerName: string | null; email: string | null; status: string; location: string };
+  job: { id: string; ref: string; title: string; location: string };
   items: AdminHireRequestItem[];
 }
 
@@ -468,5 +464,232 @@ export interface AdminHireRequestsResponse {
     totalPages: number;
     pendingConsentCount: number;
     pendingReleaseCount: number;
+    placementsReadyCount: number;
+    counts: { submitted: number; inCoordination: number; completed: number; cancelled: number };
   };
 }
+
+export interface AdminHireRequestDetail {
+  id: string;
+  status: AdminHireRequest["status"];
+  facilityNote: string | null;
+  submittedAt: string | null;
+  closedAt: string | null;
+  facility: { id: string; accountId: string; name: string; type: string | null; officerName: string | null; email: string | null; phone: string; accountStatus: string; country?: string; city?: string };
+  job: { id: string; ref: string; title: string; specialty: string; location: string };
+  coordinator: { id: string; name: string } | null;
+  history: Array<{ action: string; at: string; candidateCode: string | null; actor: string; actorRole: string | null; reason: string | null }>;
+  items: Array<{
+    id: string;
+    status: string;
+    createdAt: string | null;
+    closedAt: string | null;
+    application: {
+      id: string;
+      candidateCode: string;
+      anonymousJobTitle: string;
+      specialty: string;
+      yearsOfExperience: number;
+      status: string;
+      doctor: { id: string; userId: string; fullName: string; email: string | null; phone: string | null; status: string; nationality?: string };
+    };
+    identityRelease: null | {
+      id: string;
+      status: AdminReleaseSummary["status"];
+      doctorConsentStatus: AdminReleaseSummary["doctorConsentStatus"];
+      doctorConsentAt: string | null;
+      doctorConsentRevokedAt: string | null;
+      decidedAt: string | null;
+      decisionNote: string | null;
+      decidedBy: { id: string; name: string } | null;
+      revokedAt: string | null;
+      revocationReason: string | null;
+      conversation: null | { id: string; status: string; readOnlyAt: string | null; participants: Array<{ userId: string; role: string; name: string }>; recentMessagesCount: number };
+    };
+  }>;
+}
+
+export interface ContactSubmissionDetail {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string | null;
+  subject: string | null;
+  message: string;
+  language: string | null;
+  status: string;
+  nextStatuses: string[];
+  internalNote: string | null;
+  reviewedAt: string | null;
+  reviewedBy: string | null;
+  createdAt: string;
+  submittedBy: { role: string } | null;
+  history: Array<{ at: string; from: string | null; to: string | null; note: string | null; actor: string }>;
+}
+
+// ---------------------------------------------------------------------------
+// Doctor Applications (GET /api/admin/applications)
+// ---------------------------------------------------------------------------
+export type ApplicationStatus = "SUBMITTED" | "UNDER_REVIEW" | "HIRE_REQUESTED" | "HIRED" | "NOT_SELECTED" | "WITHDRAWN";
+
+export interface AdminApplicationItem {
+  id: string;
+  candidateCode: string;
+  status: ApplicationStatus;
+  submittedAt: string;
+  anonymous: { jobTitle: string; specialty: string; yearsOfExperience: number };
+  doctor: { id: string; accountId: string; fullName: string; email: string | null; mobileE164: string | null; accountStatus: string };
+  job: { id: string; ref: string; title: string; status: string };
+  facility: {
+    id: string;
+    accountId: string;
+    name: string;
+    accountStatus: string;
+    hospitalEmail: string | null;
+    recruitmentContact: { name: string; email: string | null; phone: string | null };
+  };
+  hireRequest: {
+    itemId: string;
+    itemStatus: string;
+    requestId: string;
+    requestStatus: string;
+    requestedAt: string;
+    identityReleaseStatus: string | null;
+    doctorConsentStatus: string | null;
+  } | null;
+}
+
+export interface AdminApplicationsResponse {
+  status: string;
+  items: AdminApplicationItem[];
+  meta: { page: number; limit: number; total: number; totalPages: number; counts: Record<string, number> };
+}
+
+// Admin application detail (GET /api/admin/applications/:id)
+export interface AdminApplicationDetail extends Omit<AdminApplicationItem, "hireRequest"> {
+  hireRequests: Array<{
+    itemId: string;
+    itemStatus: string;
+    itemClosedAt: string | null;
+    requestId: string;
+    requestStatus: string;
+    requestedAt: string;
+    requestClosedAt: string | null;
+    facilityNote: string | null;
+    identityRelease: {
+      id: string;
+      status: string;
+      doctorConsentStatus: string;
+      doctorConsentAt: string | null;
+      decidedAt: string | null;
+      decidedBy: string | null;
+      decisionNote: string | null;
+      revokedAt: string | null;
+      conversation: { id: string; status: string; createdAt: string; messageCount: number } | null;
+    } | null;
+  }>;
+  canCompletePlacement: boolean;
+  nextAction: string;
+  history: Array<{ id: string; action: string; entityType: string; actor: string; actorRole: string | null; note: string | null; createdAt: string }>;
+}
+
+// GET /api/admin/overview
+export interface AdminOverview {
+  accounts: { pendingDoctors: number; pendingFacilities: number; approvedDoctors: number; approvedFacilities: number };
+  jobs: { pendingReview: number; published: number };
+  applications: { byStatus: Record<string, number>; withoutHireRequest: number };
+  hireRequests: { byStatus: Record<string, number>; releasesAwaitingConsent: number; releasesAwaitingDecision: number; placementsReadyToComplete: number };
+  profileChanges: { doctorPending: number; facilityPending: number };
+  directory: { listed: number; approvedUnlisted: number };
+  contact: { new: number; inReview: number };
+  audit: { last7Days: number };
+  trends: OverviewTrends;
+}
+
+export interface OverviewTrends {
+  rangeDays: number;
+  since: string;
+  applicationsPerDay: Array<{ date: string; count: number }>;
+  funnel: { applied: number; hireRequested: number; consentGranted: number; identityReleased: number; hired: number };
+  placementsCompleted: number;
+  placementsPerWeek: Array<{ weekStarting: string; count: number }>;
+  applicationsBySpecialty: Array<{ name: string; count: number }>;
+  publishedJobsByCountry: Array<{ name: string; count: number }>;
+}
+
+export interface FacilityListingRow {
+  id: string;
+  accountId: string;
+  name: string;
+  slug: string | null;
+  location: string | null;
+  accountStatus: string;
+  isListedPublicly: boolean;
+  isPubliclyVisible: boolean;
+  enabledAt: string | null;
+  enabledBy: string | null;
+  jobsCount: number;
+}
+
+export interface ReferenceDataResponse {
+  editable: boolean;
+  managedBy: string;
+  countries: Array<{ id: string; nameEn: string; isoCode: string | null; isGcc: boolean; isActive: boolean; isGuidePublished: boolean; citiesCount: number; guideSectionsCount: number }>;
+  cities: Array<{ id: string; nameEn: string; country: string; isActive: boolean }>;
+  specialties: Array<{ id: string; nameEn: string; slug: string; isActive: boolean }>;
+  options: Record<string, Array<{ id?: string; code: string; nameEn: string; isActive: boolean }>>;
+  faqs: Array<{ id: string; locale: string; question: string; isPublished: boolean; updatedAt: string }>;
+  contentBlocks: Array<{ id: string; page: string; key: string; locale: string; title: string | null; isPublished: boolean; updatedAt: string }>;
+  siteSettings: string[];
+}
+
+export interface ContactSubmissionRow {
+  id: string;
+  fullName: string;
+  email: string;
+  phone: string | null;
+  subject: string | null;
+  message: string;
+  status: "NEW" | "IN_REVIEW" | "RESOLVED" | "SPAM";
+  nextStatuses: string[];
+  internalNote: string | null;
+  reviewedAt: string | null;
+  reviewedBy: string | null;
+  createdAt: string;
+}
+
+export interface ContactSubmissionsResponse {
+  items: ContactSubmissionRow[];
+  meta: { page: number; limit: number; total: number; totalPages: number; counts: Record<string, number> };
+}
+
+export interface AuditLogsResponse {
+  items: Array<{ id: string; action: string; entityType: string; entityId: string; actor: string; actorRole: string | null; metadata: Record<string, unknown>; createdAt: string }>;
+  filters: { actions: Array<{ value: string; count: number }>; entityTypes: Array<{ value: string; count: number }> };
+  meta: { page: number; limit: number; total: number; totalPages: number };
+}
+
+export interface BadgeCounts { pendingAccounts: number; doctorChanges: number; facilityChanges: number; jobsPending: number; releasesToDecide: number; placementsReady: number; contactNew: number; deletionOpen: number }
+
+export type DeletionAction = "review" | "reject" | "complete";
+export interface DeletionRequestRow {
+  id: string; status: string; reason: string | null; requestedAt: string; processedAt: string | null;
+  account: { id: string; role: string; status: string; name: string; email: string | null };
+  nextActions: DeletionAction[];
+}
+export interface DeletionRequestsResponse { items: DeletionRequestRow[]; meta: { total: number; page: number; totalPages: number; counts: Record<string, number> } }
+export interface DeletionRequestDetail {
+  id: string; status: string; reason: string | null; requestedAt: string; processedAt: string | null; resolutionNote: string | null; processedBy: string | null;
+  nextActions: DeletionAction[];
+  account: { id: string; role: string; status: string; name: string; email: string | null; mobile: string | null; createdAt: string; deactivatedAt: string | null };
+  preserved: { applications: number; hireRequestItems: number; conversations: number; messages: number; jobs: number };
+  history: Array<{ action: string; at: string; actor: string; reason: string | null }>;
+}
+export interface ContentBlockRow { id: string; page: string; key: string; locale: string; title: string | null; body: string | null; data: unknown; sortOrder: number; isPublished: boolean; updatedAt: string }
+export interface FaqRow { id: string; locale: string; question: string; answer: string; sortOrder: number; isPublished: boolean }
+export interface CountryContentRow { id: string; slug: string; isoCode: string; isGcc: boolean; nameEn: string; nameAr: string; summaryEn: string | null; summaryAr: string | null; isActive: boolean; isGuidePublished: boolean; sortOrder: number; usedBy?: { jobs: number; hospitals: number }; cities?: Array<{ id: string; nameEn: string; nameAr: string; isActive: boolean; sortOrder: number }>; sections: Array<{ id: string; locale: string; title: string; body: string; sortOrder: number }> }
+
+export interface SiteGeneral { brandName: string; logoUrl: string; faviconUrl: string; social: { facebook: string; linkedin: string; x: string }; contact: { address: string; email: string; phone: string; hours: string }; tagline: string; copyrightCompany: string }
+export interface SeoValues { title?: string; description?: string; ogTitle?: string; ogDescription?: string; ogImage?: string; canonicalUrl?: string; noindex?: boolean }
+export interface SeoSettings { seo: Record<string, SeoValues>; builtIn: Record<string, { title: string; description: string }>; pages: string[] }
+export interface ListRow { id: string; code: string | null; nameEn: string; nameAr: string; isActive: boolean; sortOrder: number; symbol?: string | null; country?: string; countryId?: string }

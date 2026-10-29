@@ -1,5 +1,6 @@
 import { Router, type Request, type Response, type NextFunction } from "express";
 import { prisma } from "../lib/prisma";
+import { recordAdminIdentityRead } from "../lib/admin-audit";
 import { getAuthenticatedUser } from "./auth";
 
 export const adminHireRequestsRouter = Router();
@@ -7,7 +8,7 @@ export const adminHireRequestsRouter = Router();
 // Middleware: Require PLATFORM_ADMIN role
 export async function requireAdmin(req: Request, res: Response, next: NextFunction) {
   try {
-    const user = await getAuthenticatedUser(req);
+    const user = await getAuthenticatedUser(req, "admin");
     if (!user) {
       res.status(401).json({ status: "error", message: "Authentication required.", code: "UNAUTHENTICATED" });
       return;
@@ -46,16 +47,31 @@ adminHireRequestsRouter.get("/", async (req: Request, res: Response) => {
       where.OR = [
         { job: { title: { contains: q, mode: "insensitive" } } },
         { facility: { name: { contains: q, mode: "insensitive" } } },
+        { items: { some: { application: { candidateCode: { contains: q, mode: "insensitive" } } } } },
       ];
     }
+    // Requests that need something from someone right now (the same definitions the Overview counts use)
+    const attention = String(req.query.attention ?? "");
+    if (attention === "decision") where.items = { some: { identityRelease: { status: "PENDING", doctorConsentStatus: "GRANTED" } } };
+    if (attention === "consent") where.items = { some: { identityRelease: { status: "PENDING", doctorConsentStatus: "PENDING" } } };
+    if (attention === "complete") where.items = { some: { status: "AGREED", identityRelease: { status: "APPROVED", doctorConsentStatus: "GRANTED", conversation: { isNot: null } } } };
 
-    const [hireRequests, totalCount, pendingCount, inCoordinationCount, completedCount, cancelledCount] =
-      await Promise.all([
+    const [
+      hireRequests,
+      totalCount,
+      pendingCount,
+      inCoordinationCount,
+      completedCount,
+      cancelledCount,
+      pendingConsentCount,
+      pendingReleaseCount,
+      placementsReadyCount,
+    ] = await Promise.all([
         prisma.hireRequest.findMany({
           where,
           include: {
             facility: {
-              select: { id: true, name: true, officerName: true, user: { select: { email: true, status: true } } },
+              select: { id: true, name: true, officerName: true, city: { select: { nameEn: true } }, country: { select: { nameEn: true } }, user: { select: { email: true, status: true } } },
             },
             job: {
               select: {
@@ -74,6 +90,7 @@ adminHireRequestsRouter.get("/", async (req: Request, res: Response) => {
                     candidateCode: true,
                     anonymousJobTitle: true,
                     anonymousYearsOfExperience: true,
+                    anonymousSpecialty: { select: { nameEn: true } },
                     status: true,
                   },
                 },
@@ -101,6 +118,11 @@ adminHireRequestsRouter.get("/", async (req: Request, res: Response) => {
         prisma.hireRequest.count({ where: { status: "IN_COORDINATION" } }),
         prisma.hireRequest.count({ where: { status: "COMPLETED" } }),
         prisma.hireRequest.count({ where: { status: "CANCELLED" } }),
+        // Releases waiting on the doctor, and releases the doctor consented to that await an admin decision
+        // (the approve endpoint requires doctorConsentStatus GRANTED).
+        prisma.identityRelease.count({ where: { status: "PENDING", doctorConsentStatus: "PENDING" } }),
+        prisma.identityRelease.count({ where: { status: "PENDING", doctorConsentStatus: "GRANTED" } }),
+        prisma.hireRequestItem.count({ where: { status: "AGREED", identityRelease: { status: "APPROVED", doctorConsentStatus: "GRANTED", conversation: { isNot: null } } } }),
       ]);
 
     res.json({
@@ -113,6 +135,7 @@ adminHireRequestsRouter.get("/", async (req: Request, res: Response) => {
           officerName: hr.facility.officerName,
           email: hr.facility.user.email,
           status: hr.facility.user.status,
+          location: [hr.facility.city?.nameEn, hr.facility.country?.nameEn].filter(Boolean).join(", "),
         },
         job: {
           id: hr.job.id,
@@ -129,6 +152,8 @@ adminHireRequestsRouter.get("/", async (req: Request, res: Response) => {
           applicationId: it.applicationId,
           candidateCode: it.application.candidateCode,
           jobTitle: it.application.anonymousJobTitle,
+          specialty: it.application.anonymousSpecialty.nameEn,
+          yearsOfExperience: it.application.anonymousYearsOfExperience,
           status: it.status,
           identityRelease: it.identityRelease
             ? {
@@ -149,6 +174,9 @@ adminHireRequestsRouter.get("/", async (req: Request, res: Response) => {
         limit: limitNum,
         total: totalCount,
         totalPages: Math.ceil(totalCount / limitNum),
+        pendingConsentCount,
+        pendingReleaseCount,
+        placementsReadyCount,
         counts: {
           submitted: pendingCount,
           inCoordination: inCoordinationCount,
@@ -236,6 +264,28 @@ adminHireRequestsRouter.get("/:id", async (req: Request, res: Response) => {
       return;
     }
 
+    // Everything that happened to this request's identity releases and placements, oldest first
+    const releaseIds = hireRequest.items.map((it) => it.identityRelease?.id).filter((x): x is string => !!x);
+    const itemIds = hireRequest.items.map((it) => it.id);
+    const historyRows = await prisma.auditLog.findMany({
+      where: { OR: [{ entityType: "IdentityRelease", entityId: { in: releaseIds } }, { entityType: "HireRequestItem", entityId: { in: itemIds } }] },
+      orderBy: { createdAt: "asc" },
+      include: { actor: { select: { displayName: true, email: true, role: true } } },
+    });
+    const codeByEntity = new Map<string, string>();
+    for (const it of hireRequest.items) {
+      codeByEntity.set(it.id, it.application.candidateCode);
+      if (it.identityRelease) codeByEntity.set(it.identityRelease.id, it.application.candidateCode);
+    }
+
+    // Detail exposes each applicant's doctor identity/contact to the platform admin
+    await recordAdminIdentityRead({
+      actorId: (req as any).adminUser.id,
+      entityType: "HireRequest",
+      entityIds: [hireRequest.id],
+      context: "GET /api/admin/hire-requests/:id",
+    });
+
     res.json({
       status: "success",
       hireRequest: {
@@ -246,6 +296,7 @@ adminHireRequestsRouter.get("/:id", async (req: Request, res: Response) => {
         closedAt: hireRequest.closedAt,
         facility: {
           id: hireRequest.facility.id,
+          accountId: hireRequest.facility.user.id,
           name: hireRequest.facility.name,
           type: hireRequest.facility.type,
           officerName: hireRequest.facility.officerName,
@@ -265,6 +316,11 @@ adminHireRequestsRouter.get("/:id", async (req: Request, res: Response) => {
         coordinator: hireRequest.coordinator
           ? { id: hireRequest.coordinator.id, name: hireRequest.coordinator.displayName || hireRequest.coordinator.email }
           : null,
+        history: historyRows.map((h) => {
+          const m = (h.metadata ?? {}) as Record<string, any>;
+          const reason = [m.reason, m.rejectionReason, m.decisionNote, m.note].find((v) => typeof v === "string" && v.trim()) ?? null;
+          return { action: h.action, at: h.createdAt, candidateCode: codeByEntity.get(h.entityId) ?? null, actor: h.actor ? (h.actor.displayName ?? h.actor.email) : "System", actorRole: h.actor?.role ?? null, reason };
+        }),
         items: hireRequest.items.map((it) => {
           const release = it.identityRelease;
           const app = it.application;

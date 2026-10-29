@@ -4,6 +4,29 @@ import { requirePlatformAdmin } from "./admin-accounts";
 
 export const adminJobsRouter = Router();
 
+// Job review lifecycle (existing JobStatus values). Decisions are only valid from these states:
+//   approve (publish)  : PENDING_REVIEW
+//   request changes    : PENDING_REVIEW      -> CHANGES_REQUESTED (facility edits and resubmits -> PENDING_REVIEW)
+//   reject             : PENDING_REVIEW | CHANGES_REQUESTED
+// PUBLISHED, REJECTED and CLOSED jobs are final for the review workflow.
+const JOB_DECISIONS: Record<"approve" | "requestChanges" | "reject", string[]> = {
+  approve: ["PENDING_REVIEW"],
+  requestChanges: ["PENDING_REVIEW"],
+  reject: ["PENDING_REVIEW", "CHANGES_REQUESTED"],
+};
+const STATUS_WORDS: Record<string, string> = {
+  DRAFT: "a draft", PENDING_REVIEW: "pending review", CHANGES_REQUESTED: "waiting for the facility to resubmit",
+  PUBLISHED: "already published", REJECTED: "rejected", CLOSED: "closed",
+};
+class JobTransitionConflict extends Error {}
+function invalidTransition(res: Response, status: string, action: string) {
+  res.status(409).json({
+    status: "error",
+    code: "INVALID_TRANSITION",
+    message: `This job is ${STATUS_WORDS[status] ?? status.toLowerCase()}, so it cannot be ${action}.`,
+  });
+}
+
 adminJobsRouter.use(requirePlatformAdmin);
 
 // ---------------------------------------------------------------------------
@@ -33,7 +56,7 @@ adminJobsRouter.get("/", async (req: Request, res: Response) => {
       ];
     }
 
-    const [jobs, total, pendingCount, publishedCount, rejectedCount, allCount] = await Promise.all([
+    const [jobs, total, pendingCount, publishedCount, rejectedCount, allCount, changesCount] = await Promise.all([
       prisma.job.findMany({
         where,
         orderBy: [{ status: "asc" }, { submittedAt: "desc" }, { createdAt: "desc" }],
@@ -68,6 +91,7 @@ adminJobsRouter.get("/", async (req: Request, res: Response) => {
       prisma.job.count({ where: { status: "PUBLISHED" } }),
       prisma.job.count({ where: { status: "REJECTED" } }),
       prisma.job.count(),
+      prisma.job.count({ where: { status: "CHANGES_REQUESTED" } }),
     ]);
 
     res.json({
@@ -118,6 +142,7 @@ adminJobsRouter.get("/", async (req: Request, res: Response) => {
           pendingReview: pendingCount,
           published: publishedCount,
           rejected: rejectedCount,
+          changesRequested: changesCount,
         },
       },
     });
@@ -257,7 +282,7 @@ adminJobsRouter.post("/:id/approve", async (req: Request, res: Response) => {
       where: { id },
       include: {
         facility: {
-          include: { user: { select: { id: true, email: true } } },
+          include: { user: { select: { id: true, email: true, status: true } } },
         },
       },
     });
@@ -267,16 +292,30 @@ adminJobsRouter.post("/:id/approve", async (req: Request, res: Response) => {
       return;
     }
 
+    // A job can only go live for a facility whose account the platform has approved
+    if (existingJob.facility.user.status !== "APPROVED") {
+      res.status(409).json({
+        status: "error",
+        code: "FACILITY_NOT_APPROVED",
+        message: "This facility account is not approved yet. Approve the facility account before publishing its jobs.",
+      });
+      return;
+    }
+
     if (existingJob.status === "PUBLISHED") {
       res.status(400).json({ status: "error", message: "Job is already published." });
+      return;
+    }
+    if (!JOB_DECISIONS.approve.includes(existingJob.status)) {
+      invalidTransition(res, existingJob.status, "approved");
       return;
     }
 
     const now = new Date();
 
     const updatedJob = await prisma.$transaction(async (tx) => {
-      const job = await tx.job.update({
-        where: { id },
+      const claimed = await tx.job.updateMany({
+        where: { id, status: { in: JOB_DECISIONS.approve as any } },
         data: {
           status: "PUBLISHED",
           publishedAt: now,
@@ -285,6 +324,8 @@ adminJobsRouter.post("/:id/approve", async (req: Request, res: Response) => {
           reviewNote: null,
         },
       });
+      if (claimed.count === 0) throw new JobTransitionConflict("This job was already decided by another administrator.");
+      const job = await tx.job.findUniqueOrThrow({ where: { id } });
 
       // Audit Log
       await tx.auditLog.create({
@@ -331,6 +372,10 @@ adminJobsRouter.post("/:id/approve", async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
+    if (error instanceof JobTransitionConflict) {
+      res.status(409).json({ status: "error", code: "INVALID_TRANSITION", message: error.message });
+      return;
+    }
     console.error("Admin approve job error:", error);
     res.status(500).json({ status: "error", message: "Failed to approve job requisition." });
   }
@@ -369,12 +414,16 @@ adminJobsRouter.post("/:id/reject", async (req: Request, res: Response) => {
       res.status(404).json({ status: "error", message: "Job submission not found." });
       return;
     }
+    if (!JOB_DECISIONS.reject.includes(existingJob.status)) {
+      invalidTransition(res, existingJob.status, "rejected");
+      return;
+    }
 
     const now = new Date();
 
     const updatedJob = await prisma.$transaction(async (tx) => {
-      const job = await tx.job.update({
-        where: { id },
+      const claimed = await tx.job.updateMany({
+        where: { id, status: { in: JOB_DECISIONS.reject as any } },
         data: {
           status: "REJECTED",
           reviewedAt: now,
@@ -382,6 +431,8 @@ adminJobsRouter.post("/:id/reject", async (req: Request, res: Response) => {
           reviewNote: rejectionReason,
         },
       });
+      if (claimed.count === 0) throw new JobTransitionConflict("This job was already decided by another administrator.");
+      const job = await tx.job.findUniqueOrThrow({ where: { id } });
 
       // Audit Log
       await tx.auditLog.create({
@@ -430,7 +481,92 @@ adminJobsRouter.post("/:id/reject", async (req: Request, res: Response) => {
       },
     });
   } catch (error) {
+    if (error instanceof JobTransitionConflict) {
+      res.status(409).json({ status: "error", code: "INVALID_TRANSITION", message: error.message });
+      return;
+    }
     console.error("Admin reject job error:", error);
     res.status(500).json({ status: "error", message: "Failed to reject job requisition." });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/admin/jobs/:id/request-changes   body: { reason }
+// Sends a pending job back to the facility with a required explanation. The job stays unpublished
+// (CHANGES_REQUESTED) and invisible to doctors until the facility resubmits and an admin approves it.
+// ---------------------------------------------------------------------------
+adminJobsRouter.post("/:id/request-changes", async (req: Request, res: Response) => {
+  try {
+    const adminUser = (req as any).adminUser;
+    const id = String(req.params.id);
+    const raw = req.body?.reason;
+    const reason = typeof raw === "string" ? raw.trim() : "";
+    if (!reason) {
+      res.status(400).json({ status: "error", code: "INVALID_INPUT", field: "reason", message: "Please explain which changes the facility should make." });
+      return;
+    }
+    if (reason.length > 2000) {
+      res.status(400).json({ status: "error", code: "INVALID_INPUT", field: "reason", message: "The explanation is too long (max 2000 characters)." });
+      return;
+    }
+
+    const existingJob = await prisma.job.findUnique({
+      where: { id },
+      include: { facility: { select: { name: true, userId: true } } },
+    });
+    if (!existingJob) {
+      res.status(404).json({ status: "error", message: "Job submission not found." });
+      return;
+    }
+    if (!JOB_DECISIONS.requestChanges.includes(existingJob.status)) {
+      invalidTransition(res, existingJob.status, "sent back for changes");
+      return;
+    }
+
+    const now = new Date();
+    const job = await prisma.$transaction(async (tx) => {
+      const claimed = await tx.job.updateMany({
+        where: { id, status: { in: JOB_DECISIONS.requestChanges as any } },
+        data: { status: "CHANGES_REQUESTED", reviewedAt: now, reviewedById: adminUser.id, reviewNote: reason },
+      });
+      if (claimed.count === 0) throw new JobTransitionConflict("This job was already decided by another administrator.");
+      const updated = await tx.job.findUniqueOrThrow({ where: { id } });
+      await tx.auditLog.create({
+        data: {
+          actorId: adminUser.id,
+          action: "JOB_CHANGES_REQUESTED",
+          entityType: "Job",
+          entityId: id,
+          metadata: { jobTitle: updated.title, referenceNumber: updated.referenceNumber, facilityId: updated.facilityId, reason, decidedBy: adminUser.email },
+        },
+      });
+      await tx.notification.create({
+        data: {
+          userId: existingJob.facility.userId,
+          type: "JOB_REVIEW",
+          data: {
+            title: "Changes requested for your job",
+            body: `The platform asked for changes to '${updated.title}': "${reason}". Edit the job and resubmit it for review.`,
+            jobId: id,
+            status: "CHANGES_REQUESTED",
+            reason,
+          },
+        },
+      });
+      return updated;
+    });
+
+    res.json({
+      status: "success",
+      message: `Changes requested for '${job.title}'. The job stays private until the facility resubmits it and you approve it.`,
+      job: { id: job.id, status: job.status, reviewNote: job.reviewNote, reviewedAt: job.reviewedAt },
+    });
+  } catch (error) {
+    if (error instanceof JobTransitionConflict) {
+      res.status(409).json({ status: "error", code: "INVALID_TRANSITION", message: error.message });
+      return;
+    }
+    console.error("Admin request job changes error:", error);
+    res.status(500).json({ status: "error", message: "Failed to request changes." });
   }
 });

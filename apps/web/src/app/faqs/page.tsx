@@ -1,15 +1,20 @@
 import type { Metadata } from "next";
+import { pageMetadata } from "@/lib/seo";
 import { FaqAccordion } from "@/components/pages/FaqAccordion";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { getFaqsContent } from "@/lib/public-content";
 import styles from "@/components/pages/pages.module.css";
 
-export const metadata: Metadata = {
+const fallbackMetadata: Metadata = {
   title: "Frequently Asked Questions | Health Arabia",
   description:
     "Clear answers to common questions about medical licensing, SCFHS registration, consultant relocation, and hospital placements in the GCC.",
 };
+
+export async function generateMetadata(): Promise<Metadata> {
+  return pageMetadata("FAQ", fallbackMetadata);
+}
 
 export default async function FaqsPage() {
   const content = await getFaqsContent();

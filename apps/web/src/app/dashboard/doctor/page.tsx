@@ -114,12 +114,12 @@ export default function DoctorDashboardPage() {
         // Verify active session & role
         const sessionRes = await fetch("/api/auth/me", { credentials: "include" });
         if (!sessionRes.ok) {
-          router.replace("/login/doctor");
+          router.replace("/login/doctor?returnTo=/dashboard/doctor");
           return;
         }
         const sessionData = await sessionRes.json();
         if (sessionData.user?.role !== "DOCTOR") {
-          router.replace("/login/doctor");
+          router.replace("/login/doctor?returnTo=/dashboard/doctor");
           return;
         }
 

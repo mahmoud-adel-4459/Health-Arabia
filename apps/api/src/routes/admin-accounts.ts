@@ -1,5 +1,6 @@
 import { Router, type Request, type Response, type NextFunction } from "express";
 import { prisma } from "../lib/prisma";
+import { recordAdminIdentityRead } from "../lib/admin-audit";
 import { getAuthenticatedUser } from "./auth";
 
 export const adminAccountsRouter = Router();
@@ -10,7 +11,7 @@ export const adminAccountsRouter = Router();
 // ---------------------------------------------------------------------------
 export async function requirePlatformAdmin(req: Request, res: Response, next: NextFunction) {
   try {
-    const user = await getAuthenticatedUser(req);
+    const user = await getAuthenticatedUser(req, "admin");
     if (!user) {
       res.status(401).json({
         status: "error",
@@ -182,6 +183,13 @@ adminAccountsRouter.get("/", async (req: Request, res: Response) => {
 
     const totalPages = Math.ceil(total / limit) || 1;
 
+    await recordAdminIdentityRead({
+      actorId: (req as any).adminUser.id,
+      entityType: "User",
+      entityIds: accounts.filter((acc) => acc.role === "DOCTOR").map((acc) => acc.id),
+      context: "GET /api/admin/accounts",
+    });
+
     res.json({
       status: "success",
       data: accounts.map((acc) => {
@@ -297,6 +305,7 @@ adminAccountsRouter.get("/:id", async (req: Request, res: Response) => {
           include: {
             city: true,
             country: true,
+            publicListingEnabledBy: { select: { id: true, displayName: true, email: true } },
             logo: {
               select: {
                 id: true,
@@ -323,7 +332,7 @@ adminAccountsRouter.get("/:id", async (req: Request, res: Response) => {
         entityId: account.id,
       },
       orderBy: { createdAt: "desc" },
-      take: 10,
+      take: 50,
       include: {
         actor: {
           select: {
@@ -334,6 +343,15 @@ adminAccountsRouter.get("/:id", async (req: Request, res: Response) => {
         },
       },
     });
+
+    if (account.role === "DOCTOR") {
+      await recordAdminIdentityRead({
+        actorId: (req as any).adminUser.id,
+        entityType: "User",
+        entityIds: [account.id],
+        context: "GET /api/admin/accounts/:id",
+      });
+    }
 
     res.json({
       status: "success",
@@ -401,6 +419,17 @@ adminAccountsRouter.get("/:id", async (req: Request, res: Response) => {
               officerPhone: account.facility.officerPhone,
               city: account.facility.city?.nameEn,
               country: account.facility.country?.nameEn,
+              slug: account.facility.slug,
+              publicListing: {
+                isListedPublicly: account.facility.isListedPublicly,
+                enabledAt: account.facility.publicListingEnabledAt,
+                enabledBy: account.facility.publicListingEnabledBy
+                  ? {
+                      id: account.facility.publicListingEnabledBy.id,
+                      name: account.facility.publicListingEnabledBy.displayName ?? account.facility.publicListingEnabledBy.email,
+                    }
+                  : null,
+              },
               logo: account.facility.logo
                 ? {
                     id: account.facility.logo.id,
@@ -424,6 +453,80 @@ adminAccountsRouter.get("/:id", async (req: Request, res: Response) => {
   } catch (error) {
     console.error("Failed to fetch admin account detail:", error);
     res.status(500).json({ status: "error", message: "Failed to load account details" });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/admin/accounts/:id/public-listing   body: { enabled: boolean }
+// Enables/disables an approved facility's listing in the public Hospitals directory.
+// Enable records the responsible admin + timestamp on the facility (publicListingEnabledById/At).
+// Disable removes it from public results immediately (public queries require isListedPublicly);
+// the last enable record is kept on the row, and every change is written to the audit log.
+// The database also enforces both rules (CHECK constraint + approved-account trigger).
+// ---------------------------------------------------------------------------
+adminAccountsRouter.post("/:id/public-listing", async (req: Request, res: Response) => {
+  try {
+    const adminUser = (req as any).adminUser;
+    const id = String(req.params.id);
+    const { enabled } = req.body ?? {};
+
+    if (typeof enabled !== "boolean") {
+      res.status(400).json({ status: "error", message: "Body must include enabled: true or false.", code: "INVALID_INPUT" });
+      return;
+    }
+
+    const account = await prisma.user.findUnique({
+      where: { id },
+      select: { id: true, role: true, status: true, facility: { select: { id: true, name: true, isListedPublicly: true } } },
+    });
+    if (!account || account.role !== "FACILITY" || !account.facility) {
+      res.status(404).json({ status: "error", message: "Facility account not found.", code: "NOT_FOUND" });
+      return;
+    }
+    if (enabled && account.status !== "APPROVED") {
+      res.status(409).json({
+        status: "error",
+        message: `Only approved facilities can be listed publicly. This account is ${account.status.toLowerCase().replace(/_/g, " ")}.`,
+        code: "FACILITY_NOT_APPROVED",
+      });
+      return;
+    }
+    if (account.facility.isListedPublicly === enabled) {
+      res.json({ status: "success", changed: false, isListedPublicly: enabled, message: "Listing status is already up to date." });
+      return;
+    }
+
+    const now = new Date();
+    const facility = await prisma.$transaction(async (tx) => {
+      const updated = await tx.facility.update({
+        where: { id: account.facility!.id },
+        data: enabled
+          ? { isListedPublicly: true, publicListingEnabledAt: now, publicListingEnabledById: adminUser.id }
+          : { isListedPublicly: false },
+        select: { id: true, isListedPublicly: true, publicListingEnabledAt: true, publicListingEnabledById: true },
+      });
+      await tx.auditLog.create({
+        data: {
+          actorId: adminUser.id,
+          action: enabled ? "FACILITY_PUBLIC_LISTING_ENABLED" : "FACILITY_PUBLIC_LISTING_DISABLED",
+          entityType: "User",
+          entityId: account.id,
+          metadata: { facilityId: account.facility!.id, facilityName: account.facility!.name, at: now.toISOString() },
+        },
+      });
+      return updated;
+    });
+
+    res.json({
+      status: "success",
+      changed: true,
+      isListedPublicly: facility.isListedPublicly,
+      publicListingEnabledAt: facility.publicListingEnabledAt,
+      message: enabled ? "Facility is now listed in the public Hospitals directory." : "Facility removed from the public Hospitals directory.",
+    });
+  } catch (error) {
+    console.error("Admin public listing update error:", error);
+    res.status(500).json({ status: "error", message: "Failed to update public listing." });
   }
 });
 
@@ -465,6 +568,17 @@ adminAccountsRouter.post("/:id/approve", async (req: Request, res: Response) => 
         throw { statusCode: 400, message: "Cannot approve a deactivated account.", code: "INVALID_STATUS" };
       }
 
+      // A suspended account is restored through "unsuspend", not approve.
+      if (user.status === "SUSPENDED") {
+        throw { statusCode: 400, message: "Cannot approve a suspended account. Use unsuspend instead.", code: "INVALID_STATUS" };
+      }
+
+      // Re-review of a rejected account needs its own reason; the earlier decision stays in the audit history.
+      const isReReview = user.status === "REJECTED";
+      if (isReReview && !(typeof note === "string" && note.trim().length >= 3)) {
+        throw { statusCode: 400, message: "A reason is required to review a rejected account again (at least 3 characters).", code: "MISSING_REASON", field: "note" };
+      }
+
       const reviewNoteText = note && typeof note === "string" && note.trim()
         ? note.trim()
         : "Approved by platform administration";
@@ -502,6 +616,7 @@ adminAccountsRouter.post("/:id/approve", async (req: Request, res: Response) => 
             reviewerId: adminUser.id,
             reviewerEmail: adminUser.email,
             note: reviewNoteText,
+            ...(isReReview ? { reReview: true } : {}),
           },
         },
       });
@@ -520,6 +635,7 @@ adminAccountsRouter.post("/:id/approve", async (req: Request, res: Response) => 
         status: "error",
         message: error.message,
         code: error.code,
+        ...(error.field ? { field: error.field } : {}),
       });
       return;
     }
@@ -571,6 +687,10 @@ adminAccountsRouter.post("/:id/reject", async (req: Request, res: Response) => {
 
       if (user.status === "DEACTIVATED") {
         throw { statusCode: 400, message: "Cannot reject a deactivated account.", code: "INVALID_STATUS" };
+      }
+
+      if (user.status === "SUSPENDED") {
+        throw { statusCode: 400, message: "Cannot reject a suspended account.", code: "INVALID_STATUS" };
       }
 
       const updatedUser = await tx.user.update({
@@ -635,5 +755,127 @@ adminAccountsRouter.post("/:id/reject", async (req: Request, res: Response) => {
     }
     console.error("Failed to reject account:", error);
     res.status(500).json({ status: "error", message: "Failed to reject account" });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/admin/accounts/:id/suspend
+// Suspends an APPROVED doctor or facility account. The reason is required and stored as the
+// account's review note (the previous note stays in the audit history). Sessions are revoked so
+// sign-in and protected actions stop immediately. A publicly listed facility leaves the Hospitals
+// directory. Applications, hire requests, chats and audit history are untouched.
+// There is deliberately no un-suspend action: the lifecycle does not define one.
+// ---------------------------------------------------------------------------
+adminAccountsRouter.post("/:id/suspend", async (req: Request, res: Response) => {
+  try {
+    const id = String(req.params.id);
+    const { reason } = req.body ?? {};
+    const adminUser = (req as any).adminUser;
+
+    if (!reason || typeof reason !== "string" || reason.trim().length < 3) {
+      res.status(400).json({ status: "error", message: "A specific suspension reason is required (at least 3 characters).", code: "MISSING_REASON", field: "reason" });
+      return;
+    }
+    const cleanReason = reason.trim().slice(0, 2000);
+
+    const result = await prisma.$transaction(async (tx) => {
+      const user = await tx.user.findUnique({
+        where: { id },
+        select: { id: true, role: true, status: true, facility: { select: { id: true, isListedPublicly: true } } },
+      });
+      if (!user) throw { statusCode: 404, message: "Account not found", code: "NOT_FOUND" };
+      if (user.role !== "DOCTOR" && user.role !== "FACILITY") {
+        throw { statusCode: 400, message: "Only doctor and facility accounts can be suspended.", code: "INVALID_ROLE" };
+      }
+      if (user.status === "SUSPENDED") throw { statusCode: 400, message: "Account is already suspended.", code: "ALREADY_SUSPENDED" };
+      if (user.status !== "APPROVED") {
+        throw { statusCode: 400, message: "Only approved accounts can be suspended.", code: "INVALID_STATUS" };
+      }
+
+      const claimed = await tx.user.updateMany({
+        where: { id: user.id, status: "APPROVED" },
+        data: { status: "SUSPENDED", reviewedAt: new Date(), reviewedById: adminUser.id, reviewNote: cleanReason },
+      });
+      if (claimed.count !== 1) throw { statusCode: 409, message: "The account changed while you were suspending it. Reload and try again.", code: "CONFLICT" };
+
+      await tx.session.updateMany({ where: { userId: user.id, revokedAt: null }, data: { revokedAt: new Date() } });
+      const wasListed = Boolean(user.facility?.isListedPublicly);
+      if (wasListed) await tx.facility.update({ where: { id: user.facility!.id }, data: { isListedPublicly: false } });
+
+      await tx.auditLog.create({
+        data: {
+          actorId: adminUser.id,
+          action: "ACCOUNT_SUSPENDED",
+          entityType: "User",
+          entityId: user.id,
+          metadata: { previousStatus: user.status, newStatus: "SUSPENDED", role: user.role, reason: cleanReason, removedFromPublicDirectory: wasListed },
+        },
+      });
+      return { id: user.id, status: "SUSPENDED", removedFromPublicDirectory: wasListed };
+    });
+
+    res.json({ status: "success", message: "Account suspended. Active sessions were revoked.", account: result });
+  } catch (error: any) {
+    if (error?.statusCode) {
+      res.status(error.statusCode).json({ status: "error", message: error.message, code: error.code });
+      return;
+    }
+    console.error("Failed to suspend account:", error);
+    res.status(500).json({ status: "error", message: "Failed to suspend account" });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// POST /api/admin/accounts/:id/unsuspend
+// SUSPENDED doctor/facility -> APPROVED only. A reason is required. Revoked sessions are NOT restored
+// (the user signs in again). A facility's public directory listing is NOT re-enabled: an admin must do
+// that explicitly. The suspension stays in the audit history.
+// ---------------------------------------------------------------------------
+adminAccountsRouter.post("/:id/unsuspend", async (req: Request, res: Response) => {
+  try {
+    const id = String(req.params.id);
+    const { reason } = req.body ?? {};
+    const adminUser = (req as any).adminUser;
+
+    if (!reason || typeof reason !== "string" || reason.trim().length < 3) {
+      res.status(400).json({ status: "error", message: "A reason for lifting the suspension is required (at least 3 characters).", code: "MISSING_REASON", field: "reason" });
+      return;
+    }
+    const cleanReason = reason.trim().slice(0, 2000);
+
+    const result = await prisma.$transaction(async (tx) => {
+      const user = await tx.user.findUnique({ where: { id }, select: { id: true, role: true, status: true, reviewNote: true } });
+      if (!user) throw { statusCode: 404, message: "Account not found", code: "NOT_FOUND" };
+      if (user.role !== "DOCTOR" && user.role !== "FACILITY") {
+        throw { statusCode: 400, message: "Only doctor and facility accounts can be unsuspended.", code: "INVALID_ROLE" };
+      }
+      if (user.status !== "SUSPENDED") {
+        throw { statusCode: 400, message: "Only suspended accounts can be unsuspended.", code: "INVALID_STATUS" };
+      }
+      const claimed = await tx.user.updateMany({
+        where: { id: user.id, status: "SUSPENDED" },
+        data: { status: "APPROVED", reviewedAt: new Date(), reviewedById: adminUser.id, reviewNote: cleanReason },
+      });
+      if (claimed.count !== 1) throw { statusCode: 409, message: "The account changed while you were working. Reload and try again.", code: "CONFLICT" };
+      await tx.auditLog.create({
+        data: {
+          actorId: adminUser.id,
+          action: "ACCOUNT_UNSUSPENDED",
+          entityType: "User",
+          entityId: user.id,
+          metadata: { previousStatus: "SUSPENDED", newStatus: "APPROVED", role: user.role, reason: cleanReason, suspensionReason: user.reviewNote, publicListingRestored: false },
+        },
+      });
+      return { id: user.id, status: "APPROVED" };
+    });
+
+    res.json({ status: "success", message: "Suspension lifted. The user must sign in again. Public listing stays off until you enable it.", account: result });
+  } catch (error: any) {
+    if (error?.statusCode) {
+      res.status(error.statusCode).json({ status: "error", message: error.message, code: error.code });
+      return;
+    }
+    console.error("Failed to unsuspend account:", error);
+    res.status(500).json({ status: "error", message: "Failed to unsuspend account" });
   }
 });

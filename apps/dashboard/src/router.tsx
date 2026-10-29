@@ -54,9 +54,55 @@ function matchRoute(currentPath: string): { path: string; params: Record<string,
     return { path: "/jobs", params: {} };
   }
 
+  // Check /deletion-requests/:id and /deletion-requests
+  const deletionMatch = currentPath.match(/^\/deletion-requests\/([a-zA-Z0-9_-]+)\/?$/);
+  if (deletionMatch) {
+    return { path: "/deletion-requests/:id", params: { id: deletionMatch[1] } };
+  }
+  if (currentPath === "/deletion-requests" || currentPath === "/deletion-requests/") {
+    return { path: "/deletion-requests", params: {} };
+  }
+
+  // Countries: /countries/new, /countries/:id, /countries
+  if (currentPath === "/countries/new" || currentPath === "/countries/new/") {
+    return { path: "/countries/new", params: {} };
+  }
+  const countryMatch = currentPath.match(/^\/countries\/([a-zA-Z0-9_-]+)\/?$/);
+  if (countryMatch) {
+    return { path: "/countries/:id", params: { id: countryMatch[1] } };
+  }
+
+  // Hire requests: /hire-requests/:id and /hire-requests
+  const hireMatch = currentPath.match(/^\/hire-requests\/([a-zA-Z0-9_-]+)\/?$/);
+  if (hireMatch) {
+    return { path: "/hire-requests/:id", params: { id: hireMatch[1] } };
+  }
+
+  // Contact messages: /contact-submissions/:id
+  const contactMatch = currentPath.match(/^\/contact-submissions\/([a-zA-Z0-9_-]+)\/?$/);
+  if (contactMatch) {
+    return { path: "/contact-submissions/:id", params: { id: contactMatch[1] } };
+  }
+
   // Check /hire-requests
   if (currentPath === "/hire-requests" || currentPath === "/hire-requests/") {
     return { path: "/hire-requests", params: {} };
+  }
+
+  // Check /applications/:id and /applications
+  const appMatch = currentPath.match(/^\/applications\/([a-zA-Z0-9_-]+)\/?$/);
+  if (appMatch) {
+    return { path: "/applications/:id", params: { id: appMatch[1] } };
+  }
+  if (currentPath === "/applications" || currentPath === "/applications/") {
+    return { path: "/applications", params: {} };
+  }
+
+  // Platform areas
+  for (const area of ["/overview", "/countries", "/settings", "/directory", "/reference-data", "/contact-submissions", "/audit"]) {
+    if (currentPath === area || currentPath === area + "/") {
+      return { path: area, params: {} };
+    }
   }
 
   // Check /accounts or /

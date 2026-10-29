@@ -5,6 +5,12 @@ import Link from "next/link";
 import { Eye, EyeSlash } from "iconsax-react";
 import styles from "./pages.module.css";
 
+// Only same-site relative paths are honoured (prevents open redirects)
+function readReturnTo(): string | null {
+  const value = new URLSearchParams(window.location.search).get("returnTo");
+  return value && value.startsWith("/") && !value.startsWith("//") ? value : null;
+}
+
 export function FacilityLoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -56,7 +62,7 @@ export function FacilityLoginForm() {
         if (data.user.isPendingReview) {
           window.location.href = "/login/facility?status=pending_review";
         } else {
-          window.location.href = "/dashboard/facility";
+          window.location.href = readReturnTo() || "/dashboard/facility";
         }
       }, 1000);
     } catch {

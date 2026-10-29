@@ -26,7 +26,10 @@ interface AuthUser {
   role: "DOCTOR" | "FACILITY" | "PLATFORM_ADMIN";
   status: "PENDING_REVIEW" | "APPROVED" | "REJECTED" | "SUSPENDED" | "DRAFT" | "DEACTIVATED";
   isPendingReview: boolean;
+  avatarUrl?: string | null;
 }
+
+const DASHBOARD_URL = process.env.NEXT_PUBLIC_DASHBOARD_URL ?? "http://localhost:5173";
 
 function MaybeLink({ item, className }: { item: LinkItem; className?: string }) {
   if (!item.href) return <span className={className}>{item.label}</span>;
@@ -47,6 +50,7 @@ export function SiteHeader({
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loadingSession, setLoadingSession] = useState(true);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [avatarFailed, setAvatarFailed] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Check active session from /api/auth/me
@@ -136,13 +140,14 @@ export function SiteHeader({
   return (
     <header className={styles.header}>
       <div className={`container ${styles.headerInner}`}>
-        <Link href="/" className={styles.logo} aria-label="Health Arabia home">
+        <Link href="/" className={styles.logo} aria-label={`${content.brand?.name ?? "Health Arabia"} home`}>
           <Image
-            src="/brand/health-arabia-logo.png"
-            alt="Health Arabia"
+            src={content.brand?.logoUrl ?? "/brand/health-arabia-logo.png"}
+            alt={content.brand?.name ?? "Health Arabia"}
             width={272}
             height={48}
             priority
+            unoptimized={!!content.brand?.logoUrl && !content.brand.logoUrl.startsWith("/")}
           />
         </Link>
 
@@ -172,7 +177,16 @@ export function SiteHeader({
               >
                 {user.role === "FACILITY" ? (
                   <div className={styles.facilityAvatarBox}>
-                    <span>{getInitials(user.displayName)}</span>
+                    {user.avatarUrl && !avatarFailed ? (
+                      <img
+                        src={user.avatarUrl}
+                        alt=""
+                        className={styles.doctorAvatarImg}
+                        onError={() => setAvatarFailed(true)}
+                      />
+                    ) : (
+                      <span>{getInitials(user.displayName)}</span>
+                    )}
                   </div>
                 ) : user.role === "PLATFORM_ADMIN" ? (
                   <div className={styles.adminAvatarBox}>
@@ -180,18 +194,16 @@ export function SiteHeader({
                   </div>
                 ) : (
                   <div className={styles.doctorAvatarBox}>
-                    <img
-                      src="/images/testimonials/sarah-ahmed.png"
-                      alt=""
-                      className={styles.doctorAvatarImg}
-                      onError={(e) => {
-                        // Fallback to initials if image is missing
-                        (e.currentTarget as HTMLElement).style.display = "none";
-                      }}
-                    />
-                    <span className={styles.doctorAvatarInitials}>
-                      {getInitials(user.displayName)}
-                    </span>
+                    {user.avatarUrl && !avatarFailed ? (
+                      <img
+                        src={user.avatarUrl}
+                        alt=""
+                        className={styles.doctorAvatarImg}
+                        onError={() => setAvatarFailed(true)}
+                      />
+                    ) : (
+                      <span className={styles.doctorAvatarInitials}>{getInitials(user.displayName)}</span>
+                    )}
                   </div>
                 )}
 
@@ -319,7 +331,7 @@ export function SiteHeader({
                     {user.role === "PLATFORM_ADMIN" && (
                       <>
                         <a
-                          href="http://localhost:5173/accounts"
+                          href={`${DASHBOARD_URL}/accounts`}
                           className={styles.accountMenuItem}
                           target="_blank"
                           rel="noreferrer"
@@ -421,7 +433,7 @@ export function SiteHeader({
                       </Link>
                     </>
                   ) : (
-                    <a href="http://localhost:5173/accounts" className={styles.navLink}>
+                    <a href={`${DASHBOARD_URL}/accounts`} className={styles.navLink}>
                       Admin Review Console
                     </a>
                   )}
